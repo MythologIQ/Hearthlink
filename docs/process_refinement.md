@@ -119,5 +119,57 @@ A living record of evolving standard operating procedures (SOP) for Hearthlink. 
 * Post-phase retrospectives.
 * Blocker triage on critical issues.
 
-Latest update: 2025-07-07 – Logically reorganized and synchronized, platinum standards fully enforced.
+## 13. Synapse Connection Integration SOP
 
+* **All new Synapse connections (agents, plugins, APIs) are documented as supplements in `/docs/` using the Synapse Integration Template.**
+* **Integration workflow:**
+
+  1. *Design PRD/blueprint* in a new `/docs/SYNAPSE_<AGENT/PLUGIN>_SUPPLEMENT.md` file.
+  2. *Reference the new integration in the root `README.md`* (see template below).
+  3. *Cross-link* from the main Synapse blueprint to the supplement.
+  4. *Implementation* occurs in its own feature branch: `feature/synapse-<agent/connection>`.
+  5. *If new connection requires a custom setup/config wizard, document required steps, CLI/UI hooks, and post-merge checklist.*
+  6. *Update Synapse's `config/connection_registry.json` (or equivalent) to recognize the new connection, supporting future dynamic discovery/UI setup.*
+  7. *Full QA, docs, and process review before merge to main.*
+* **A new connections wizard/config is recommended in Synapse's roadmap for all agent/plugin integrations.** (Planned for enhancement if not yet implemented.)
+
+---
+
+## 14. MCP Resource Policy Implementation SOP
+
+* **All agent resource access must be controlled through MCP (Model Context Protocol) with explicit scoped permissions.**
+* **Resource policy workflow:**
+
+  1. *Define agent resource scope* in `/docs/MCP_AGENT_RESOURCE_POLICY.md` with explicit disk, network, workspace, and memory permissions.
+  2. *Implement policy enforcement* in `src/enterprise/mcp_resource_policy.py` with security controls and audit logging.
+  3. *Agent-specific policies* must include timeout limits, audit requirements, and security controls (encryption, sandbox, risk assessment).
+  4. *All resource access requests* flow through MCP with validation, logging, and automatic timeout enforcement.
+  5. *Security controls* are mandatory for sensitive operations (user consent, data anonymization, content validation).
+  6. *Audit trails* capture all access decisions, violations, and security events for compliance and monitoring.
+  7. *Integration with Sentry* ensures real-time security monitoring and incident response for policy violations.
+
+* **Key Implementation Patterns:**
+  - Zero trust principle: No default access, all permissions explicitly granted
+  - Least privilege: Agents only access resources required for their function
+  - Time-bound access: All permissions expire automatically
+  - Comprehensive audit: Every access decision logged with full context
+  - Security controls: Encryption, sandboxing, risk assessment as required
+  - Violation handling: Immediate blocking, alerting, and incident creation
+
+* **Agent Resource Scopes Defined:**
+  - **Sentry:** Security monitoring (logs, alerts, policies)
+  - **Alden:** User companion (workspace, goals, personal memory)
+  - **Alice:** Behavioral analysis (interaction logs, research, patterns)
+  - **Mimic:** Persona generation (templates, knowledge, generated content)
+  - **Core:** Session orchestration (session data, coordination, communal memory)
+  - **Vault:** Memory management (encrypted storage, backup, all memory slices)
+  - **Synapse:** External gateway (plugins, APIs, sandboxed execution)
+
+* **Security Controls Required:**
+  - Encryption for sensitive data access
+  - Sandboxing for external connections
+  - Risk assessment for new connections
+  - User consent for personal data access
+  - Data anonymization for behavioral analysis
+  - Content validation for generated content
+  - Session boundaries for multi-agent operations

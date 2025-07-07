@@ -1,26 +1,26 @@
 {
   "test_run": {
-    "timestamp": "2025-07-07T09:48:13.978944",
+    "timestamp": "2025-07-07T17:47:09.084959",
     "total_tests": 2,
     "passed": 0,
     "failed": 2,
     "success_rate": 0.0,
-    "total_duration": 0.35016942024230957
+    "total_duration": 1.0094151496887207
   },
   "results": [
     {
       "test_suite": "Multi-Agent Session Tests",
       "status": "FAILED",
-      "error": "attempted relative import beyond top-level package",
+      "error": "name 'SessionAnalysis' is not defined",
       "duration": 0,
-      "timestamp": "2025-07-07T09:48:13.964919"
+      "timestamp": "2025-07-07T17:47:09.074271"
     },
     {
       "test_suite": "Memory Management Tests",
       "status": "FAILED",
-      "error": "attempted relative import beyond top-level package",
+      "error": "name 'SessionAnalysis' is not defined",
       "duration": 0,
-      "timestamp": "2025-07-07T09:48:13.978717"
+      "timestamp": "2025-07-07T17:47:09.084729"
     }
   ]
 }

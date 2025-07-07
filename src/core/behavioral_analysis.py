@@ -28,8 +28,8 @@ import re
 from collections import defaultdict, Counter
 
 # Import Vault for communal memory mediation
-from ..vault.vault import Vault
-from ..vault.schema import CommunalMemory
+from vault.vault import Vault
+from vault.schema import CommunalMemory
 
 # Import error handling
 from .error_handling import (

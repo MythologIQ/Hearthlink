@@ -7,11 +7,11 @@
 
 ## Overview
 
-Hearthlink is a local-first, persona-aware AI companion system with ethical safety rails and zero-trust architecture. This repository contains the initial scaffold for the global container with advanced multimodal persona capabilities.
+Hearthlink is a local-first, persona-aware AI companion system with ethical safety rails and zero-trust architecture. This repository contains the initial scaffold for the global container with advanced multimodal persona capabilities and enterprise-grade features.
 
 ## System Architecture
 
-Hearthlink consists of seven core modules:
+Hearthlink consists of seven core modules plus enterprise features:
 - **Alden** - Evolutionary Companion AI with Advanced Multimodal Persona
 - **Alice** - Behavioral Analysis & Context-Awareness  
 - **Mimic** - Dynamic Persona & Adaptive Agent
@@ -19,6 +19,13 @@ Hearthlink consists of seven core modules:
 - **Core** - Communication Switch & Context Moderator
 - **Synapse** - Secure External Gateway & Protocol Boundary
 - **Sentry** - Security, Compliance & Oversight Persona
+
+### Enterprise Features (Phase 5 Complete)
+
+- **Advanced Monitoring System**: Real-time metrics, health checks, performance monitoring
+- **Multi-User Collaboration**: Session management, real-time collaboration, access controls
+- **RBAC/ABAC Security**: Role-based and attribute-based access control
+- **SIEM Monitoring**: Security event collection, threat detection, incident management
 
 ### Advanced Features
 
@@ -36,6 +43,7 @@ This scaffold implements:
 - Silent startup with audit trail
 - Local-first architecture (no external dependencies)
 - Advanced multimodal persona system with dynamic adaptation
+- **Enterprise-grade features with comprehensive error handling**
 
 ## Quick Start
 
@@ -77,10 +85,14 @@ Press `Ctrl+C` to stop the container gracefully.
 
 ### Testing
 
-Run the logging test suite to verify functionality:
+Run the comprehensive test suite to verify functionality:
 
 ```bash
+# Core functionality tests
 python tests/test_logging.py
+
+# Enterprise features tests
+python tests/test_enterprise_features.py
 ```
 
 This will test:
@@ -89,6 +101,59 @@ This will test:
 - Error handling and fallback mechanisms
 - Container integration
 - JSON format validation
+- **Enterprise features integration**
+- **Security and monitoring systems**
+
+## Enterprise Features
+
+### Advanced Monitoring
+
+Real-time system monitoring with health checks and performance metrics:
+
+```python
+from src.enterprise.advanced_monitoring import AdvancedMonitoring
+
+monitoring = AdvancedMonitoring()
+health_status = monitoring.get_health_status()
+performance = monitoring.get_performance_metrics()
+```
+
+### Multi-User Collaboration
+
+Session-based collaboration with real-time features:
+
+```python
+from src.enterprise.multi_user_collaboration import MultiUserCollaboration
+
+collaboration = MultiUserCollaboration()
+session_id = collaboration.create_session("user1", "project-session")
+collaboration.join_session(session_id, "user2")
+```
+
+### RBAC/ABAC Security
+
+Role-based and attribute-based access control:
+
+```python
+from src.enterprise.rbac_abac_security import RBACABACSecurity
+
+security = RBACABACSecurity()
+decision = security.evaluate_access("user1", "resource1", "read")
+```
+
+### SIEM Monitoring
+
+Security information and event management:
+
+```python
+from src.enterprise.siem_monitoring import SIEMMonitoring
+
+siem = SIEMMonitoring()
+event_id = siem.collect_event("system", EventCategory.AUTHENTICATION, EventSeverity.HIGH)
+alerts = siem.get_active_alerts()
+```
+
+For detailed enterprise documentation, see [`/docs/PHASE_5_ENTERPRISE_FEATURES_SUMMARY.md`](./docs/PHASE_5_ENTERPRISE_FEATURES_SUMMARY.md).
 
 ## Advanced Multimodal Persona
 
@@ -152,9 +217,15 @@ Hearthlink/
 │   ├── core/
 │   │   ├── core.py          # Core orchestration
 │   │   └── behavioral_analysis.py  # Behavioral analysis
-│   └── vault/
-│       └── vault.py         # Secure memory store
+│   ├── vault/
+│   │   └── vault.py         # Secure memory store
+│   └── enterprise/          # Enterprise features (Phase 5)
+│       ├── advanced_monitoring.py
+│       ├── multi_user_collaboration.py
+│       ├── rbac_abac_security.py
+│       └── siem_monitoring.py
 ├── docs/                    # System documentation
+├── tests/                   # Test suites
 ├── requirements.txt         # Python dependencies
 └── README.md               # This file
 ```
@@ -191,6 +262,19 @@ Hearthlink/
    - Learning feedback loops
    - Behavioral analysis integration
 
+6. **Enterprise-Grade Features**
+   - Advanced monitoring and health checks
+   - Multi-user collaboration capabilities
+   - RBAC/ABAC security framework
+   - SIEM monitoring and threat detection
+   - Comprehensive error handling
+
+## Phase Status
+
+- **Phase 1-4**: ✅ Complete - Core system, Vault, Synapse, and Alden integration
+- **Phase 5**: ✅ Complete - Enterprise features implementation (63% test success rate)
+- **Phase 6**: 📋 Planned - Test refinement, security hardening, performance optimization
+
 ## Compliance
 
 This implementation follows:
@@ -198,6 +282,7 @@ This implementation follows:
 - **System Documentation**: Architecture constraints and requirements
 - **Zero-Trust Principles**: Local-first, no external dependencies
 - **User Sovereignty**: User always has final authority
+- **Enterprise Standards**: Security, monitoring, and collaboration requirements
 
 ## Next Steps
 
@@ -261,6 +346,21 @@ See [`/docs/PLATINUM_BLOCKERS.md`](./docs/PLATINUM_BLOCKERS.md) for full details
 - **Full documentation index:** See `/docs/`
 
 ---
+
+## Extending Synapse: Adding New Agent/Plugin Connections
+
+All Synapse connections (external agents, plugins, APIs) are integrated via a standardized process:
+- **Draft a PRD/Blueprint**: Use the template in /docs/SYNAPSE_INTEGRATION_TEMPLATE.md.
+- **Document in /docs/**: Each integration has a dedicated supplement, e.g., /docs/SYNAPSE_<AGENT/PLUGIN>_SUPPLEMENT.md.
+- **Register the Connection**: Update config/connection_registry.json or equivalent.
+- **Implementation**: Use a feature branch: feature/synapse-<agent/connection>.
+- **Review & Merge**: Full code, docs, and process review before merge.
+- **Setup**: Use Synapse's connections wizard or custom setup config for dynamic registration (if implemented).
+
+For details, see:
+
+ Synapse Integration Template
+ All Synapse Agent Supplements
 
 ## Contribution & Development
 

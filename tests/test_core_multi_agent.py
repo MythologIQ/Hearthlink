@@ -25,7 +25,8 @@ from core.core import Core, Session, Participant, ParticipantType, SessionStatus
 from core.error_handling import (
     CoreErrorHandler, CoreErrorRecovery, CoreErrorValidator, CoreErrorMetrics,
     SessionNotFoundError, ParticipantNotFoundError, InvalidOperationError,
-    TurnTakingError, BreakoutRoomError, CommunalMemoryError, VaultIntegrationError
+    TurnTakingError, BreakoutRoomError, CommunalMemoryError, VaultIntegrationError,
+    ErrorCategory, ErrorSeverity
 )
 from vault.vault import Vault
 

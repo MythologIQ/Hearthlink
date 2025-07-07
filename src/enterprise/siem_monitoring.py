@@ -167,14 +167,14 @@ class SecurityMetrics:
     period_start: str
     period_end: str
     total_events: int
-    events_by_severity: Dict[str, int] = field(default_factory=dict)
-    events_by_category: Dict[str, int] = field(default_factory=dict)
     alerts_generated: int
     incidents_created: int
-    incidents_by_status: Dict[str, int] = field(default_factory=dict)
     threat_detection_rate: float
     mean_time_to_detect: float
     mean_time_to_resolve: float
+    events_by_severity: Dict[str, int] = field(default_factory=dict)
+    events_by_category: Dict[str, int] = field(default_factory=dict)
+    incidents_by_status: Dict[str, int] = field(default_factory=dict)
 
 
 class SIEMMonitoring:
