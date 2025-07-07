@@ -1,3 +1,9 @@
+---
+
+> ⚡ **This document is a dynamic, ever-evolving process manual—purpose-built to learn from failing forward and continuous improvement. Every lesson, challenge, and enhancement is recorded here to drive Hearthlink toward platinum-grade excellence.**
+
+---
+
 # Hearthlink Process Refinement – Living SOP
 
 ## Purpose
@@ -79,4 +85,51 @@ This document is a living record of our evolving standard operating procedures (
 
 ---
 
-*Latest update: 2025-07-07 (Phase 2 launch, modular branching/push enforcement, validation prompts for major AI suggestions, full QA traceability enforced)*
+## 9. Lessons Learned & Further Refinement (Phase 2+)
+
+### Key Lessons Learned
+
+1. **Process Documentation Prevents Drift**
+
+   * Explicit, living SOPs and phase supplementals kept all contributors (AI and human) aligned and prevented both technical and procedural drift—even as the project grew more complex.
+2. **Branching, Modularity, and Regular Pushing Are Non-Negotiable**
+
+   * Enforcing branch-per-module, regular commits, and disciplined merges created traceability and rapid recovery after workflow missteps (e.g., misplaced `.git`).
+3. **Prompt Hygiene = Project Hygiene**
+
+   * Mandating prompt structure (branch, push, validate suggestions, approval gating) enabled high agency for AI/automation without risk of untracked changes or code chaos.
+4. **Variance Reports and Approval Loops Are Essential**
+
+   * Phase-end variance analysis ensured no incomplete or unsafe system ever merged—gaps were surfaced and fixed before advancing.
+5. **Negative Testing and Edge-Case QA Were Not Optional**
+
+   * Missing tests or import issues in one module triggered fast corrective sprints and prevented “false sense of completion.”
+
+### Further Refinements for Next Phase
+
+1. **Proactive Import/Dependency Health Checks**
+
+   * Automate dependency validation and import structure checks at every sprint start (not just after test failures).
+   * Add an “import health” status to every variance or status report.
+2. **Mandatory Documentation Updates in Every Branch**
+
+   * Require every feature/fix branch to include updated documentation alongside code (not just after-the-fact in main).
+   * Automate docs status as a checklist item before merge.
+3. **Automated Suggestion/Improvement Logging**
+
+   * Any AI/agent-generated recommendation (even if not implemented) should be auto-logged to a running “improvements” list for later review.
+4. **Pre-Merge Peer or Owner Review—Always**
+
+   * Before any branch merges to main, mandate a checkpoint review, not just a variance report.
+   * Owner/QA can spot-check both code and updated process docs.
+5. **Post-Phase Retrospective**
+
+   * Schedule a brief review at the end of each phase: what worked, what blocked us, what needs tightening next time.
+   * Summarize lessons here, in `process_refinement.md`, for institutional knowledge.
+6. **Standardize “Blocker Triage”**
+
+   * As soon as a critical gap is found (security, persona, test failure), trigger a mandatory triage/priority review before further development.
+
+---
+
+*Latest update: 2025-07-07 (Phase 2 lessons learned and further refinements appended)*
