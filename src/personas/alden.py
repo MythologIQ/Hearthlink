@@ -33,6 +33,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from main import HearthlinkLogger, HearthlinkError
 from llm.local_llm_client import LocalLLMClient, LLMRequest, LLMResponse, LLMError
 
+# Import behavioral analysis
+from core.behavioral_analysis import (
+    BehavioralAnalysis, TextAnalysis, BehavioralInsight, 
+    AdaptiveFeedback, ExternalSignal, SignalType
+)
+
 
 class PersonaError(HearthlinkError):
     """Base exception for persona-related errors."""
@@ -324,7 +330,7 @@ Please respond as Alden, providing reflective support and guidance."""
     def generate_response(self, user_message: str, session_id: Optional[str] = None, 
                          context: Optional[Dict[str, Any]] = None) -> str:
         """
-        Generate Alden's response to user input.
+        Generate Alden's response to user input with behavioral analysis integration.
         
         Args:
             user_message: User's message
@@ -357,7 +363,49 @@ Please respond as Alden, providing reflective support and guidance."""
                                       "user_id": self.memory.user_id
                                   }})
             
-            # Prepare system prompt with current memory state
+            # Perform behavioral analysis on user message
+            text_analysis = None
+            behavioral_insights = []
+            adaptive_feedback = []
+            
+            try:
+                # Analyze text behavior if behavioral analysis is available
+                if hasattr(self, 'behavioral_analysis'):
+                    text_analysis = self.behavioral_analysis.analyze_text(user_message)
+                    
+                    # Generate behavioral insights
+                    analyses = [{"type": "text", "data": text_analysis}]
+                    behavioral_insights = self.behavioral_analysis.generate_behavioral_insights(
+                        analyses, self.memory.user_id, session_id
+                    )
+                    
+                    # Generate adaptive feedback
+                    adaptive_feedback = self.behavioral_analysis.generate_adaptive_feedback(
+                        behavioral_insights, "alden"
+                    )
+                    
+                    # Log behavioral analysis results
+                    self.logger.logger.info("Behavioral analysis completed", 
+                                          extra={"extra_fields": {
+                                              "event_type": "behavioral_analysis_complete",
+                                              "request_id": request_id,
+                                              "session_id": session_id,
+                                              "sentiment_score": text_analysis.sentiment_score if text_analysis else None,
+                                              "insight_count": len(behavioral_insights),
+                                              "feedback_count": len(adaptive_feedback)
+                                          }})
+                    
+            except Exception as e:
+                # Log behavioral analysis error but continue with response generation
+                self.logger.logger.warning(f"Behavioral analysis failed: {e}", 
+                                         extra={"extra_fields": {
+                                             "event_type": "behavioral_analysis_error",
+                                             "request_id": request_id,
+                                             "session_id": session_id,
+                                             "error": str(e)
+                                         }})
+            
+            # Prepare system prompt with current memory state and behavioral insights
             system_prompt = self.baseline_system_prompt.format(
                 openness=self.memory.traits["openness"],
                 conscientiousness=self.memory.traits["conscientiousness"],
@@ -370,10 +418,29 @@ Please respond as Alden, providing reflective support and guidance."""
                 reflective_capacity=self.memory.reflective_capacity
             )
             
+            # Enhance system prompt with behavioral insights if available
+            if behavioral_insights:
+                insight_context = "\n\nBehavioral Insights:\n"
+                for insight in behavioral_insights[:3]:  # Limit to top 3 insights
+                    insight_context += f"- {insight.description}\n"
+                system_prompt += insight_context
+            
+            # Add adaptive feedback to system prompt if available
+            if adaptive_feedback:
+                feedback_context = "\n\nAdaptive Feedback:\n"
+                for feedback in adaptive_feedback[:2]:  # Limit to top 2 feedback items
+                    feedback_context += f"- {feedback.description}\n"
+                system_prompt += feedback_context
+            
             # Prepare user prompt
             recent_mood = "neutral"
             if self.memory.session_mood:
                 recent_mood = self.memory.session_mood[-1].mood
+            
+            # Add behavioral analysis context to user prompt
+            behavioral_context = ""
+            if text_analysis:
+                behavioral_context = f"\nBehavioral Analysis:\n- Sentiment: {text_analysis.sentiment_score:.2f}\n- Emotions: {', '.join(text_analysis.emotion_labels)}\n- Engagement: {', '.join(text_analysis.engagement_indicators)}"
             
             user_prompt = self.baseline_user_prompt_template.format(
                 user_message=user_message,
@@ -381,7 +448,7 @@ Please respond as Alden, providing reflective support and guidance."""
                 timestamp=timestamp,
                 user_tags=", ".join(self.memory.user_tags) if self.memory.user_tags else "none",
                 recent_mood=recent_mood
-            )
+            ) + behavioral_context
             
             # Generate LLM response
             llm_request = LLMRequest(
@@ -392,7 +459,12 @@ Please respond as Alden, providing reflective support and guidance."""
                 context={
                     "session_id": session_id,
                     "user_id": self.memory.user_id,
-                    "persona_id": "alden"
+                    "persona_id": "alden",
+                    "behavioral_analysis": {
+                        "text_analysis": asdict(text_analysis) if text_analysis else None,
+                        "insights_count": len(behavioral_insights),
+                        "feedback_count": len(adaptive_feedback)
+                    }
                 },
                 request_id=request_id
             )
@@ -403,6 +475,10 @@ Please respond as Alden, providing reflective support and guidance."""
             if not llm_response.content or not llm_response.content.strip():
                 raise PersonaError("LLM returned empty response")
             
+            # Apply adaptive feedback to persona if available
+            if adaptive_feedback:
+                self._apply_adaptive_feedback(adaptive_feedback)
+            
             # Log successful response
             self.logger.logger.info("Alden response generated", 
                                   extra={"extra_fields": {
@@ -411,7 +487,8 @@ Please respond as Alden, providing reflective support and guidance."""
                                       "session_id": session_id,
                                       "response_length": len(llm_response.content),
                                       "response_time": llm_response.response_time,
-                                      "model": llm_response.model
+                                      "model": llm_response.model,
+                                      "behavioral_analysis_applied": bool(behavioral_insights)
                                   }})
             
             return llm_response.content
@@ -429,6 +506,69 @@ Please respond as Alden, providing reflective support and guidance."""
             )
             self._log_error_context(error_context)
             raise PersonaError(f"Failed to generate Alden response: {str(e)}") from e
+    
+    def _apply_adaptive_feedback(self, feedback_list: List[AdaptiveFeedback]) -> None:
+        """
+        Apply adaptive feedback to adjust persona behavior.
+        
+        Args:
+            feedback_list: List of adaptive feedback to apply
+        """
+        try:
+            for feedback in feedback_list:
+                if feedback.status == "pending" and feedback.priority in ["high", "critical"]:
+                    # Apply high-priority feedback immediately
+                    self._apply_single_feedback(feedback)
+                    feedback.status = "implemented"
+                    
+                    self.logger.logger.info("Applied adaptive feedback", 
+                                          extra={"extra_fields": {
+                                              "event_type": "adaptive_feedback_applied",
+                                              "feedback_id": feedback.feedback_id,
+                                              "feedback_type": feedback.feedback_type,
+                                              "priority": feedback.priority
+                                          }})
+                    
+        except Exception as e:
+            self.logger.logger.error(f"Failed to apply adaptive feedback: {e}")
+
+    def _apply_single_feedback(self, feedback: AdaptiveFeedback) -> None:
+        """
+        Apply a single piece of adaptive feedback.
+        
+        Args:
+            feedback: Adaptive feedback to apply
+        """
+        try:
+            if feedback.feedback_type == "persona_adaptation":
+                # Apply persona adaptation feedback
+                if "adjust_response_style" in feedback.implementation_suggestions:
+                    # Adjust response style based on feedback
+                    if "more_supportive" in feedback.description.lower():
+                        self.memory.motivation_style = "supportive"
+                    elif "more_analytical" in feedback.description.lower():
+                        self.memory.motivation_style = "analytical"
+                    elif "more_structured" in feedback.description.lower():
+                        self.memory.motivation_style = "structured"
+                
+                # Update traits based on feedback
+                if "increase_empathy" in feedback.description.lower():
+                    self.memory.traits["agreeableness"] = min(100, self.memory.traits["agreeableness"] + 5)
+                elif "increase_adaptability" in feedback.description.lower():
+                    self.memory.traits["openness"] = min(100, self.memory.traits["openness"] + 5)
+                    
+        except Exception as e:
+            self.logger.logger.error(f"Failed to apply single feedback: {e}")
+
+    def set_behavioral_analysis(self, behavioral_analysis: BehavioralAnalysis) -> None:
+        """
+        Set behavioral analysis instance for Alden persona.
+        
+        Args:
+            behavioral_analysis: Behavioral analysis instance
+        """
+        self.behavioral_analysis = behavioral_analysis
+        self.logger.logger.info("Behavioral analysis set for Alden persona")
     
     def update_trait(self, trait_name: str, new_value: int, reason: str = "user_update") -> None:
         """

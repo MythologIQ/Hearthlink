@@ -34,6 +34,12 @@ from .error_handling import (
     CoreErrorContext, ErrorCategory, ErrorSeverity
 )
 
+# Import behavioral analysis
+from .behavioral_analysis import (
+    BehavioralAnalysis, ExternalSignal, SignalType, BehavioralInsight,
+    AdaptiveFeedback, BehavioralReport, BehavioralAnalysisError
+)
+
 class ParticipantType(Enum):
     """Types of session participants."""
     PERSONA = "persona"
@@ -153,6 +159,9 @@ class Core:
         self.error_handler = CoreErrorHandler(self.logger)
         self.error_metrics = CoreErrorMetrics()
         self.error_validator = CoreErrorValidator()
+        
+        # Initialize behavioral analysis
+        self.behavioral_analysis = BehavioralAnalysis(config, vault, self.logger)
         
         # Setup error recovery strategies
         self._setup_error_recovery()
@@ -1017,4 +1026,275 @@ class Core:
             
         except Exception as e:
             self.logger.error(f"Failed to get session summary: {e}")
-            return None 
+            return None
+
+    # Behavioral Analysis Integration
+    def analyze_session_behavior(self, session_id: str, user_id: str) -> Optional[SessionAnalysis]:
+        """
+        Analyze behavioral patterns in a session.
+        
+        Args:
+            session_id: Session to analyze
+            user_id: User requesting analysis
+            
+        Returns:
+            SessionAnalysis object with analysis results
+        """
+        try:
+            if session_id not in self.sessions:
+                raise CoreError(f"Session {session_id} not found")
+            
+            session = self.sessions[session_id]
+            
+            # Prepare session data for analysis
+            session_data = {
+                "session_id": session_id,
+                "events": [asdict(event) for event in session.session_log],
+                "participants": [asdict(participant) for participant in session.participants],
+                "breakouts": [asdict(breakout) for breakout in session.breakouts],
+                "duration_minutes": self._calculate_session_duration_minutes(session),
+                "topic": session.topic,
+                "status": session.status.value
+            }
+            
+            # Perform session analysis
+            analysis = self.behavioral_analysis.analyze_session(session_data)
+            
+            self._log("analyze_session_behavior", user_id, session_id, "behavioral_analysis", {
+                "analysis_type": "session_patterns",
+                "event_count": len(session.session_log)
+            })
+            
+            return analysis
+            
+        except Exception as e:
+            self._log("analyze_session_behavior", user_id, session_id, "behavioral_analysis", {}, 
+                     result="failure", error=e)
+            raise CoreError(f"Failed to analyze session behavior: {e}")
+
+    def analyze_text_behavior(self, text: str, user_id: str, session_id: Optional[str] = None) -> TextAnalysis:
+        """
+        Analyze behavioral patterns in text.
+        
+        Args:
+            text: Text to analyze
+            user_id: User requesting analysis
+            session_id: Optional session context
+            
+        Returns:
+            TextAnalysis object with analysis results
+        """
+        try:
+            # Perform text analysis
+            analysis = self.behavioral_analysis.analyze_text(text)
+            
+            self._log("analyze_text_behavior", user_id, session_id, "behavioral_analysis", {
+                "analysis_type": "text_sentiment",
+                "text_length": len(text)
+            })
+            
+            return analysis
+            
+        except Exception as e:
+            self._log("analyze_text_behavior", user_id, session_id, "behavioral_analysis", 
+                     {"text_length": len(text)}, result="failure", error=e)
+            raise CoreError(f"Failed to analyze text behavior: {e}")
+
+    def process_behavioral_signal(self, signal_data: Dict[str, Any], user_id: str, 
+                                session_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Process behavioral signals (text, session history, external data).
+        
+        Args:
+            signal_data: Signal data to process
+            user_id: User associated with signal
+            session_id: Optional session context
+            
+        Returns:
+            Processed signal data
+        """
+        try:
+            # Create external signal object
+            signal = ExternalSignal(
+                signal_id=str(uuid.uuid4()),
+                signal_type=SignalType(signal_data.get("type", "text")),
+                timestamp=datetime.now().isoformat(),
+                data=signal_data.get("data", {}),
+                confidence=signal_data.get("confidence", 1.0),
+                source=signal_data.get("source", "user"),
+                metadata=signal_data.get("metadata", {})
+            )
+            
+            # Process signal
+            result = self.behavioral_analysis.process_external_signal(signal)
+            
+            self._log("process_behavioral_signal", user_id, session_id, "behavioral_analysis", {
+                "signal_type": signal.signal_type.value,
+                "signal_id": signal.signal_id
+            })
+            
+            return result
+            
+        except Exception as e:
+            self._log("process_behavioral_signal", user_id, session_id, "behavioral_analysis", 
+                     {"signal_type": signal_data.get("type")}, result="failure", error=e)
+            raise CoreError(f"Failed to process behavioral signal: {e}")
+
+    def generate_behavioral_insights(self, user_id: str, session_id: Optional[str] = None,
+                                   analysis_period: Optional[Tuple[str, str]] = None) -> List[BehavioralInsight]:
+        """
+        Generate behavioral insights for user/session.
+        
+        Args:
+            user_id: User to generate insights for
+            session_id: Optional session context
+            analysis_period: Optional analysis period (start, end timestamps)
+            
+        Returns:
+            List of BehavioralInsight objects
+        """
+        try:
+            # Gather analysis data
+            analyses = []
+            
+            # Add session analysis if session_id provided
+            if session_id and session_id in self.sessions:
+                session_analysis = self.analyze_session_behavior(session_id, user_id)
+                if session_analysis:
+                    analyses.append({"type": "session", "data": session_analysis})
+            
+            # Generate insights
+            insights = self.behavioral_analysis.generate_behavioral_insights(analyses, user_id, session_id)
+            
+            self._log("generate_behavioral_insights", user_id, session_id, "behavioral_analysis", {
+                "insight_count": len(insights),
+                "analysis_period": analysis_period
+            })
+            
+            return insights
+            
+        except Exception as e:
+            self._log("generate_behavioral_insights", user_id, session_id, "behavioral_analysis", 
+                     {"analysis_period": analysis_period}, result="failure", error=e)
+            raise CoreError(f"Failed to generate behavioral insights: {e}")
+
+    def generate_adaptive_feedback(self, user_id: str, target_persona: str = "alden",
+                                 session_id: Optional[str] = None) -> List[AdaptiveFeedback]:
+        """
+        Generate adaptive feedback for persona adjustment.
+        
+        Args:
+            user_id: User to generate feedback for
+            target_persona: Target persona for feedback
+            session_id: Optional session context
+            
+        Returns:
+            List of AdaptiveFeedback objects
+        """
+        try:
+            # Generate insights first
+            insights = self.generate_behavioral_insights(user_id, session_id)
+            
+            # Generate feedback based on insights
+            feedback = self.behavioral_analysis.generate_adaptive_feedback(insights, target_persona)
+            
+            self._log("generate_adaptive_feedback", user_id, session_id, "behavioral_analysis", {
+                "target_persona": target_persona,
+                "feedback_count": len(feedback)
+            })
+            
+            return feedback
+            
+        except Exception as e:
+            self._log("generate_adaptive_feedback", user_id, session_id, "behavioral_analysis", 
+                     {"target_persona": target_persona}, result="failure", error=e)
+            raise CoreError(f"Failed to generate adaptive feedback: {e}")
+
+    def create_behavioral_report(self, user_id: str, session_id: Optional[str] = None,
+                               analysis_period: Optional[Tuple[str, str]] = None) -> BehavioralReport:
+        """
+        Create comprehensive behavioral analysis report.
+        
+        Args:
+            user_id: User to create report for
+            session_id: Optional session context
+            analysis_period: Optional analysis period (start, end timestamps)
+            
+        Returns:
+            BehavioralReport object
+        """
+        try:
+            # Create behavioral report
+            report = self.behavioral_analysis.create_behavioral_report(user_id, session_id, analysis_period)
+            
+            self._log("create_behavioral_report", user_id, session_id, "behavioral_analysis", {
+                "report_id": report.report_id,
+                "analysis_period": analysis_period
+            })
+            
+            return report
+            
+        except Exception as e:
+            self._log("create_behavioral_report", user_id, session_id, "behavioral_analysis", 
+                     {"analysis_period": analysis_period}, result="failure", error=e)
+            raise CoreError(f"Failed to create behavioral report: {e}")
+
+    def get_behavioral_analysis_history(self, user_id: Optional[str] = None) -> List[BehavioralReport]:
+        """
+        Get behavioral analysis history.
+        
+        Args:
+            user_id: Optional user filter
+            
+        Returns:
+            List of BehavioralReport objects
+        """
+        try:
+            return self.behavioral_analysis.get_analysis_history(user_id)
+        except Exception as e:
+            self.logger.error(f"Failed to get behavioral analysis history: {e}")
+            return []
+
+    def export_behavioral_analysis_data(self, report_id: str, user_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Export behavioral analysis data.
+        
+        Args:
+            report_id: Report ID to export
+            user_id: User requesting export
+            
+        Returns:
+            Analysis data dictionary
+        """
+        try:
+            data = self.behavioral_analysis.export_analysis_data(report_id)
+            
+            if data:
+                self._log("export_behavioral_analysis_data", user_id, None, "behavioral_analysis", {
+                    "report_id": report_id
+                })
+            
+            return data
+            
+        except Exception as e:
+            self._log("export_behavioral_analysis_data", user_id, None, "behavioral_analysis", 
+                     {"report_id": report_id}, result="failure", error=e)
+            raise CoreError(f"Failed to export behavioral analysis data: {e}")
+
+    def _calculate_session_duration_minutes(self, session: Session) -> float:
+        """Calculate session duration in minutes."""
+        try:
+            start_time = datetime.fromisoformat(session.created_at)
+            end_time = datetime.now()
+            
+            if session.status == SessionStatus.ENDED and session.session_log:
+                # Use last event timestamp if session ended
+                last_event = max(session.session_log, key=lambda x: x.timestamp)
+                end_time = datetime.fromisoformat(last_event.timestamp)
+            
+            duration = end_time - start_time
+            return duration.total_seconds() / 60.0
+            
+        except Exception as e:
+            self.logger.error(f"Failed to calculate session duration: {e}")
+            return 0.0 
