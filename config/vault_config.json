@@ -1,0 +1,15 @@
+{
+  "encryption": {
+    "algorithm": "AES-256",
+    "key_file": "vault.key",
+    "key_env_var": "VAULT_ENCRYPTION_KEY"
+  },
+  "storage": {
+    "type": "file",
+    "file_path": "vault/vault.db"
+  },
+  "audit": {
+    "log_file": "vault/audit.log"
+  },
+  "schema_version": "1.0.0"
+} 

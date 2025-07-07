@@ -1,0 +1,48 @@
+{
+  "session": {
+    "max_participants": 10,
+    "max_breakouts_per_session": 5,
+    "session_timeout_minutes": 480,
+    "auto_archive_after_days": 30
+  },
+  "turn_taking": {
+    "turn_timeout_seconds": 300,
+    "auto_advance": true,
+    "allow_manual_turn_set": true,
+    "max_turn_duration_minutes": 10
+  },
+  "communal_memory": {
+    "auto_share_insights": false,
+    "insight_approval_required": true,
+    "max_insights_per_session": 100,
+    "insight_retention_days": 90
+  },
+  "live_feed": {
+    "default_verbosity": "default",
+    "auto_include_external": true,
+    "show_metadata": false,
+    "max_events_in_feed": 1000
+  },
+  "audit": {
+    "log_all_events": true,
+    "retention_days": 365,
+    "export_formats": ["json", "csv", "syslog"]
+  },
+  "agent_suggestions": {
+    "enable_suggestions": true,
+    "suggestion_threshold": 0.7,
+    "max_suggestions_per_session": 5,
+    "suggestion_cooldown_minutes": 15
+  },
+  "breakout_rooms": {
+    "max_participants_per_breakout": 6,
+    "auto_end_breakout_after_minutes": 60,
+    "allow_cross_breakout_communication": false
+  },
+  "performance": {
+    "cache_session_data": true,
+    "cache_ttl_seconds": 300,
+    "max_concurrent_sessions": 20,
+    "session_cleanup_interval_minutes": 30
+  }
+} 
