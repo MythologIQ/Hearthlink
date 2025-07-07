@@ -1,4 +1,6 @@
-# Hearthlink
+![Hearthlink](https://github.com/user-attachments/assets/a4ef30dd-d0f0-4150-8eb1-f7945c2f6897)
+
+#Hearthlink
 
 > **Open, honest, transparent… Real.**
 
