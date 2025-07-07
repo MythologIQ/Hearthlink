@@ -424,6 +424,6 @@ python tests/test_core_memory_management.py
 ## References
 
 - [Appendix H - Developer & QA Platinum Checklists](../docs/appendix_h_developer_qa_platinum_checklists.md)
-- [Core Module Documentation](../src/core/README.md)
-- [Vault Module Documentation](../src/vault/README.md)
+- [Core Module Documentation](../docs/hearthlink_system_documentation_master.md#core-module)
+- [Vault Module Documentation](../docs/VAULT_REVIEW_REPORT.md)
 - [System Architecture Documentation](../docs/hearthlink_system_documentation_master.md) 

@@ -90,7 +90,7 @@ This document summarizes the comprehensive testing and error handling implementa
 
 **Documentation:**
 - **`tests/CORE_TEST_PLAN.md`**: Comprehensive test plan with validation criteria
-- **`tests/README.md`**: Detailed testing documentation and usage guide
+- **`tests/`**: Detailed testing documentation and usage guide
 - **Test Data**: Predefined participants and insights for testing
 - **Success Criteria**: Functional and non-functional requirements
 - **Performance Benchmarks**: Target and actual performance metrics
