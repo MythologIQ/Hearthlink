@@ -173,3 +173,43 @@ A living record of evolving standard operating procedures (SOP) for Hearthlink. 
   - Data anonymization for behavioral analysis
   - Content validation for generated content
   - Session boundaries for multi-agent operations
+
+---
+
+## 15. Feature Wishlist Review and Prioritization SOP
+
+* **All feature requests and enhancements are tracked in `/docs/FEATURE_WISHLIST.md` with comprehensive specifications.**
+* **Feature review workflow:**
+
+  1. *Feature identification* - New features identified during development, user feedback, or system analysis
+  2. *Specification development* - Detailed requirements, API design, dependencies, and security considerations
+  3. *Priority assessment* - Business value, technical complexity, dependencies, and resource requirements
+  4. *Implementation planning* - Phase assignment, resource allocation, and timeline estimation
+  5. *Documentation updates* - Cross-reference in README, process refinement, and relevant documentation
+  6. *Review and approval* - Owner validation and prioritization for implementation
+
+* **Feature Specification Requirements:**
+  - Clear problem statement and business value
+  - Detailed technical requirements and API design
+  - Security considerations and privacy controls
+  - Dependencies and integration points
+  - Implementation effort estimation
+  - Testing and validation requirements
+
+* **Priority Assessment Criteria:**
+  - **Business Value** (1-10): Impact on user experience and system capabilities
+  - **Technical Complexity** (1-10): Implementation difficulty and resource requirements
+  - **Dependencies** (1-10): Blocking factors and prerequisite features
+  - **Priority Score**: Calculated based on business value, complexity, and dependencies
+
+* **Implementation Phases:**
+  - **Phase 1 (High Priority)**: Features with priority score 7-10, minimal dependencies
+  - **Phase 2 (Medium Priority)**: Features with priority score 5-7, moderate dependencies
+  - **Phase 3 (Lower Priority)**: Features with priority score 1-5, high complexity or dependencies
+
+* **Documentation Standards:**
+  - All features must be documented in `/docs/FEATURE_WISHLIST.md`
+  - Specifications must include API design and security considerations
+  - Dependencies must be clearly identified and tracked
+  - Implementation notes must reference existing system architecture
+  - Cross-references must be updated in README and process documentation

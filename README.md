@@ -343,6 +343,7 @@ See [`/docs/PLATINUM_BLOCKERS.md`](./docs/PLATINUM_BLOCKERS.md) for full details
 - **Platinum Blockers:** [`/docs/PLATINUM_BLOCKERS.md`](./docs/PLATINUM_BLOCKERS.md)
 - **Model Context Protocol:** [`/docs/appendix_e_model_context_protocol_mcp_full_specification.md`](./docs/appendix_e_model_context_protocol_mcp_full_specification.md)
 - **Developer & QA Checklists:** [`/docs/appendix_h_developer_qa_platinum_checklists.md`](./docs/appendix_h_developer_qa_platinum_checklists.md)
+- **Feature Wishlist:** [`/docs/FEATURE_WISHLIST.md`](./docs/FEATURE_WISHLIST.md) - Future features and development roadmap
 - **Full documentation index:** See `/docs/`
 
 ---
@@ -400,4 +401,39 @@ Crisis support features are informational only. Users are always urged to seek p
 ---
 
 **Welcome to the next generation of collaborative AI.**
+
+## Documentation
+
+- **System Overview:** [`/docs/hearthlink_system_documentation_master.md`](./docs/hearthlink_system_documentation_master.md)
+- **Persona Guide:** [`/docs/PERSONA_GUIDE.md`](./docs/PERSONA_GUIDE.md)
+- **Platinum Blockers:** [`/docs/PLATINUM_BLOCKERS.md`](./docs/PLATINUM_BLOCKERS.md)
+- **Model Context Protocol:** [`/docs/appendix_e_model_context_protocol_mcp_full_specification.md`](./docs/appendix_e_model_context_protocol_mcp_full_specification.md)
+- **Developer & QA Checklists:** [`/docs/appendix_h_developer_qa_platinum_checklists.md`](./docs/appendix_h_developer_qa_platinum_checklists.md)
+- **Feature Wishlist:** [`/docs/FEATURE_WISHLIST.md`](./docs/FEATURE_WISHLIST.md) - Future features and development roadmap
+- **Full documentation index:** See `/docs/`
+
+---
+
+## Future Development
+
+### Planned Features
+
+Hearthlink maintains an active feature wishlist for future development. Key planned features include:
+
+- **Local Web Search Agent**: Privacy-preserving web search with content extraction
+- **Per-Agent Workspace Permissions**: Granular workspace access control for all agents
+- **Dynamic Synapse Connection Wizard**: UI-driven plugin and connection management
+- **Browser Automation**: Secure web form filling and data extraction
+- **Enhanced Sentry Resource Monitoring**: Real-time disk and network monitoring
+- **Local Video Transcript Extractor**: Speech-to-text processing for video content
+
+For detailed specifications, requirements, and implementation priorities, see [`/docs/FEATURE_WISHLIST.md`](./docs/FEATURE_WISHLIST.md).
+
+### Development Phases
+
+- **Phase 6**: Test refinement, security hardening, performance optimization
+- **Phase 7**: Feature wishlist implementation (prioritized by business value and technical complexity)
+- **Phase 8**: Advanced integrations and enterprise enhancements
+
+All features follow the established development process with comprehensive documentation, testing, and security review.
 
