@@ -7,18 +7,25 @@
 
 ## Overview
 
-Hearthlink is a local-first, persona-aware AI companion system with ethical safety rails and zero-trust architecture. This repository contains the initial scaffold for the global container.
+Hearthlink is a local-first, persona-aware AI companion system with ethical safety rails and zero-trust architecture. This repository contains the initial scaffold for the global container with advanced multimodal persona capabilities.
 
 ## System Architecture
 
 Hearthlink consists of seven core modules:
-- **Alden** - Evolutionary Companion AI
+- **Alden** - Evolutionary Companion AI with Advanced Multimodal Persona
 - **Alice** - Behavioral Analysis & Context-Awareness  
 - **Mimic** - Dynamic Persona & Adaptive Agent
 - **Vault** - Persona-Aware Secure Memory Store
 - **Core** - Communication Switch & Context Moderator
 - **Synapse** - Secure External Gateway & Protocol Boundary
 - **Sentry** - Security, Compliance & Oversight Persona
+
+### Advanced Features
+
+- **Multimodal Input Processing**: Text, audio, visual, environmental, behavioral, and sensory inputs
+- **Dynamic User Adaptation**: Real-time persona adjustment based on behavioral patterns
+- **Learning Feedback Loops**: Integrated learning from behavioral analysis and user corrections
+- **Behavioral Analysis Integration**: Comprehensive understanding of user behavior patterns
 
 ## Current Implementation
 
@@ -28,6 +35,7 @@ This scaffold implements:
 - Ethical safety rails compliance
 - Silent startup with audit trail
 - Local-first architecture (no external dependencies)
+- Advanced multimodal persona system with dynamic adaptation
 
 ## Quick Start
 
@@ -82,13 +90,70 @@ This will test:
 - Container integration
 - JSON format validation
 
+## Advanced Multimodal Persona
+
+### Features
+
+The advanced multimodal persona system provides:
+
+- **Multi-modal Input Processing**: Process text, audio, visual, environmental, behavioral, and sensory inputs
+- **Dynamic User Adaptation**: Real-time persona adjustment based on behavioral triggers
+- **Learning Feedback Loops**: Continuous learning from behavioral analysis and user corrections
+- **State Management**: Comprehensive persona state tracking and persistence
+- **Privacy-First**: Local processing with user-controlled data sharing
+
+### Usage Example
+
+```python
+from personas.advanced_multimodal_persona import (
+    AdvancedMultimodalPersona, MultimodalInput, InputModality
+)
+
+# Create advanced persona
+persona = AdvancedMultimodalPersona(
+    persona_id="alden-advanced",
+    llm_client=llm_client,
+    behavioral_analysis=behavioral_analysis,
+    logger=logger
+)
+
+# Process multimodal inputs
+text_input = MultimodalInput(
+    modality=InputModality.TEXT,
+    data={"text": "I need help with my project"},
+    confidence=0.95,
+    source="user_message"
+)
+
+env_input = MultimodalInput(
+    modality=InputModality.ENVIRONMENTAL,
+    data={"environmental": {"location": "home", "time_of_day": "evening"}},
+    confidence=0.9,
+    source="system_context"
+)
+
+# Process inputs and get adaptive response
+result = persona.process_multimodal_input([text_input, env_input], user_id="user-123")
+print(f"Response: {result['response']}")
+```
+
+For detailed documentation, see [`/docs/PERSONA_GUIDE.md`](./docs/PERSONA_GUIDE.md).
+
 ## Development
 
 ### Project Structure
 ```
 Hearthlink/
 ├── src/
-│   └── main.py              # Main container entry point
+│   ├── main.py              # Main container entry point
+│   ├── personas/
+│   │   ├── alden.py         # Alden persona implementation
+│   │   └── advanced_multimodal_persona.py  # Advanced multimodal persona
+│   ├── core/
+│   │   ├── core.py          # Core orchestration
+│   │   └── behavioral_analysis.py  # Behavioral analysis
+│   └── vault/
+│       └── vault.py         # Secure memory store
 ├── docs/                    # System documentation
 ├── requirements.txt         # Python dependencies
 └── README.md               # This file
@@ -120,6 +185,12 @@ Hearthlink/
    - Graceful shutdown handling
    - Error recovery and logging
 
+5. **Advanced Multimodal Persona**
+   - Multi-modal input processing
+   - Dynamic user adaptation
+   - Learning feedback loops
+   - Behavioral analysis integration
+
 ## Compliance
 
 This implementation follows:
@@ -136,6 +207,7 @@ This scaffold provides the foundation for implementing:
 3. Individual persona modules (Alden, Alice, Mimic)
 4. Synapse (external gateway)
 5. Sentry (security and audit)
+6. Advanced multimodal persona features
 
 ## License
 
@@ -155,11 +227,12 @@ This scaffold provides the foundation for implementing:
 
 - **Global Orchestration**: Run agents in the background across all processes (desktop, terminal, system tray)
 - **Alice**: Neurodivergent-aware AI support with empathic, non-clinical protocol
-- **Alden**: Reflection, feedback, and LLM integration
+- **Alden**: Reflection, feedback, and LLM integration with advanced multimodal capabilities
 - **Vault**: Secure, encrypted memory—per persona and communal
 - **Mimic**: Extensible persona and plugin system with sandboxing and audit
 - **Sentry**: Comprehensive system logging, audit export, anomaly detection (local only, privacy-first)
 - **Synapse**: Plugin management, manifest enforcement, secure extension
+- **Advanced Multimodal Persona**: Multi-modal input processing, dynamic adaptation, and learning feedback loops
 
 See [`/docs/PLATINUM_BLOCKERS.md`](./docs/PLATINUM_BLOCKERS.md) for full details on platinum barrier features.
 
@@ -181,6 +254,7 @@ See [`/docs/PLATINUM_BLOCKERS.md`](./docs/PLATINUM_BLOCKERS.md) for full details
 ## Documentation
 
 - **System Overview:** [`/docs/hearthlink_system_documentation_master.md`](./docs/hearthlink_system_documentation_master.md)
+- **Persona Guide:** [`/docs/PERSONA_GUIDE.md`](./docs/PERSONA_GUIDE.md)
 - **Platinum Blockers:** [`/docs/PLATINUM_BLOCKERS.md`](./docs/PLATINUM_BLOCKERS.md)
 - **Model Context Protocol:** [`/docs/appendix_e_model_context_protocol_mcp_full_specification.md`](./docs/appendix_e_model_context_protocol_mcp_full_specification.md)
 - **Developer & QA Checklists:** [`/docs/appendix_h_developer_qa_platinum_checklists.md`](./docs/appendix_h_developer_qa_platinum_checklists.md)

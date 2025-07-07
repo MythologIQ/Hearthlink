@@ -1,565 +1,935 @@
-# Hearthlink Persona Guide - Behavioral Analysis Multimodal
+# Hearthlink Persona Guide - Advanced Multimodal Persona System
 
 ## Overview
 
-The Hearthlink persona system now includes advanced behavioral analysis capabilities that enable multimodal understanding of user behavior patterns, session dynamics, and contextual signals. This guide documents the behavioral analysis features, integration patterns, and usage examples.
+The Hearthlink persona system now includes advanced multimodal persona modeling with dynamic user adaptation and integrated learning from behavioral analysis feedback loops. This guide documents the advanced persona features, multimodal input processing, adaptation strategies, and usage examples.
 
 ## Table of Contents
 
-1. [Behavioral Analysis Overview](#behavioral-analysis-overview)
-2. [Core Components](#core-components)
-3. [Integration Patterns](#integration-patterns)
-4. [Analysis Types](#analysis-types)
-5. [Signal Processing](#signal-processing)
-6. [Adaptive Feedback](#adaptive-feedback)
-7. [Reporting and Insights](#reporting-and-insights)
-8. [API Reference](#api-reference)
-9. [Usage Examples](#usage-examples)
-10. [Configuration](#configuration)
-11. [Best Practices](#best-practices)
+1. [Advanced Persona Overview](#advanced-persona-overview)
+2. [Multimodal Input Processing](#multimodal-input-processing)
+3. [Dynamic User Adaptation](#dynamic-user-adaptation)
+4. [Learning Feedback Loops](#learning-feedback-loops)
+5. [Behavioral Analysis Integration](#behavioral-analysis-integration)
+6. [Core Components](#core-components)
+7. [Integration Patterns](#integration-patterns)
+8. [Analysis Types](#analysis-types)
+9. [Signal Processing](#signal-processing)
+10. [Adaptive Feedback](#adaptive-feedback)
+11. [Reporting and Insights](#reporting-and-insights)
+12. [API Reference](#api-reference)
+13. [Usage Examples](#usage-examples)
+14. [Configuration](#configuration)
+15. [Best Practices](#best-practices)
 
-## Behavioral Analysis Overview
+## Advanced Persona Overview
 
-The behavioral analysis system provides comprehensive understanding of user behavior through multiple modalities:
+The advanced multimodal persona system provides comprehensive persona modeling with:
 
-- **Text Analysis**: Sentiment analysis, emotion detection, engagement indicators
-- **Session Patterns**: Interaction flow, collaboration patterns, adaptation signals
-- **External Signals**: Image/audio metadata, environmental data, user interactions
-- **Multimodal Fusion**: Combined analysis across multiple signal types
-- **Adaptive Feedback**: Real-time persona adjustment recommendations
+- **Multimodal Input Processing**: Text, audio, visual, environmental, behavioral, and sensory inputs
+- **Dynamic User Adaptation**: Real-time persona adjustment based on user behavior patterns
+- **Learning Feedback Loops**: Integrated learning from behavioral analysis and user corrections
+- **Adaptive Responses**: Context-aware responses that reflect current persona state
+- **State Persistence**: Maintainable persona state with adaptation history
 
 ### Key Features
 
-- **Real-time Analysis**: Continuous behavioral pattern recognition
-- **Multimodal Support**: Text, session history, and external signal processing
-- **Adaptive Responses**: Dynamic persona behavior adjustment
-- **Comprehensive Reporting**: Detailed behavioral insights and recommendations
+- **Multi-modal Support**: Process inputs from multiple modalities simultaneously
+- **Real-time Adaptation**: Dynamic persona adjustment based on behavioral triggers
+- **Learning Integration**: Continuous learning from behavioral analysis feedback
+- **State Management**: Comprehensive persona state tracking and persistence
 - **Privacy-First**: Local processing with user-controlled data sharing
+
+## Multimodal Input Processing
+
+### Supported Input Modalities
+
+The advanced persona system supports processing inputs from multiple modalities:
+
+```python
+from personas.advanced_multimodal_persona import InputModality, MultimodalInput
+
+# Text input
+text_input = MultimodalInput(
+    input_id="input-123",
+    modality=InputModality.TEXT,
+    timestamp="2024-01-01T10:00:00Z",
+    data={"text": "I'm feeling overwhelmed with this project"},
+    confidence=0.95,
+    source="user_message"
+)
+
+# Audio input (placeholder for future implementation)
+audio_input = MultimodalInput(
+    input_id="input-124",
+    modality=InputModality.AUDIO,
+    timestamp="2024-01-01T10:00:00Z",
+    data={"audio": {"features": {}, "duration": 5.2}},
+    confidence=0.8,
+    source="voice_input"
+)
+
+# Visual input (placeholder for future implementation)
+visual_input = MultimodalInput(
+    input_id="input-125",
+    modality=InputModality.VISUAL,
+    timestamp="2024-01-01T10:00:00Z",
+    data={"visual": {"features": {}, "metadata": {}}},
+    confidence=0.7,
+    source="camera_input"
+)
+
+# Environmental input
+env_input = MultimodalInput(
+    input_id="input-126",
+    modality=InputModality.ENVIRONMENTAL,
+    timestamp="2024-01-01T10:00:00Z",
+    data={"environmental": {"location": "office", "time_of_day": "morning"}},
+    confidence=0.9,
+    source="system_context"
+)
+```
+
+### Processing Multimodal Inputs
+
+```python
+from personas.advanced_multimodal_persona import AdvancedMultimodalPersona
+
+# Create advanced persona
+persona = AdvancedMultimodalPersona(
+    persona_id="alden-advanced",
+    llm_client=llm_client,
+    behavioral_analysis=behavioral_analysis,
+    logger=logger
+)
+
+# Process multiple inputs
+inputs = [text_input, audio_input, visual_input, env_input]
+result = persona.process_multimodal_input(inputs, user_id="user-123", session_id="session-456")
+
+print(f"Processed inputs: {len(result['processed_inputs'])}")
+print(f"Adaptation recommendations: {len(result['adaptation_recommendations'])}")
+print(f"Behavioral insights: {len(result['behavioral_insights'])}")
+print(f"Response: {result['response']}")
+```
+
+## Dynamic User Adaptation
+
+### Adaptation Types
+
+The system supports multiple types of user adaptation:
+
+```python
+from personas.advanced_multimodal_persona import AdaptationType
+
+# Personality adaptation
+persona.adapt_to_user(
+    adaptation_type=AdaptationType.PERSONALITY_SHIFT,
+    trigger="negative_sentiment",
+    evidence=["low_sentiment_score", "emotional_distress_indicators"],
+    user_id="user-123"
+)
+
+# Communication style adaptation
+persona.adapt_to_user(
+    adaptation_type=AdaptationType.COMMUNICATION_STYLE,
+    trigger="high_formality_preference",
+    evidence=["formal_language_use", "professional_context"],
+    user_id="user-123"
+)
+
+# Engagement level adaptation
+persona.adapt_to_user(
+    adaptation_type=AdaptationType.ENGAGEMENT_LEVEL,
+    trigger="high_engagement",
+    evidence=["frequent_interactions", "detailed_responses"],
+    user_id="user-123"
+)
+```
+
+### Adaptation Triggers
+
+The system automatically detects adaptation triggers:
+
+- **Negative Sentiment**: Increases empathy and supportiveness
+- **Positive Sentiment**: Increases engagement and enthusiasm
+- **High Engagement**: Increases response frequency and detail
+- **Low Engagement**: Adjusts communication style for re-engagement
+- **Emotional Distress**: Increases emotional support and sensitivity
+- **Learning Preferences**: Adapts to visual, auditory, or kinesthetic preferences
+
+## Learning Feedback Loops
+
+### Learning Feedback Sources
+
+The system integrates learning from multiple sources:
+
+```python
+from personas.advanced_multimodal_persona import LearningFeedback
+
+# Behavioral analysis feedback
+behavioral_feedback = LearningFeedback(
+    feedback_id="feedback-123",
+    source="behavioral_analysis",
+    timestamp="2024-01-01T10:00:00Z",
+    feedback_type="communication_style",
+    description="User responds better to supportive communication",
+    target_aspect="communication_style",
+    suggested_change={"supportiveness": 0.9, "formality": 0.6},
+    confidence=0.85,
+    priority="high"
+)
+
+# User correction feedback
+user_correction = LearningFeedback(
+    feedback_id="feedback-124",
+    source="user_correction",
+    timestamp="2024-01-01T10:00:00Z",
+    feedback_type="personality_trait",
+    description="User prefers more analytical responses",
+    target_aspect="personality_traits",
+    suggested_change={"openness": 0.8, "curiosity": 0.9},
+    confidence=0.95,
+    priority="critical"
+)
+
+# Apply feedback
+persona.apply_learning_feedback(behavioral_feedback)
+persona.apply_learning_feedback(user_correction)
+```
+
+### Feedback Processing
+
+The system processes feedback from different sources:
+
+- **Behavioral Analysis**: Automatic feedback from behavioral pattern recognition
+- **User Corrections**: Direct feedback from user interactions
+- **System Observations**: Feedback from system-level observations
+
+## Behavioral Analysis Integration
+
+### Integrated Behavioral Analysis
+
+The advanced persona system integrates behavioral analysis for comprehensive understanding:
+
+```python
+# Behavioral analysis is automatically applied during input processing
+result = persona.process_multimodal_input(inputs, user_id, session_id)
+
+# Access behavioral insights
+insights = result['behavioral_insights']
+for insight in insights:
+    print(f"Insight: {insight.description}")
+    print(f"Confidence: {insight.confidence}")
+    print(f"Impact: {insight.impact_score}")
+```
+
+### Behavioral Pattern Recognition
+
+The system recognizes and responds to behavioral patterns:
+
+- **Consistent Engagement**: Maintains high engagement levels
+- **Variable Participation**: Adapts to varying participation patterns
+- **Deep Dive Tendency**: Provides detailed, analytical responses
+- **Surface Level Interaction**: Adjusts to brief, focused interactions
+- **Collaborative Behavior**: Enhances collaborative features
+- **Independent Working**: Supports independent work patterns
 
 ## Core Components
 
-### 1. BehavioralAnalysis Class
+### 1. AdvancedMultimodalPersona Class
 
-The main behavioral analysis engine that processes signals and generates insights.
-
-```python
-from core.behavioral_analysis import BehavioralAnalysis
-
-# Initialize with configuration and vault
-behavioral_analysis = BehavioralAnalysis(config, vault, logger)
-```
-
-### 2. Signal Types
-
-Supported signal types for multimodal analysis:
+The main advanced persona class that handles multimodal processing and adaptation.
 
 ```python
-from core.behavioral_analysis import SignalType
+from personas.advanced_multimodal_persona import AdvancedMultimodalPersona
 
-# Text signals
-text_signal = ExternalSignal(
-    signal_type=SignalType.TEXT,
-    data={"text": "user message content"}
-)
-
-# Session history signals
-session_signal = ExternalSignal(
-    signal_type=SignalType.SESSION_HISTORY,
-    data={"sessions": [...]}
-)
-
-# External signals (future phase)
-image_signal = ExternalSignal(
-    signal_type=SignalType.IMAGE_METADATA,
-    data={"metadata": {...}}
+# Initialize with LLM client and behavioral analysis
+persona = AdvancedMultimodalPersona(
+    persona_id="alden-advanced",
+    llm_client=llm_client,
+    behavioral_analysis=behavioral_analysis,
+    logger=logger
 )
 ```
 
-### 3. Analysis Results
+### 2. Input Modalities
 
-Structured analysis results with confidence metrics:
+Supported input modalities for multimodal processing:
 
 ```python
-# Text analysis results
-text_analysis = TextAnalysis(
-    sentiment_score=0.75,  # -1.0 to 1.0
-    emotion_labels=["joy", "excitement"],
-    complexity_score=0.6,  # 0.0 to 1.0
-    engagement_indicators=["detailed_response", "question_asking"],
-    behavioral_markers=["seeking_help", "expressing_opinion"],
-    confidence=0.85
-)
+from personas.advanced_multimodal_persona import InputModality
 
-# Session analysis results
-session_analysis = SessionAnalysis(
-    session_id="session-123",
-    duration_minutes=45.0,
-    interaction_count=23,
-    participant_engagement={"user1": 0.8, "user2": 0.6},
-    topic_coherence=0.85,
-    collaboration_patterns=["collaborative_discussion"],
-    adaptation_signals=["adaptive_response"],
-    effectiveness_score=0.78
-)
+# Available modalities
+modalities = [
+    InputModality.TEXT,           # Text input
+    InputModality.AUDIO,          # Audio input (future)
+    InputModality.VISUAL,         # Visual input (future)
+    InputModality.ENVIRONMENTAL,  # Environmental context
+    InputModality.BEHAVIORAL,     # Behavioral data
+    InputModality.SENSORY         # Sensory input (future)
+]
+```
+
+### 3. Adaptation Types
+
+Types of user adaptation supported by the system:
+
+```python
+from personas.advanced_multimodal_persona import AdaptationType
+
+# Available adaptation types
+adaptation_types = [
+    AdaptationType.PERSONALITY_SHIFT,      # Personality trait adjustments
+    AdaptationType.COMMUNICATION_STYLE,    # Communication style changes
+    AdaptationType.RESPONSE_PATTERN,       # Response pattern modifications
+    AdaptationType.ENGAGEMENT_LEVEL,       # Engagement level adjustments
+    AdaptationType.LEARNING_PREFERENCE,    # Learning preference adaptations
+    AdaptationType.EMOTIONAL_SUPPORT       # Emotional support level changes
+]
 ```
 
 ## Integration Patterns
 
 ### Core Module Integration
 
-The behavioral analysis is integrated into the Core module for session-level analysis:
+The advanced persona integrates with the Core module for session-level processing:
 
 ```python
-# Analyze session behavior
-session_analysis = core.analyze_session_behavior(session_id, user_id)
-
-# Generate behavioral insights
-insights = core.generate_behavioral_insights(user_id, session_id)
-
-# Create comprehensive report
-report = core.create_behavioral_report(user_id, session_id)
+# Core module can use advanced persona for enhanced responses
+def enhanced_session_response(core, session_id, user_id, inputs):
+    # Get advanced persona
+    persona = core.get_advanced_persona(user_id)
+    
+    # Process multimodal inputs
+    result = persona.process_multimodal_input(inputs, user_id, session_id)
+    
+    # Use adaptive response
+    return result['response']
 ```
 
-### Persona Integration
+### Behavioral Analysis Integration
 
-Personas can use behavioral analysis for adaptive responses:
+Seamless integration with behavioral analysis:
 
 ```python
-# Set behavioral analysis for persona
-alden.set_behavioral_analysis(behavioral_analysis)
-
-# Generate response with behavioral analysis
-response = alden.generate_response(user_message, session_id)
+# Behavioral analysis provides feedback to persona
+def behavioral_feedback_loop(behavioral_analysis, persona, user_id):
+    # Generate behavioral insights
+    insights = behavioral_analysis.generate_behavioral_insights([], user_id)
+    
+    # Convert insights to learning feedback
+    for insight in insights:
+        feedback = LearningFeedback(
+            feedback_id=str(uuid.uuid4()),
+            source="behavioral_analysis",
+            timestamp=datetime.now().isoformat(),
+            feedback_type="pattern_recognition",
+            description=insight.description,
+            target_aspect="personality_traits",
+            suggested_change=insight.metadata.get("suggested_changes", {}),
+            confidence=insight.confidence,
+            priority="medium"
+        )
+        
+        # Apply feedback to persona
+        persona.apply_learning_feedback(feedback)
 ```
 
 ## Analysis Types
 
-### 1. Text Sentiment Analysis
+### 1. Multimodal Input Analysis
 
-Analyzes text for sentiment, emotions, and behavioral patterns:
+Analyzes inputs from multiple modalities:
 
 ```python
-# Analyze text behavior
-text_analysis = behavioral_analysis.analyze_text("I'm really excited about this project!")
+# Process multimodal inputs
+inputs = [
+    MultimodalInput(..., modality=InputModality.TEXT, ...),
+    MultimodalInput(..., modality=InputModality.ENVIRONMENTAL, ...),
+    MultimodalInput(..., modality=InputModality.BEHAVIORAL, ...)
+]
 
-print(f"Sentiment: {text_analysis.sentiment_score}")
-print(f"Emotions: {text_analysis.emotion_labels}")
-print(f"Engagement: {text_analysis.engagement_indicators}")
+result = persona.process_multimodal_input(inputs, user_id, session_id)
+
+# Access processed inputs
+for processed_input in result['processed_inputs']:
+    print(f"Modality: {processed_input['modality']}")
+    print(f"Confidence: {processed_input['confidence']}")
 ```
 
-### 2. Session Pattern Analysis
+### 2. Adaptation Analysis
 
-Analyzes session dynamics and interaction patterns:
+Analyzes adaptation triggers and recommendations:
 
 ```python
-# Analyze session patterns
-session_data = {
-    "session_id": "session-123",
-    "events": [...],
-    "participants": [...],
-    "duration_minutes": 45.0
-}
+# Check adaptation recommendations
+recommendations = result['adaptation_recommendations']
 
-session_analysis = behavioral_analysis.analyze_session(session_data)
+for rec in recommendations:
+    print(f"Type: {rec['type']}")
+    print(f"Trigger: {rec['trigger']}")
+    print(f"Priority: {rec['priority']}")
+    print(f"Evidence: {rec['evidence']}")
 ```
 
-### 3. Multimodal Signal Processing
+### 3. Learning Feedback Analysis
 
-Processes multiple signal types for comprehensive analysis:
+Analyzes learning feedback and its application:
 
 ```python
-# Process external signals
-signal = ExternalSignal(
-    signal_type=SignalType.USER_INTERACTION,
-    data={"type": "click", "target": "button", "timestamp": "2024-01-01T10:00:00Z"}
-)
+# Get current learning feedback
+feedback_list = persona.state.learning_feedback
 
-result = behavioral_analysis.process_external_signal(signal)
+for feedback in feedback_list:
+    print(f"Source: {feedback.source}")
+    print(f"Type: {feedback.feedback_type}")
+    print(f"Status: {feedback.status}")
+    print(f"Confidence: {feedback.confidence}")
 ```
 
 ## Signal Processing
 
 ### Text Signal Processing
 
-Text signals are processed for:
-- Sentiment analysis (positive/negative/neutral)
-- Emotion detection (joy, sadness, anger, fear, etc.)
-- Complexity assessment
-- Engagement indicators
-- Behavioral markers
-
-### Session History Processing
-
-Session history signals provide:
-- Interaction frequency analysis
-- Participant engagement metrics
-- Topic coherence assessment
-- Collaboration pattern recognition
-- Adaptation signal identification
-
-### External Signal Processing
-
-External signals (image/audio metadata) are processed as stubs for future implementation:
+Enhanced text processing with behavioral analysis integration:
 
 ```python
-# Image metadata processing (future phase)
-image_signal = ExternalSignal(
-    signal_type=SignalType.IMAGE_METADATA,
-    data={
-        "format": "JPEG",
-        "size": "2.5MB",
-        "dimensions": "1920x1080",
-        "timestamp": "2024-01-01T10:00:00Z"
-    }
+# Text processing includes sentiment, emotion, and behavioral analysis
+text_input = MultimodalInput(
+    modality=InputModality.TEXT,
+    data={"text": "I'm really struggling with this task"},
+    confidence=0.95,
+    source="user_message"
 )
 
-# Audio metadata processing (future phase)
-audio_signal = ExternalSignal(
-    signal_type=SignalType.AUDIO_METADATA,
-    data={
-        "format": "WAV",
-        "duration": "30s",
-        "sample_rate": "44.1kHz",
-        "channels": 2
-    }
+result = persona.process_multimodal_input([text_input], user_id, session_id)
+processed_text = result['processed_inputs'][0]
+
+print(f"Sentiment: {processed_text['sentiment_score']}")
+print(f"Emotions: {processed_text['emotion_labels']}")
+print(f"Engagement: {processed_text['engagement_indicators']}")
+```
+
+### Environmental Signal Processing
+
+Processes environmental context for adaptation:
+
+```python
+# Environmental processing for context-aware adaptation
+env_input = MultimodalInput(
+    modality=InputModality.ENVIRONMENTAL,
+    data={"environmental": {
+        "location": "office",
+        "time_of_day": "late_evening",
+        "context": "work_deadline"
+    }},
+    confidence=0.9,
+    source="system_context"
 )
+
+result = persona.process_multimodal_input([env_input], user_id, session_id)
+processed_env = result['processed_inputs'][0]
+
+print(f"Location: {processed_env['location']}")
+print(f"Time: {processed_env['time_of_day']}")
+print(f"Context: {processed_env['context']}")
+```
+
+### Behavioral Signal Processing
+
+Processes behavioral data for pattern recognition:
+
+```python
+# Behavioral processing for pattern-based adaptation
+behavioral_input = MultimodalInput(
+    modality=InputModality.BEHAVIORAL,
+    data={"behavioral": {
+        "type": "interaction_pattern",
+        "data": {
+            "frequency": "high",
+            "duration": "long",
+            "complexity": "detailed"
+        }
+    }},
+    confidence=0.8,
+    source="session_analysis"
+)
+
+result = persona.process_multimodal_input([behavioral_input], user_id, session_id)
+processed_behavioral = result['processed_inputs'][0]
+
+print(f"Behavior Type: {processed_behavioral['behavior_type']}")
+print(f"Behavior Data: {processed_behavioral['behavior_data']}")
 ```
 
 ## Adaptive Feedback
 
-### Feedback Generation
+### Real-time Adaptation
 
-The system generates adaptive feedback for persona adjustment:
+The system provides real-time adaptation based on input analysis:
 
 ```python
-# Generate adaptive feedback
-feedback = behavioral_analysis.generate_adaptive_feedback(insights, "alden")
+# Automatic adaptation based on input triggers
+result = persona.process_multimodal_input(inputs, user_id, session_id)
 
-for item in feedback:
-    print(f"Type: {item.feedback_type}")
-    print(f"Priority: {item.priority}")
-    print(f"Description: {item.description}")
-    print(f"Suggestions: {item.implementation_suggestions}")
+# Check for automatic adaptations
+adaptations = result['adaptation_recommendations']
+for adaptation in adaptations:
+    if adaptation['priority'] == 'high':
+        # Apply high-priority adaptations automatically
+        persona.adapt_to_user(
+            adaptation_type=AdaptationType(adaptation['type']),
+            trigger=adaptation['trigger'],
+            evidence=adaptation['evidence'],
+            user_id=user_id
+        )
 ```
 
-### Feedback Types
+### Manual Adaptation
 
-1. **Persona Adaptation**: Adjust persona response style and behavior
-2. **Session Optimization**: Improve session flow and engagement
-3. **Engagement Improvement**: Enhance user engagement strategies
-4. **Collaboration Enhancement**: Foster better collaboration patterns
-
-### Feedback Application
-
-Personas automatically apply high-priority feedback:
+Manual adaptation for specific user needs:
 
 ```python
-# Apply adaptive feedback
-def _apply_adaptive_feedback(self, feedback_list):
-    for feedback in feedback_list:
-        if feedback.priority in ["high", "critical"]:
-            self._apply_single_feedback(feedback)
-            feedback.status = "implemented"
+# Manual adaptation for specific scenarios
+persona.adapt_to_user(
+    adaptation_type=AdaptationType.EMOTIONAL_SUPPORT,
+    trigger="user_request",
+    evidence=["explicit_request", "emotional_context"],
+    user_id=user_id
+)
 ```
 
 ## Reporting and Insights
 
-### Behavioral Reports
+### Persona State Reporting
 
-Comprehensive behavioral analysis reports:
+Comprehensive reporting of current persona state:
 
 ```python
-# Create behavioral report
-report = behavioral_analysis.create_behavioral_report(
-    user_id="user-123",
-    session_id="session-456",
-    analysis_period=("2024-01-01T00:00:00Z", "2024-01-31T23:59:59Z")
-)
+# Get current persona state
+state = persona.get_state()
 
-print(f"Report ID: {report.report_id}")
-print(f"Patterns: {[p.value for p in report.patterns_identified]}")
-print(f"Insights: {len(report.insights)}")
-print(f"Feedback: {len(report.feedback_recommendations)}")
+print(f"Personality Traits: {state['personality_traits']}")
+print(f"Communication Style: {state['communication_style']}")
+print(f"Engagement Patterns: {state['engagement_patterns']}")
+print(f"Learning Preferences: {state['learning_preferences']}")
+print(f"Recent Adaptations: {len(state['adaptations'])}")
+print(f"Learning Feedback: {len(state['learning_feedback'])}")
 ```
 
-### Behavioral Insights
+### Adaptation History
 
-Generated insights provide actionable recommendations:
+Track adaptation history and effectiveness:
 
 ```python
-# Generate insights
-insights = behavioral_analysis.generate_behavioral_insights(analyses, user_id)
+# Get adaptation history
+adaptations = persona.state.adaptations
 
-for insight in insights:
-    print(f"Type: {insight.insight_type}")
-    print(f"Description: {insight.description}")
-    print(f"Confidence: {insight.confidence}")
-    print(f"Evidence: {insight.evidence}")
-    print(f"Recommendations: {insight.recommendations}")
+for adaptation in adaptations:
+    print(f"Type: {adaptation.adaptation_type.value}")
+    print(f"Trigger: {adaptation.trigger}")
+    print(f"Impact Score: {adaptation.impact_score}")
+    print(f"Evidence: {adaptation.evidence}")
+    print(f"Timestamp: {adaptation.timestamp}")
+```
+
+### Learning Feedback Analysis
+
+Analyze learning feedback effectiveness:
+
+```python
+# Analyze learning feedback
+feedback_list = persona.state.learning_feedback
+
+applied_feedback = [f for f in feedback_list if f.status == "applied"]
+rejected_feedback = [f for f in feedback_list if f.status == "rejected"]
+
+print(f"Applied Feedback: {len(applied_feedback)}")
+print(f"Rejected Feedback: {len(rejected_feedback)}")
+print(f"Success Rate: {len(applied_feedback) / len(feedback_list) * 100:.1f}%")
 ```
 
 ## API Reference
 
-### BehavioralAnalysis Methods
+### AdvancedMultimodalPersona
 
-#### analyze_text(text: str, context: Optional[Dict] = None) -> TextAnalysis
-Analyzes text for behavioral patterns and sentiment.
+#### Constructor
 
-#### analyze_session(session_data: Dict) -> SessionAnalysis
-Analyzes session patterns and dynamics.
+```python
+AdvancedMultimodalPersona(
+    persona_id: str,
+    llm_client: LocalLLMClient,
+    behavioral_analysis: BehavioralAnalysis,
+    logger: Optional[HearthlinkLogger] = None
+)
+```
 
-#### process_external_signal(signal: ExternalSignal) -> Dict
-Processes external signals (text, session history, external data).
+#### Methods
 
-#### generate_behavioral_insights(analyses: List, user_id: str, session_id: Optional[str] = None) -> List[BehavioralInsight]
-Generates behavioral insights from multiple analyses.
+##### process_multimodal_input
 
-#### generate_adaptive_feedback(insights: List[BehavioralInsight], target_persona: str) -> List[AdaptiveFeedback]
-Generates adaptive feedback for persona adjustment.
+```python
+def process_multimodal_input(
+    self,
+    inputs: List[MultimodalInput],
+    user_id: str,
+    session_id: Optional[str] = None
+) -> Dict[str, Any]
+```
 
-#### create_behavioral_report(user_id: str, session_id: Optional[str] = None, analysis_period: Optional[Tuple] = None) -> BehavioralReport
-Creates comprehensive behavioral analysis report.
+Process multiple input modalities and generate adaptive response.
 
-### Core Integration Methods
+**Parameters:**
+- `inputs`: List of multimodal inputs to process
+- `user_id`: User identifier
+- `session_id`: Optional session identifier
 
-#### analyze_session_behavior(session_id: str, user_id: str) -> Optional[SessionAnalysis]
-Analyzes behavioral patterns in a session.
+**Returns:**
+- Dictionary containing processed inputs, adaptation recommendations, behavioral insights, and response
 
-#### analyze_text_behavior(text: str, user_id: str, session_id: Optional[str] = None) -> TextAnalysis
-Analyzes behavioral patterns in text.
+##### adapt_to_user
 
-#### process_behavioral_signal(signal_data: Dict, user_id: str, session_id: Optional[str] = None) -> Dict
-Processes behavioral signals.
+```python
+def adapt_to_user(
+    self,
+    adaptation_type: AdaptationType,
+    trigger: str,
+    evidence: List[str],
+    user_id: str
+) -> bool
+```
 
-#### generate_behavioral_insights(user_id: str, session_id: Optional[str] = None, analysis_period: Optional[Tuple] = None) -> List[BehavioralInsight]
-Generates behavioral insights for user/session.
+Adapt persona to user based on specified adaptation type.
 
-#### generate_adaptive_feedback(user_id: str, target_persona: str = "alden", session_id: Optional[str] = None) -> List[AdaptiveFeedback]
-Generates adaptive feedback for persona adjustment.
+**Parameters:**
+- `adaptation_type`: Type of adaptation to apply
+- `trigger`: What triggered the adaptation
+- `evidence`: Evidence supporting the adaptation
+- `user_id`: User identifier
 
-#### create_behavioral_report(user_id: str, session_id: Optional[str] = None, analysis_period: Optional[Tuple] = None) -> BehavioralReport
-Creates comprehensive behavioral analysis report.
+**Returns:**
+- True if adaptation was successfully applied
 
-### Persona Integration Methods
+##### apply_learning_feedback
 
-#### set_behavioral_analysis(behavioral_analysis: BehavioralAnalysis) -> None
-Sets behavioral analysis instance for persona.
+```python
+def apply_learning_feedback(
+    self,
+    feedback: LearningFeedback
+) -> bool
+```
 
-#### generate_response(user_message: str, session_id: Optional[str] = None, context: Optional[Dict] = None) -> str
-Generates response with behavioral analysis integration.
+Apply learning feedback to persona state.
+
+**Parameters:**
+- `feedback`: Learning feedback to apply
+
+**Returns:**
+- True if feedback was successfully applied
+
+##### get_state
+
+```python
+def get_state(self) -> Dict[str, Any]
+```
+
+Get current persona state.
+
+**Returns:**
+- Dictionary containing current persona state
+
+##### export_state
+
+```python
+def export_state(self) -> Dict[str, Any]
+```
+
+Export persona state for persistence.
+
+**Returns:**
+- Dictionary containing exportable persona state
+
+### Data Classes
+
+#### MultimodalInput
+
+```python
+@dataclass
+class MultimodalInput:
+    input_id: str
+    modality: InputModality
+    timestamp: str
+    data: Dict[str, Any]
+    confidence: float
+    source: str
+    metadata: Dict[str, Any] = field(default_factory=dict)
+```
+
+#### UserAdaptation
+
+```python
+@dataclass
+class UserAdaptation:
+    adaptation_id: str
+    adaptation_type: AdaptationType
+    timestamp: str
+    trigger: str
+    old_state: Dict[str, Any]
+    new_state: Dict[str, Any]
+    confidence: float
+    evidence: List[str]
+    impact_score: float
+    metadata: Dict[str, Any] = field(default_factory=dict)
+```
+
+#### LearningFeedback
+
+```python
+@dataclass
+class LearningFeedback:
+    feedback_id: str
+    source: str
+    timestamp: str
+    feedback_type: str
+    description: str
+    target_aspect: str
+    suggested_change: Dict[str, Any]
+    confidence: float
+    priority: str
+    status: str = "pending"
+    metadata: Dict[str, Any] = field(default_factory=dict)
+```
 
 ## Usage Examples
 
-### Basic Text Analysis
+### Basic Multimodal Processing
 
 ```python
-from core.behavioral_analysis import BehavioralAnalysis
-
-# Initialize behavioral analysis
-behavioral_analysis = BehavioralAnalysis(config, vault, logger)
-
-# Analyze text
-text = "I'm really excited about this new project! Can you help me get started?"
-analysis = behavioral_analysis.analyze_text(text)
-
-print(f"Sentiment: {analysis.sentiment_score}")
-print(f"Emotions: {analysis.emotion_labels}")
-print(f"Engagement: {analysis.engagement_indicators}")
-```
-
-### Session Analysis
-
-```python
-# Analyze session behavior
-session_analysis = core.analyze_session_behavior(session_id, user_id)
-
-print(f"Duration: {session_analysis.duration_minutes} minutes")
-print(f"Interactions: {session_analysis.interaction_count}")
-print(f"Effectiveness: {session_analysis.effectiveness_score}")
-```
-
-### Adaptive Feedback Generation
-
-```python
-# Generate insights and feedback
-insights = core.generate_behavioral_insights(user_id, session_id)
-feedback = core.generate_adaptive_feedback(user_id, "alden", session_id)
-
-for item in feedback:
-    print(f"Feedback: {item.description}")
-    print(f"Priority: {item.priority}")
-    print(f"Impact: {item.expected_impact}")
-```
-
-### Comprehensive Reporting
-
-```python
-# Create comprehensive report
-report = core.create_behavioral_report(
-    user_id="user-123",
-    session_id="session-456",
-    analysis_period=("2024-01-01T00:00:00Z", "2024-01-31T23:59:59Z")
+from personas.advanced_multimodal_persona import (
+    AdvancedMultimodalPersona, MultimodalInput, InputModality
 )
 
-print(f"Summary: {report.summary}")
-print(f"Patterns: {[p.value for p in report.patterns_identified]}")
-print(f"Confidence: {report.confidence_metrics}")
-```
-
-### Persona Integration
-
-```python
-# Set behavioral analysis for Alden
-alden.set_behavioral_analysis(behavioral_analysis)
-
-# Generate adaptive response
-response = alden.generate_response(
-    "I'm feeling overwhelmed with this project",
-    session_id="session-123"
+# Create persona
+persona = AdvancedMultimodalPersona(
+    persona_id="alden-advanced",
+    llm_client=llm_client,
+    behavioral_analysis=behavioral_analysis,
+    logger=logger
 )
 
-# Response will include behavioral analysis context and adaptive adjustments
+# Create multimodal inputs
+text_input = MultimodalInput(
+    input_id="text-1",
+    modality=InputModality.TEXT,
+    timestamp=datetime.now().isoformat(),
+    data={"text": "I need help with my project"},
+    confidence=0.95,
+    source="user_message"
+)
+
+env_input = MultimodalInput(
+    input_id="env-1",
+    modality=InputModality.ENVIRONMENTAL,
+    timestamp=datetime.now().isoformat(),
+    data={"environmental": {"location": "home", "time_of_day": "evening"}},
+    confidence=0.9,
+    source="system_context"
+)
+
+# Process inputs
+inputs = [text_input, env_input]
+result = persona.process_multimodal_input(inputs, user_id="user-123")
+
+# Use adaptive response
+print(f"Response: {result['response']}")
+```
+
+### Dynamic Adaptation
+
+```python
+# Trigger adaptation based on user behavior
+persona.adapt_to_user(
+    adaptation_type=AdaptationType.EMOTIONAL_SUPPORT,
+    trigger="user_stress",
+    evidence=["high_stress_indicators", "negative_sentiment"],
+    user_id="user-123"
+)
+
+# Check adaptation results
+state = persona.get_state()
+print(f"Empathy level: {state['personality_traits']['empathy']}")
+print(f"Supportiveness: {state['communication_style']['supportiveness']}")
+```
+
+### Learning Feedback Integration
+
+```python
+from personas.advanced_multimodal_persona import LearningFeedback
+
+# Create learning feedback from behavioral analysis
+feedback = LearningFeedback(
+    feedback_id="feedback-1",
+    source="behavioral_analysis",
+    timestamp=datetime.now().isoformat(),
+    feedback_type="communication_style",
+    description="User responds better to concise responses",
+    target_aspect="communication_style",
+    suggested_change={"detail_level": 0.5, "directness": 0.8},
+    confidence=0.85,
+    priority="medium"
+)
+
+# Apply feedback
+success = persona.apply_learning_feedback(feedback)
+print(f"Feedback applied: {success}")
+```
+
+### Comprehensive Session Processing
+
+```python
+def process_comprehensive_session(persona, session_data, user_id):
+    """Process a comprehensive session with multimodal inputs."""
+    
+    # Extract inputs from session data
+    inputs = []
+    
+    # Add text inputs
+    for message in session_data.get("messages", []):
+        text_input = MultimodalInput(
+            input_id=f"text-{message['id']}",
+            modality=InputModality.TEXT,
+            timestamp=message['timestamp'],
+            data={"text": message['content']},
+            confidence=0.95,
+            source="session_message"
+        )
+        inputs.append(text_input)
+    
+    # Add environmental context
+    env_input = MultimodalInput(
+        input_id="env-session",
+        modality=InputModality.ENVIRONMENTAL,
+        timestamp=session_data['start_time'],
+        data={"environmental": session_data.get("context", {})},
+        confidence=0.9,
+        source="session_context"
+    )
+    inputs.append(env_input)
+    
+    # Process all inputs
+    result = persona.process_multimodal_input(inputs, user_id, session_data['session_id'])
+    
+    # Apply high-priority adaptations
+    for adaptation in result['adaptation_recommendations']:
+        if adaptation['priority'] == 'high':
+            persona.adapt_to_user(
+                adaptation_type=AdaptationType(adaptation['type']),
+                trigger=adaptation['trigger'],
+                evidence=adaptation['evidence'],
+                user_id=user_id
+            )
+    
+    return result
 ```
 
 ## Configuration
 
-### Behavioral Analysis Configuration
+### Persona Configuration
 
 ```python
-behavioral_config = {
-    "analysis": {
-        "text_analysis": {
-            "sentiment_threshold": 0.1,
-            "emotion_detection": True,
-            "complexity_analysis": True,
-            "engagement_indicators": True
-        },
-        "session_analysis": {
-            "pattern_recognition": True,
-            "collaboration_analysis": True,
-            "adaptation_tracking": True
-        },
-        "signal_processing": {
-            "text_signals": True,
-            "session_history": True,
-            "external_signals": False  # Future phase
-        }
+# Configuration for advanced multimodal persona
+persona_config = {
+    "persona_id": "alden-advanced",
+    "llm_config": {
+        "model": "local-model",
+        "temperature": 0.7,
+        "max_tokens": 500
     },
-    "feedback": {
-        "auto_apply_high_priority": True,
-        "feedback_generation": True,
-        "persona_adaptation": True
+    "behavioral_analysis_config": {
+        "enabled": True,
+        "confidence_threshold": 0.7,
+        "adaptation_threshold": 0.8
     },
-    "reporting": {
-        "generate_insights": True,
-        "create_reports": True,
-        "export_data": True
+    "adaptation_config": {
+        "auto_adapt": True,
+        "learning_rate": 0.1,
+        "max_adaptations_per_session": 5
     }
 }
 ```
 
-### Core Integration Configuration
+### Input Processing Configuration
 
 ```python
-core_config = {
-    "behavioral_analysis": {
+# Input processing configuration
+input_config = {
+    "text_processing": {
+        "sentiment_analysis": True,
+        "emotion_detection": True,
+        "complexity_analysis": True
+    },
+    "audio_processing": {
+        "enabled": False,  # Future implementation
+        "feature_extraction": True
+    },
+    "visual_processing": {
+        "enabled": False,  # Future implementation
+        "metadata_extraction": True
+    },
+    "environmental_processing": {
         "enabled": True,
-        "real_time_analysis": True,
-        "session_integration": True,
-        "persona_integration": True
+        "context_extraction": True
     }
 }
 ```
 
 ## Best Practices
 
-### 1. Privacy and Data Handling
+### 1. Input Processing
 
-- All behavioral analysis is performed locally
-- User data is not shared without explicit consent
-- Analysis results are stored in user-controlled vault
-- External signals are processed as metadata only
+- **Validate Inputs**: Always validate input data before processing
+- **Handle Missing Data**: Gracefully handle missing or incomplete input data
+- **Confidence Scoring**: Use confidence scores to weight input importance
+- **Error Handling**: Implement robust error handling for input processing
 
-### 2. Performance Optimization
+### 2. Adaptation Strategies
 
-- Use asynchronous processing for real-time analysis
-- Cache analysis results for repeated patterns
-- Limit analysis depth for high-frequency interactions
-- Implement graceful degradation for analysis failures
+- **Gradual Changes**: Make gradual, incremental adaptations rather than sudden changes
+- **Evidence-Based**: Base adaptations on strong evidence and high confidence
+- **User Control**: Allow users to override or modify adaptations
+- **Audit Trail**: Maintain complete audit trail of all adaptations
 
-### 3. Integration Guidelines
+### 3. Learning Feedback
 
-- Always handle behavioral analysis errors gracefully
-- Provide fallback behavior when analysis is unavailable
-- Log analysis results for debugging and improvement
-- Validate analysis inputs and outputs
+- **Source Validation**: Validate feedback sources and credibility
+- **Confidence Assessment**: Assess confidence in feedback before application
+- **Conflict Resolution**: Handle conflicting feedback from different sources
+- **Feedback Persistence**: Persist feedback for long-term learning
 
-### 4. Adaptive Feedback
+### 4. State Management
 
-- Apply high-priority feedback immediately
-- Validate feedback before application
-- Track feedback effectiveness over time
-- Allow user override of automatic adjustments
+- **Regular Backups**: Regularly backup persona state
+- **Version Control**: Maintain version control for state changes
+- **Export Capability**: Provide export capability for user control
+- **State Validation**: Validate state consistency and integrity
 
-### 5. Reporting
+### 5. Performance Optimization
 
-- Generate reports on-demand rather than continuously
-- Include confidence metrics with all insights
-- Provide actionable recommendations
-- Export data in standard formats
+- **Batch Processing**: Process multiple inputs in batches when possible
+- **Caching**: Cache frequently accessed state data
+- **Async Processing**: Use async processing for non-blocking operations
+- **Resource Management**: Monitor and manage resource usage
 
-## Future Enhancements
+### 6. Privacy and Security
 
-### Phase 2: Advanced Signal Processing
+- **Local Processing**: Keep all processing local to user device
+- **Data Minimization**: Minimize data collection and retention
+- **User Control**: Provide user control over data processing
+- **Audit Compliance**: Maintain audit compliance for all operations
 
-- **Image Analysis**: Process image content for behavioral context
-- **Audio Analysis**: Analyze voice patterns and emotional tone
-- **Environmental Signals**: Process device and environment data
-- **Biometric Integration**: Heart rate, stress levels, attention metrics
+---
 
-### Phase 3: Advanced Pattern Recognition
-
-- **Long-term Pattern Analysis**: Identify behavioral trends over time
-- **Predictive Modeling**: Anticipate user needs and preferences
-- **Cross-session Analysis**: Understand behavior across multiple sessions
-- **Collaborative Pattern Recognition**: Group behavior analysis
-
-### Phase 4: Advanced Adaptive Systems
-
-- **Multi-persona Coordination**: Coordinate multiple personas based on analysis
-- **Dynamic Personality Adjustment**: Real-time persona trait modification
-- **Contextual Memory Integration**: Integrate behavioral insights with memory
-- **Proactive Intervention**: Anticipate and address user needs
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Analysis Failures**: Check input validation and error handling
-2. **Performance Issues**: Monitor analysis frequency and caching
-3. **Integration Problems**: Verify behavioral analysis initialization
-4. **Feedback Loops**: Ensure feedback application doesn't create cycles
-
-### Debugging
-
-```python
-# Enable debug logging
-logger.setLevel(logging.DEBUG)
-
-# Check behavioral analysis status
-status = behavioral_analysis.get_status()
-
-# Validate signal processing
-result = behavioral_analysis.process_external_signal(test_signal)
-
-# Export analysis data for debugging
-data = behavioral_analysis.export_analysis_data(report_id)
-```
-
-## Conclusion
-
-The behavioral analysis multimodal system provides comprehensive understanding of user behavior through multiple signal types. By integrating text analysis, session patterns, and external signals, the system enables adaptive persona responses and actionable insights.
-
-The modular design allows for gradual enhancement and future expansion while maintaining privacy and user control. The integration with Core and Persona modules provides seamless behavioral understanding across the entire Hearthlink system.
-
-For questions or support, refer to the main Hearthlink documentation or contact the development team. 
+**Version**: 1.0.0  
+**Last Updated**: 2025-07-07  
+**Status**: Advanced multimodal persona system implemented and documented 
