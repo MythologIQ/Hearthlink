@@ -1,35 +1,37 @@
 # ![Hearthlink](https://github.com/user-attachments/assets/a4ef30dd-d0f0-4150-8eb1-f7945c2f6897)
 
+> ⚡ **This README is the authoritative project overview for Hearthlink. All module and test documentation is found in `/docs/` or per-module folders. Please keep this README as the single source of truth.**
 
+---
 
+# Hearthlink
 
-# Hearthlink Global Container
+Hearthlink is a local-first, persona-aware AI companion framework designed for collaborative, ethical, and privacy-respecting AI orchestration on your desktop.
 
-## Overview
+## 🔥 Overview
 
-Hearthlink is a local-first, persona-aware AI companion system with ethical safety rails and zero-trust architecture. This repository contains the initial scaffold for the global container.
+- **Persona-Aware**: Evolutionary and behavioral AI companions (Alden, Alice, Mimic)
+- **Modular**: Every major feature is its own independently versioned, audited module
+- **Privacy-First**: Local encrypted memory, no forced cloud, full user control
+- **Platinum-Standard Safety**: Ethical rails, audit trails, dependency mitigation
+- **Zero-Trust Security**: Sentry oversight, plugin sandboxing, no auto-internet calls
 
-## System Architecture
+## 🏗️ System Architecture
 
-Hearthlink consists of seven core modules:
-- **Alden** - Evolutionary Companion AI
-- **Alice** - Behavioral Analysis & Context-Awareness  
-- **Mimic** - Dynamic Persona & Adaptive Agent
-- **Vault** - Persona-Aware Secure Memory Store
-- **Core** - Communication Switch & Context Moderator
-- **Synapse** - Secure External Gateway & Protocol Boundary
-- **Sentry** - Security, Compliance & Oversight Persona
+**Core Modules:**
+- **Alden** – Evolutionary Companion AI
+- **Alice** – Behavioral/Cognitive Support
+- **Mimic** – Dynamic Persona Engine
+- **Vault** – Persona-Aware Secure Memory Store
+- **Core** – Communication Switch & Moderator
+- **Synapse** – Secure Plugin/API Gateway
+- **Sentry** – Security, Compliance, Oversight
 
-## Current Implementation
+> **See [`/docs/hearthlink_system_documentation_master.md`](./docs/hearthlink_system_documentation_master.md) for full architecture diagrams and system flow.**
 
-This scaffold implements:
-- Cross-platform background process (Windows 10+ compatible)
-- Platinum-standard logging with timestamps
-- Ethical safety rails compliance
-- Silent startup with audit trail
-- Local-first architecture (no external dependencies)
+---
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.8 or higher
@@ -37,193 +39,92 @@ This scaffold implements:
 
 ### Installation
 
-1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/WulfForge/Hearthlink.git
 cd Hearthlink
-```
-
-2. Run the container:
-```bash
 python src/main.py
-```
+Logs:
+Windows: %LOCALAPPDATA%\Hearthlink\logs\hearthlink.log
+Unix-like: ~/.hearthlink/logs/hearthlink.log
+(Automatic directory creation, 10MB rotation, 5 backup files)
 
-### Expected Output
+Tests:
 
-The container will start silently and log to:
-- **Windows**: `%LOCALAPPDATA%\Hearthlink\logs\hearthlink.log`
-- **Unix-like**: `~/.hearthlink/logs/hearthlink.log`
-
-**Log Rotation**: Files rotate at 10MB, retaining up to 5 backup files.
-
-Sample structured JSON log output:
-```json
-{"timestamp": "2025-01-27T10:30:15.123456", "level": "INFO", "logger": "Hearthlink", "message": "Hearthlink container started", "module": "main", "function": "log_startup", "line": 123, "event_type": "container_startup", "platform": {"system": "Windows", "release": "10", "version": "10.0.19045", "machine": "AMD64", "processor": "Intel64 Family 6"}, "python": {"version": "3.11.0", "implementation": "CPython", "compiler": "MSC v.1935 64 bit (AMD64)"}, "log_directory": "C:\\Users\\username\\AppData\\Local\\Hearthlink\\logs", "log_config": {"max_size_mb": 10, "backup_count": 5, "format": "structured_json"}}
-{"timestamp": "2025-01-27T10:30:15.124567", "level": "INFO", "logger": "Hearthlink", "message": "Initializing ethical safety rails", "module": "main", "function": "_setup_safety_rails", "line": 234, "event_type": "safety_rails_initialization", "rails": ["dependency_mitigation", "human_origin_clause", "audit_trail", "ethical_boundaries"]}
-{"timestamp": "2025-01-27T10:30:15.125678", "level": "INFO", "logger": "Hearthlink", "message": "Hearthlink container started successfully", "module": "main", "function": "start", "line": 345, "event_type": "container_start", "start_time": "2025-01-27T10:30:15.125678"}
-```
-
-### Stopping the Container
-
-Press `Ctrl+C` to stop the container gracefully.
-
-### Testing
-
-Run the logging test suite to verify functionality:
-
-```bash
 python tests/test_logging.py
-```
+See /docs/ for complete test suites and QA checklists.
 
-This will test:
-- Structured JSON logging format
-- Log rotation functionality
-- Error handling and fallback mechanisms
-- Container integration
-- JSON format validation
+🌟 Key Features
+Global Orchestration: Run background across all processes (desktop, terminal, system tray)
 
-## Development
+Alice: Empathic, neurodivergent-aware support, non-clinical
 
-### Project Structure
-```
-Hearthlink/
-├── src/
-│   └── main.py              # Main container entry point
-├── docs/                    # System documentation
-├── requirements.txt         # Python dependencies
-└── README.md               # This file
-```
+Alden: Evolutionary feedback, context-tracking, LLM integration
 
-### Key Features
+Mimic: Extensible persona, plugin system, audit sandbox
 
-1. **Cross-Platform Compatibility**
-   - Windows: Uses `%LOCALAPPDATA%\Hearthlink\logs`
-   - Unix-like: Uses `~/.hearthlink/logs`
-   - Automatic directory creation
+Vault: Secure, encrypted, persona & communal memory
 
-2. **Platinum-Standard Structured JSON Logging**
-   - Structured JSON format with explicit timestamps and log levels
-   - 10MB log rotation with 5 backup files
-   - Platform and architecture detection
-   - UTF-8 encoding support
-   - Exception traceback capture
-   - Audit trail compliance
+Core: Multi-agent orchestration, roundtable, session management
 
-3. **Ethical Safety Rails**
-   - Dependency mitigation logging
-   - Human origin clause preparation
-   - Audit trail initialization
-   - Crisis handling readiness
+Sentry: Local-only security, audit, anomaly detection
 
-4. **Silent Background Operation**
-   - Minimal resource usage
-   - Graceful shutdown handling
-   - Error recovery and logging
+Synapse: Plugin manifest system, sandboxed external API
 
-## Compliance
+🛡️ Compliance & Safety
+PLATINUM_BLOCKERS.md: See /docs/PLATINUM_BLOCKERS.md for all compliance, ethics, and neurodivergent support standards
 
-This implementation follows:
-- **PLATINUM_BLOCKERS.md**: Ethical safety rails and dependency mitigation
-- **System Documentation**: Architecture constraints and requirements
-- **Zero-Trust Principles**: Local-first, no external dependencies
-- **User Sovereignty**: User always has final authority
+User Sovereignty: User is always in control
 
-## Next Steps
+MIT License: Permissive, but users are reminded of ethical guardrails
 
-This scaffold provides the foundation for implementing:
-1. Vault (secure memory store)
-2. Core (agent orchestration)
-3. Individual persona modules (Alden, Alice, Mimic)
-4. Synapse (external gateway)
-5. Sentry (security and audit)
+📚 Module & Testing Index
+Major Modules (Details in /docs/ or /src/<module>/README.md)
 
-## License
+Alden: /src/personas/alden.py
 
-[License information to be added]
+Alice: /src/personas/alice.py
 
-## Contributing
+Mimic: /src/personas/mimic.py
 
-[Contribution guidelines to be added]
+Vault: /src/vault/vault.py
 
-# Hearthlink
+Core: /src/core/core.py
 
-> **Open, honest, transparent… Real.**
+Synapse: /src/synapse/synapse.py
 
----
+Sentry: /src/sentry/sentry.py
 
-## Features
+Testing:
 
-- **Global Orchestration**: Run agents in the background across all processes (desktop, terminal, system tray)
-- **Alice**: Neurodivergent-aware AI support with empathic, non-clinical protocol
-- **Alden**: Reflection, feedback, and LLM integration
-- **Vault**: Secure, encrypted memory—per persona and communal
-- **Mimic**: Extensible persona and plugin system with sandboxing and audit
-- **Sentry**: Comprehensive system logging, audit export, anomaly detection (local only, privacy-first)
-- **Synapse**: Plugin management, manifest enforcement, secure extension
+Core tests: /tests/test_core_multi_agent.py, /tests/test_core_memory_management.py, /tests/run_core_tests.py
 
-See [`/docs/PLATINUM_BLOCKERS.md`](./docs/PLATINUM_BLOCKERS.md) for full details on platinum barrier features.
+QA Checklist: /docs/appendix_h_developer_qa_platinum_checklists.md
 
----
+See /docs/ for all implementation, integration, and testing details.
 
-## Quick Start
+⚙️ Development Workflow
+Modular, Branch-Per-Feature:
+See Process Refinement
 
-1. **Clone the repo**
-    ```sh
-    git clone https://github.com/WulfForge/Hearthlink.git
-    ```
-2. **Open in Codespaces or your local development environment**
-3. **See `/docs/` for all architecture, system, and implementation details**
-4. **Launch via your preferred entry point (e.g., `main.py`, desktop launcher, etc.)**
-5. **Consult `/docs/PLATINUM_BLOCKERS.md` for neurodivergent support, compliance mapping, and advanced features**
+Regular pushes to GitHub required for every milestone
 
----
+Single README in root is authoritative (all others are legacy and will be removed)
 
-## Documentation
+🤝 Contribution & Access
+Private Repo: Access by invitation
 
-- **System Overview:** [`/docs/hearthlink_system_documentation_master.md`](./docs/hearthlink_system_documentation_master.md)
-- **Platinum Blockers:** [`/docs/PLATINUM_BLOCKERS.md`](./docs/PLATINUM_BLOCKERS.md)
-- **Model Context Protocol:** [`/docs/appendix_e_model_context_protocol_mcp_full_specification.md`](./docs/appendix_e_model_context_protocol_mcp_full_specification.md)
-- **Developer & QA Checklists:** [`/docs/appendix_h_developer_qa_platinum_checklists.md`](./docs/appendix_h_developer_qa_platinum_checklists.md)
-- **Full documentation index:** See `/docs/`
+Development managed via feature branches and issue tracker
 
----
+All PRs require review and variance report for merge
 
-## Contribution & Development
+📝 License
+MIT License – See LICENSE
 
-- This repository is **private**.  
-- Access is by invitation only.
-- All development and QA are managed internally by the authorized team (Cursor, Product Owner, select beta participants).
-- For requests or to join the beta, please contact the maintainer directly.
+📞 Contact, Status, Disclaimer
+Closed Beta – Not public, request access via maintainer
 
----
+Disclaimer: Hearthlink and Alice are for productivity/support only—not medical or therapeutic tools.
 
-## Licensing
+Open, honest, transparent… Real.
 
-Hearthlink is open source under the **MIT License**.  
-See [`LICENSE`](./LICENSE) for full legal terms.
-
-## Download & Usage
-
-- Hearthlink is available for download via the official website for a minimal fee to support ongoing development and maintenance.
-- Each download includes the MIT License and all required documentation.
-- Users may use, modify, or redistribute Hearthlink per the MIT License.  
-  Note: redistribution may occur, as permitted by the license.
-
----
-
-## Status
-
-- **Closed Beta**: Actively under development
-- **Contact**: For questions or access, open an Issue or contact the maintainer
-
----
-
-## Disclaimer
-
-Hearthlink and Alice are support tools for productivity and personal development—**not clinical or therapeutic software**.  
-Crisis support features are informational only. Users are always urged to seek professional help if needed.
-
----
-
-**Welcome to the next generation of collaborative AI.**
-
+This README supersedes all prior module-specific or legacy README files. Please maintain this file as the project’s single authoritative overview.
