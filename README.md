@@ -3,16 +3,151 @@
 
 
 
-# Hearthlink
-
-> **Open, honest, transparent… Real.**
-
----
+# Hearthlink Global Container
 
 ## Overview
 
-Hearthlink is a next-generation orchestration framework for local AI agents, browser-based GPTs, and collaborative digital workspaces.  
-It is built for reliability, platinum-grade clarity, and accessibility—grounded in modern design, open standards, and deep ethical consideration.
+Hearthlink is a local-first, persona-aware AI companion system with ethical safety rails and zero-trust architecture. This repository contains the initial scaffold for the global container.
+
+## System Architecture
+
+Hearthlink consists of seven core modules:
+- **Alden** - Evolutionary Companion AI
+- **Alice** - Behavioral Analysis & Context-Awareness  
+- **Mimic** - Dynamic Persona & Adaptive Agent
+- **Vault** - Persona-Aware Secure Memory Store
+- **Core** - Communication Switch & Context Moderator
+- **Synapse** - Secure External Gateway & Protocol Boundary
+- **Sentry** - Security, Compliance & Oversight Persona
+
+## Current Implementation
+
+This scaffold implements:
+- Cross-platform background process (Windows 10+ compatible)
+- Platinum-standard logging with timestamps
+- Ethical safety rails compliance
+- Silent startup with audit trail
+- Local-first architecture (no external dependencies)
+
+## Quick Start
+
+### Prerequisites
+- Python 3.8 or higher
+- Windows 10+ (primary target), macOS, or Linux
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd Hearthlink
+```
+
+2. Run the container:
+```bash
+python src/main.py
+```
+
+### Expected Output
+
+The container will start silently and log to:
+- **Windows**: `%LOCALAPPDATA%\Hearthlink\logs\hearthlink.log`
+- **Unix-like**: `~/.hearthlink/logs/hearthlink.log`
+
+**Log Rotation**: Files rotate at 10MB, retaining up to 5 backup files.
+
+Sample structured JSON log output:
+```json
+{"timestamp": "2025-01-27T10:30:15.123456", "level": "INFO", "logger": "Hearthlink", "message": "Hearthlink container started", "module": "main", "function": "log_startup", "line": 123, "event_type": "container_startup", "platform": {"system": "Windows", "release": "10", "version": "10.0.19045", "machine": "AMD64", "processor": "Intel64 Family 6"}, "python": {"version": "3.11.0", "implementation": "CPython", "compiler": "MSC v.1935 64 bit (AMD64)"}, "log_directory": "C:\\Users\\username\\AppData\\Local\\Hearthlink\\logs", "log_config": {"max_size_mb": 10, "backup_count": 5, "format": "structured_json"}}
+{"timestamp": "2025-01-27T10:30:15.124567", "level": "INFO", "logger": "Hearthlink", "message": "Initializing ethical safety rails", "module": "main", "function": "_setup_safety_rails", "line": 234, "event_type": "safety_rails_initialization", "rails": ["dependency_mitigation", "human_origin_clause", "audit_trail", "ethical_boundaries"]}
+{"timestamp": "2025-01-27T10:30:15.125678", "level": "INFO", "logger": "Hearthlink", "message": "Hearthlink container started successfully", "module": "main", "function": "start", "line": 345, "event_type": "container_start", "start_time": "2025-01-27T10:30:15.125678"}
+```
+
+### Stopping the Container
+
+Press `Ctrl+C` to stop the container gracefully.
+
+### Testing
+
+Run the logging test suite to verify functionality:
+
+```bash
+python tests/test_logging.py
+```
+
+This will test:
+- Structured JSON logging format
+- Log rotation functionality
+- Error handling and fallback mechanisms
+- Container integration
+- JSON format validation
+
+## Development
+
+### Project Structure
+```
+Hearthlink/
+├── src/
+│   └── main.py              # Main container entry point
+├── docs/                    # System documentation
+├── requirements.txt         # Python dependencies
+└── README.md               # This file
+```
+
+### Key Features
+
+1. **Cross-Platform Compatibility**
+   - Windows: Uses `%LOCALAPPDATA%\Hearthlink\logs`
+   - Unix-like: Uses `~/.hearthlink/logs`
+   - Automatic directory creation
+
+2. **Platinum-Standard Structured JSON Logging**
+   - Structured JSON format with explicit timestamps and log levels
+   - 10MB log rotation with 5 backup files
+   - Platform and architecture detection
+   - UTF-8 encoding support
+   - Exception traceback capture
+   - Audit trail compliance
+
+3. **Ethical Safety Rails**
+   - Dependency mitigation logging
+   - Human origin clause preparation
+   - Audit trail initialization
+   - Crisis handling readiness
+
+4. **Silent Background Operation**
+   - Minimal resource usage
+   - Graceful shutdown handling
+   - Error recovery and logging
+
+## Compliance
+
+This implementation follows:
+- **PLATINUM_BLOCKERS.md**: Ethical safety rails and dependency mitigation
+- **System Documentation**: Architecture constraints and requirements
+- **Zero-Trust Principles**: Local-first, no external dependencies
+- **User Sovereignty**: User always has final authority
+
+## Next Steps
+
+This scaffold provides the foundation for implementing:
+1. Vault (secure memory store)
+2. Core (agent orchestration)
+3. Individual persona modules (Alden, Alice, Mimic)
+4. Synapse (external gateway)
+5. Sentry (security and audit)
+
+## License
+
+[License information to be added]
+
+## Contributing
+
+[Contribution guidelines to be added]
+
+# Hearthlink
+
+> **Open, honest, transparent… Real.**
 
 ---
 

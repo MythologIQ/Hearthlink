@@ -1,0 +1,655 @@
+[
+  {
+    "id": "core-validate-chat",
+    "name": "Validate Chat",
+    "description": "Default, non-removable rule: All chat content must be validated for hallucinations, ambiguity, and drift.",
+    "pattern": "*",
+    "patternType": "default",
+    "purpose": "validate_chat",
+    "severity": "critical",
+    "enabled": true,
+    "createdAt": "2025-07-07T04:26:10.442Z",
+    "updatedAt": "2025-07-07T04:26:10.442Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    },
+    "response": "validate",
+    "createdBy": "system"
+  },
+  {
+    "id": "core-workspace-safety",
+    "name": "Workspace Safety",
+    "description": "Non-removable: Block all destructive commands unless a full workspace backup is verified and directory is confirmed.",
+    "pattern": "delete|remove|rm|del",
+    "patternType": "command",
+    "purpose": "safety",
+    "severity": "critical",
+    "enabled": true,
+    "createdAt": "2025-07-07T04:26:10.443Z",
+    "updatedAt": "2025-07-07T04:26:10.443Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    },
+    "response": "block",
+    "createdBy": "system"
+  },
+  {
+    "name": "Filesystem Hallucination Detection",
+    "pattern": "\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "id": "rule_1751862370447_qkd0epdsp",
+    "createdAt": "2025-07-07T04:26:10.447Z",
+    "updatedAt": "2025-07-07T04:26:10.447Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1751862370451_nwk80rbsg",
+    "name": "Proactive File Existence Check",
+    "pattern": "\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "message": "Potential hallucination: File existence claim detected. Verify file actually exists.",
+    "createdAt": "2025-07-07T04:26:10.451Z",
+    "updatedAt": "2025-07-07T04:26:10.451Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1751862370453_3xoxtn3bl",
+    "name": "File Content Claim Validation",
+    "pattern": "\\b(?:content|text|data)\\s+(?:in|of|from)\\s+(?:file|document)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "message": "Potential hallucination: File content claim detected. Verify content actually exists in file.",
+    "createdAt": "2025-07-07T04:26:10.453Z",
+    "updatedAt": "2025-07-07T04:26:10.453Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1751862370456_p19ymdty6",
+    "name": "File Modification Time Claim",
+    "pattern": "\\b(?:modified|updated|changed)\\s+(?:on|at|when)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "message": "Potential hallucination: File modification time claim detected. Verify modification timestamp.",
+    "createdAt": "2025-07-07T04:26:10.456Z",
+    "updatedAt": "2025-07-07T04:26:10.456Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1751862370459_2ft2p0xew",
+    "name": "Directory Structure Claim",
+    "pattern": "\\b(?:directory|folder)\\s+(?:structure|layout|organization)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "message": "Potential hallucination: Directory structure claim detected. Verify directory structure.",
+    "createdAt": "2025-07-07T04:26:10.459Z",
+    "updatedAt": "2025-07-07T04:26:10.459Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1751862370464_n74iqdmm4",
+    "name": "File Size Claim",
+    "pattern": "\\b(?:file|document)\\s+(?:size|length|bytes)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "message": "Potential hallucination: File size claim detected. Verify actual file size.",
+    "createdAt": "2025-07-07T04:26:10.465Z",
+    "updatedAt": "2025-07-07T04:26:10.465Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Minimal Hallucination Detection",
+    "pattern": "\\b(?:I\\s+can\\s+see|there\\s+is|I\\s+found|I\\s+located|the\\s+file\\s+contains|I\\s+can\\s+see\\s+in\\s+the\\s+file)\\b",
+    "patternType": "regex",
+    "purpose": "minimal_validation",
+    "severity": "warning",
+    "message": "Potential hallucination: AI making claims about file content. Verify these claims.",
+    "enabled": true,
+    "id": "rule_1751862370469_juwsg6sxc",
+    "createdAt": "2025-07-07T04:26:10.469Z",
+    "updatedAt": "2025-07-07T04:26:10.469Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Version Consistency Check",
+    "pattern": "\\b(?:version|v\\d+\\.\\d+\\.\\d+|semver)\\b",
+    "patternType": "regex",
+    "purpose": "version_consistency",
+    "severity": "warning",
+    "enabled": true,
+    "response": "Version consistency check triggered. This may be a temporary mismatch during updates.",
+    "alerting": {
+      "whenToAlert": "delayed",
+      "delaySeconds": 30,
+      "howToAlert": "notification",
+      "alertFrequency": "throttled",
+      "throttleMinutes": 5,
+      "suppressAfterTriggers": 10,
+      "suppressDurationMinutes": 60
+    },
+    "id": "rule_1751862370473_yqdj317ts",
+    "createdAt": "2025-07-07T04:26:10.473Z",
+    "updatedAt": "2025-07-07T04:26:10.473Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Implementation Verification",
+    "pattern": "\\b(?:I\\s+implemented|I\\s+created|I\\s+built|I\\s+developed)\\b",
+    "patternType": "regex",
+    "purpose": "implementation_verification",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1751862370475_z2z0faqa5",
+    "createdAt": "2025-07-07T04:26:10.475Z",
+    "updatedAt": "2025-07-07T04:26:10.475Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Task Completion Claim",
+    "pattern": "\\b(?:completed|finished|done|implemented|resolved)\\b",
+    "patternType": "regex",
+    "purpose": "task_completion",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1751862370478_onf2w2s4d",
+    "createdAt": "2025-07-07T04:26:10.478Z",
+    "updatedAt": "2025-07-07T04:26:10.478Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Audit Results Claim",
+    "pattern": "\\b(?:audit|review|analysis|assessment)\\s+(?:shows|indicates|reveals)\\b",
+    "patternType": "regex",
+    "purpose": "audit_results",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1751862370481_5kbpb5afq",
+    "createdAt": "2025-07-07T04:26:10.481Z",
+    "updatedAt": "2025-07-07T04:26:10.481Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Compilation Status Claim",
+    "pattern": "\\b(?:compiles|builds|runs|executes)\\s+(?:successfully|without\\s+errors)\\b",
+    "patternType": "regex",
+    "purpose": "compilation_status",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1751862370483_065zirhr2",
+    "createdAt": "2025-07-07T04:26:10.483Z",
+    "updatedAt": "2025-07-07T04:26:10.483Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Test Results Claim",
+    "pattern": "\\b(?:tests\\s+pass|test\\s+results|coverage|tested)\\b",
+    "patternType": "regex",
+    "purpose": "test_results",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1751862370486_i20rhg83w",
+    "createdAt": "2025-07-07T04:26:10.486Z",
+    "updatedAt": "2025-07-07T04:26:10.486Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Hallucination Admission",
+    "pattern": "\\b(?:I\\s+don\\s*'t\\s+know|I\\s+can\\s*'t\\s+see|I\\s+don\\s*'t\\s+have\\s+access)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_admission",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370490_xwnicmu5m",
+    "createdAt": "2025-07-07T04:26:10.490Z",
+    "updatedAt": "2025-07-07T04:26:10.490Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Vague Offer Detection",
+    "pattern": "\\b(?:I\\s+can\\s+help|I\\s+can\\s+assist|I\\s+can\\s+guide)\\b",
+    "patternType": "regex",
+    "purpose": "vague_offers",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370492_bsu60w2kt",
+    "createdAt": "2025-07-07T04:26:10.492Z",
+    "updatedAt": "2025-07-07T04:26:10.492Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Absolute Statement Detection",
+    "pattern": "\\b(?:always|never|every|all|none|impossible|guaranteed)\\b",
+    "patternType": "regex",
+    "purpose": "absolute_statements",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1751862370494_20uu14hs4",
+    "createdAt": "2025-07-07T04:26:10.494Z",
+    "updatedAt": "2025-07-07T04:26:10.494Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Performance Claim Detection",
+    "pattern": "\\b(?:fast|slow|efficient|optimized|performance|speed)\\b",
+    "patternType": "regex",
+    "purpose": "performance_claims",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1751862370496_h3bo9jkxx",
+    "createdAt": "2025-07-07T04:26:10.496Z",
+    "updatedAt": "2025-07-07T04:26:10.496Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "No Repetitive Confirmation or Stalling",
+    "pattern": "(let me know if you want to review|otherwise, I will proceed as planned|waiting for confirmation|if you have any new requests|just let me know).*?[.!?]",
+    "patternType": "regex",
+    "purpose": "workflow",
+    "severity": "warning",
+    "enabled": true,
+    "message": "Detected repetitive confirmation or stalling. Proceed with the work unless explicitly told to wait.",
+    "id": "rule_1751862370499_44z48tfal",
+    "createdAt": "2025-07-07T04:26:10.499Z",
+    "updatedAt": "2025-07-07T04:26:10.499Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Full Verification Process Enforcement",
+    "pattern": "\\b(?:compile\\s+and\\s+package|package\\s+for\\s+review|build\\s+package|generate\\s+package|create\\s+package|npm\\s+run\\s+package)\\b",
+    "patternType": "regex",
+    "purpose": "full_verification_enforcement",
+    "severity": "error",
+    "enabled": true,
+    "message": "🚨 CRITICAL: Package generation detected without full verification process!",
+    "response": "block",
+    "description": "Enforces complete verification pipeline before any package generation. No exceptions allowed.",
+    "scope": {
+      "fileTypes": [
+        "*"
+      ],
+      "projectTypes": [
+        "*"
+      ],
+      "userRoles": [
+        "*"
+      ]
+    },
+    "override": {
+      "allowed": false,
+      "requiresJustification": true,
+      "escalationPath": "Use publish.bat or publish.ps1 for full verification pipeline"
+    },
+    "alerting": {
+      "whenToAlert": "immediate",
+      "howToAlert": "all",
+      "alertFrequency": "always",
+      "escalationDelay": 30,
+      "escalationLevels": [
+        {
+          "level": 1,
+          "delayMinutes": 1,
+          "alertMethod": "notification"
+        },
+        {
+          "level": 2,
+          "delayMinutes": 5,
+          "alertMethod": "toast"
+        },
+        {
+          "level": 3,
+          "delayMinutes": 10,
+          "alertMethod": "statusbar"
+        }
+      ]
+    },
+    "id": "rule_1751862370502_wg34izofj",
+    "createdAt": "2025-07-07T04:26:10.502Z",
+    "updatedAt": "2025-07-07T04:26:10.502Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Incomplete Build Detection",
+    "pattern": "\\b(?:npm\\s+run\\s+compile.*npm\\s+run\\s+package|compile.*package|just\\s+compile|only\\s+package)\\b",
+    "patternType": "regex",
+    "purpose": "incomplete_build_detection",
+    "severity": "warning",
+    "enabled": true,
+    "message": "⚠️ WARNING: Incomplete build process detected! Missing verification steps.",
+    "response": "warn",
+    "description": "Detects when only compilation and packaging are mentioned without full verification pipeline.",
+    "scope": {
+      "fileTypes": [
+        "*"
+      ],
+      "projectTypes": [
+        "*"
+      ],
+      "userRoles": [
+        "*"
+      ]
+    },
+    "override": {
+      "allowed": false,
+      "requiresJustification": true,
+      "escalationPath": "Use publish.bat or publish.ps1 for complete verification"
+    },
+    "alerting": {
+      "whenToAlert": "immediate",
+      "howToAlert": "notification",
+      "alertFrequency": "always"
+    },
+    "id": "rule_1751862370504_9emv4xwzl",
+    "createdAt": "2025-07-07T04:26:10.504Z",
+    "updatedAt": "2025-07-07T04:26:10.504Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Verification Pipeline Reminder",
+    "pattern": "\\b(?:verification|testing|linting|quality\\s+check|compliance)\\b",
+    "patternType": "regex",
+    "purpose": "verification_pipeline_reminder",
+    "severity": "info",
+    "enabled": true,
+    "message": "💡 REMINDER: Ensure full verification pipeline includes: Compilation → Linting → Icon Check → Tests → Spec Gate → Packaging",
+    "response": "suggest",
+    "description": "Reminds about complete verification steps when verification is mentioned.",
+    "scope": {
+      "fileTypes": [
+        "*"
+      ],
+      "projectTypes": [
+        "*"
+      ],
+      "userRoles": [
+        "*"
+      ]
+    },
+    "override": {
+      "allowed": true,
+      "requiresJustification": false
+    },
+    "alerting": {
+      "whenToAlert": "delayed",
+      "delaySeconds": 10,
+      "howToAlert": "log",
+      "alertFrequency": "throttled",
+      "throttleMinutes": 5
+    },
+    "id": "rule_1751862370507_wxpd1et24",
+    "createdAt": "2025-07-07T04:26:10.507Z",
+    "updatedAt": "2025-07-07T04:26:10.507Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Auto Version Management",
+    "pattern": "\\b(?:version|release|update|bump)\\b",
+    "patternType": "regex",
+    "purpose": "auto_version_management",
+    "severity": "info",
+    "enabled": true,
+    "response": "Version management activity detected. This is normal during updates.",
+    "alerting": {
+      "whenToAlert": "delayed",
+      "delaySeconds": 15,
+      "howToAlert": "log",
+      "alertFrequency": "throttled",
+      "throttleMinutes": 3,
+      "suppressAfterTriggers": 5,
+      "suppressDurationMinutes": 30
+    },
+    "id": "rule_1751862370509_emczrb38t",
+    "createdAt": "2025-07-07T04:26:10.509Z",
+    "updatedAt": "2025-07-07T04:26:10.509Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "AI Task Execution",
+    "pattern": "\\b(?:I\\s+will|I\\s+can|I\\s+should|let\\s+me)\\b",
+    "patternType": "regex",
+    "purpose": "ai_task_execution",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370511_zhemwrmx0",
+    "createdAt": "2025-07-07T04:26:10.511Z",
+    "updatedAt": "2025-07-07T04:26:10.511Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "GitHub Workflow Management",
+    "pattern": "\\b(?:branch|merge|commit|push|pull|issue|pr)\\b",
+    "patternType": "regex",
+    "purpose": "github_workflow_management",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370514_yzrp49g2s",
+    "createdAt": "2025-07-07T04:26:10.514Z",
+    "updatedAt": "2025-07-07T04:26:10.514Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Product Discovery Protocol",
+    "pattern": "\\b(?:plan|strategy|roadmap|milestone|goal)\\b",
+    "patternType": "regex",
+    "purpose": "product_discovery_protocol",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370516_zzktzauc7",
+    "createdAt": "2025-07-07T04:26:10.516Z",
+    "updatedAt": "2025-07-07T04:26:10.516Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Beginner Guidance",
+    "pattern": "\\b(?:how\\s+to|what\\s+is|explain|guide|tutorial)\\b",
+    "patternType": "regex",
+    "purpose": "beginner_guidance",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370519_i6so1f250",
+    "createdAt": "2025-07-07T04:26:10.519Z",
+    "updatedAt": "2025-07-07T04:26:10.519Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Error Recovery Assistance",
+    "pattern": "\\b(?:error|exception|fail|crash|bug)\\b",
+    "patternType": "regex",
+    "purpose": "error_recovery_assistance",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1751862370522_xamz74n8c",
+    "createdAt": "2025-07-07T04:26:10.522Z",
+    "updatedAt": "2025-07-07T04:26:10.522Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Best Practice Suggestions",
+    "pattern": "\\b(?:best\\s+practice|recommendation|suggestion|tip)\\b",
+    "patternType": "regex",
+    "purpose": "best_practice_suggestions",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370524_8uc56rjgz",
+    "createdAt": "2025-07-07T04:26:10.524Z",
+    "updatedAt": "2025-07-07T04:26:10.524Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Dependency Management",
+    "pattern": "\\b(?:dependency|package|import|require|install)\\b",
+    "patternType": "regex",
+    "purpose": "dependency_management",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370527_h1g6twbcg",
+    "createdAt": "2025-07-07T04:26:10.527Z",
+    "updatedAt": "2025-07-07T04:26:10.527Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Testing Guidance",
+    "pattern": "\\b(?:test|spec|coverage|assert|mock)\\b",
+    "patternType": "regex",
+    "purpose": "testing_guidance",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370530_b01zj6nfm",
+    "createdAt": "2025-07-07T04:26:10.530Z",
+    "updatedAt": "2025-07-07T04:26:10.530Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Documentation Assistance",
+    "pattern": "\\b(?:document|comment|readme|api|guide)\\b",
+    "patternType": "regex",
+    "purpose": "documentation_assistance",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1751862370532_wsj6lb6nt",
+    "createdAt": "2025-07-07T04:26:10.532Z",
+    "updatedAt": "2025-07-07T04:26:10.532Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Prevent Premature Victory Declarations",
+    "description": "Ensure proper validation before claiming success or victory",
+    "pattern": "(?:successfully|victory|fixed|completed|done|working|resolved).*(?:without|before|claiming|declaring|saying).*(?:validation|testing|verifying|checking)|(?:perfect|excellent|great|awesome).*(?:all|everything|completely).*(?:fixed|working|resolved|done)|(?:✅|🎉|🚀|✨).*(?:success|victory|complete|done|fixed)",
+    "patternType": "regex",
+    "purpose": "quality",
+    "severity": "warning",
+    "enabled": true,
+    "message": "Avoid claiming success before proper validation. Always test and validate before declaring victory.",
+    "response": "warn",
+    "scope": {
+      "fileTypes": [
+        "*"
+      ],
+      "projectTypes": [
+        "*"
+      ],
+      "userRoles": [
+        "*"
+      ]
+    },
+    "override": {
+      "allowed": true,
+      "requiresJustification": true
+    },
+    "createdBy": "system",
+    "id": "rule_1751862370534_3rt9gwwoz",
+    "createdAt": "2025-07-07T04:26:10.534Z",
+    "updatedAt": "2025-07-07T04:26:10.534Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  }
+]

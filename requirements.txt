@@ -1,0 +1,21 @@
+# Hearthlink Global Container Dependencies
+# Minimal requirements for cross-platform background process
+
+# Core Python standard library modules used:
+# - os, sys, time, logging, platform, datetime, pathlib, typing
+# No external dependencies required for initial scaffold
+
+# Core dependencies for Alden persona and LLM integration
+requests>=2.31.0  # For HTTP requests to local LLM endpoints
+fastapi>=0.104.0  # For API endpoints
+uvicorn>=0.24.0   # For ASGI server
+pydantic>=2.5.0   # For data validation
+
+# Synapse plugin gateway dependencies
+cryptography>=41.0.0  # For manifest signing and encryption
+websockets>=12.0      # For real-time communication (Core)
+jinja2>=3.1.0         # For UI templates
+aiofiles>=23.0        # For async file operations
+
+# Future dependencies (to be added as modules are implemented):
+# - sqlite3  # For local database (Vault)
