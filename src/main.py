@@ -615,7 +615,14 @@ class HearthlinkContainer:
             if self.start_time:
                 uptime = (datetime.now() - self.start_time).total_seconds()
             
+            # Determine status based on running state
+            if self.running:
+                status = "running"
+            else:
+                status = "stopped"
+            
             return {
+                "status": status,
                 "running": self.running,
                 "platform": platform.system(),
                 "log_directory": str(self.logger.log_dir.absolute()),
@@ -630,7 +637,7 @@ class HearthlinkContainer:
             }
         except Exception as e:
             self.logger.log_error(e, "status_retrieval")
-            return {"error": str(e)}
+            return {"status": "error", "error": str(e)}
     
     def simulate_error(self, error_type: str = "test") -> None:
         """

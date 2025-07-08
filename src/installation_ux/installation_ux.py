@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from .persona_introducer import PersonaIntroducer
 from .accessibility_manager import AccessibilityManager
 from .av_compatibility_checker import AVCompatibilityChecker
+from .audio_system_checker import AudioSystemChecker
 from .config_wizard import FirstRunConfigWizard
 
 @dataclass
@@ -63,6 +64,7 @@ class InstallationUX:
         self.persona_introducer = PersonaIntroducer(self.logger)
         self.accessibility_manager = AccessibilityManager(self.logger)
         self.av_checker = AVCompatibilityChecker(self.logger)
+        self.audio_checker = AudioSystemChecker(self.logger)
         self.config_wizard = FirstRunConfigWizard(self.logger)
         
         # Installation state
@@ -95,6 +97,13 @@ class InstallationUX:
                     success=False, 
                     errors=[f"System compatibility check failed: {compatibility_result.get('reason', 'Unknown')}"]
                 )
+            
+            # Step 2.5: Audio system check (new step)
+            self._log("step_2_5_started", "system", None, "installation", {"step": "audio_check"})
+            audio_result = self._check_audio_system()
+            if not audio_result.get("overall_success", False):
+                self._log("audio_warning", "system", None, "installation", 
+                         {"warning": "Audio system check failed or incomplete"})
             
             # Step 3: AV compatibility check and resolution
             self._log("step_3_started", "system", None, "installation", {"step": "av_check"})
@@ -241,35 +250,91 @@ class InstallationUX:
         return missing
     
     def _handle_av_compatibility(self) -> Dict[str, Any]:
-        """Handle antivirus compatibility check and resolution."""
+        """Handle antivirus compatibility checking and resolution."""
         try:
-            # Check for AV software
-            av_detections = self.av_checker.check_all_av_software()
+            print("\n🛡️  Antivirus Compatibility Check")
+            print("=" * 40)
             
-            if not av_detections:
+            # Check for AV software
+            detected_av = self.av_checker.check_all_av_software()
+            
+            if not detected_av:
+                print("✅ No antivirus software detected - proceeding normally.")
                 return {"resolved": True, "warnings": []}
             
-            warnings = []
-            for detection in av_detections:
-                print(f"\n⚠️  Detected {detection.name} antivirus software.")
-                print("To ensure Hearthlink works smoothly, you may need to add it to your antivirus exclusions.")
-                
-                instructions = self.av_checker.generate_exclusion_instructions(detection.name)
-                print("\nExclusion instructions:")
-                for instruction in instructions:
-                    print(f"  {instruction}")
-                
-                print("\nWould you like to continue anyway? (y/n): ", end="")
-                if not input().lower().startswith('y'):
-                    return {"resolved": False, "warnings": ["User cancelled due to AV concerns"]}
-                
-                warnings.append(f"AV software {detection.name} detected - exclusions may be needed")
+            print(f"⚠️  Detected {len(detected_av)} antivirus software:")
+            for av in detected_av:
+                print(f"   • {av.name}")
             
-            return {"resolved": True, "warnings": warnings}
+            # Provide exclusion instructions
+            print("\n📋 To ensure smooth operation, please add Hearthlink to your antivirus exclusions:")
+            
+            for av in detected_av:
+                print(f"\n{av.name} Instructions:")
+                instructions = self.av_checker.generate_exclusion_instructions(av.name)
+                for instruction in instructions:
+                    print(f"   {instruction}")
+            
+            print("\nPress Enter when you've completed the exclusions, or 's' to skip: ", end="")
+            user_input = input().lower().strip()
+            
+            if user_input == 's':
+                return {"resolved": False, "warnings": ["AV exclusions skipped - may cause issues"]}
+            
+            return {"resolved": True, "warnings": []}
             
         except Exception as e:
-            self._log("av_check_failed", "system", None, "installation", {}, "error", e)
+            self._log("av_compatibility_failed", "system", None, "installation", {}, "error", e)
             return {"resolved": False, "warnings": [f"AV check failed: {str(e)}"]}
+    
+    def _check_audio_system(self) -> Dict[str, Any]:
+        """Check audio system compatibility and configuration."""
+        try:
+            print("\n🎵 Audio System Check")
+            print("=" * 30)
+            print("Let's make sure your audio is working properly for voice interactions.")
+            
+            # Run comprehensive audio check
+            audio_results = self.audio_checker.run_comprehensive_audio_check()
+            
+            # Display results
+            print(f"\n📊 Audio Check Results:")
+            
+            # Microphone results
+            mic_result = audio_results["microphone"]
+            if mic_result.success:
+                print(f"✅ Microphone: Working ({mic_result.details.get('quality_score', 0):.1%} quality)")
+            else:
+                print(f"❌ Microphone: {mic_result.error_message or 'Failed'}")
+            
+            # Speaker results
+            speaker_result = audio_results["speaker"]
+            if speaker_result.success:
+                print(f"✅ Speakers: Working")
+            else:
+                print(f"❌ Speakers: {speaker_result.error_message or 'Failed'}")
+            
+            # Voice synthesis results
+            tts_result = audio_results["voice_synthesis"]
+            if tts_result.success:
+                print(f"✅ Voice Synthesis: Working ({', '.join(tts_result.details.get('available_methods', []))})")
+            else:
+                print(f"⚠️  Voice Synthesis: {tts_result.error_message or 'Limited'}")
+            
+            # Display recommendations
+            if audio_results.get("recommendations"):
+                print(f"\n💡 Recommendations:")
+                for rec in audio_results["recommendations"]:
+                    print(f"   • {rec}")
+            
+            # Store audio configuration
+            self.user_preferences["audio_config"] = audio_results
+            
+            return audio_results
+            
+        except Exception as e:
+            self._log("audio_check_failed", "system", None, "installation", {}, "error", e)
+            return {"overall_success": False, "error": str(e)}
     
     def _introduce_personas(self) -> bool:
         """Introduce all core personas to the user."""
@@ -379,4 +444,53 @@ class InstallationUX:
         self.logger.info(f"Installation UX: {action} - {result}")
         
         if error:
-            self.logger.error(f"Installation UX error: {str(error)}") 
+            self.logger.error(f"Installation UX error: {str(error)}")
+    
+    def _check_audio_system(self) -> Dict[str, Any]:
+        """Check audio system compatibility and configuration."""
+        try:
+            print("\n🎵 Audio System Check")
+            print("=" * 30)
+            print("Let's make sure your audio is working properly for voice interactions.")
+            
+            # Run comprehensive audio check
+            audio_results = self.audio_checker.run_comprehensive_audio_check()
+            
+            # Display results
+            print(f"\n📊 Audio Check Results:")
+            
+            # Microphone results
+            mic_result = audio_results["microphone"]
+            if mic_result.success:
+                print(f"✅ Microphone: Working ({mic_result.details.get('quality_score', 0):.1%} quality)")
+            else:
+                print(f"❌ Microphone: {mic_result.error_message or 'Failed'}")
+            
+            # Speaker results
+            speaker_result = audio_results["speaker"]
+            if speaker_result.success:
+                print(f"✅ Speakers: Working")
+            else:
+                print(f"❌ Speakers: {speaker_result.error_message or 'Failed'}")
+            
+            # Voice synthesis results
+            tts_result = audio_results["voice_synthesis"]
+            if tts_result.success:
+                print(f"✅ Voice Synthesis: Working ({', '.join(tts_result.details.get('available_methods', []))})")
+            else:
+                print(f"⚠️  Voice Synthesis: {tts_result.error_message or 'Limited'}")
+            
+            # Display recommendations
+            if audio_results.get("recommendations"):
+                print(f"\n💡 Recommendations:")
+                for rec in audio_results["recommendations"]:
+                    print(f"   • {rec}")
+            
+            # Store audio configuration
+            self.user_preferences["audio_config"] = audio_results
+            
+            return audio_results
+            
+        except Exception as e:
+            self._log("audio_check_failed", "system", None, "installation", {}, "error", e)
+            return {"overall_success": False, "error": str(e)} 

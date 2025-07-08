@@ -297,41 +297,28 @@ class SIEMMonitoring:
     def _setup_detection_rules(self):
         """Setup threat detection rules."""
         self.detection_rules = {
-            "brute_force_auth": self._detect_brute_force,
-            "privilege_escalation": self._detect_privilege_escalation,
-            "data_access_anomaly": self._detect_data_access_anomaly,
-            "compliance_violation": self._detect_compliance_violation
+            "multiple_failed_auth": self._detect_brute_force,
+            "role_assignment_change": self._detect_privilege_escalation,
+            "unusual_data_access": self._detect_data_access_anomaly,
+            "policy_violation": self._detect_compliance_violation
         }
     
     def collect_event(self, source: str, category: EventCategory, severity: EventSeverity,
                      user_id: Optional[str] = None, session_id: Optional[str] = None,
                      resource: Optional[str] = None, action: Optional[str] = None,
                      details: Optional[Dict[str, Any]] = None) -> str:
-        """
-        Collect a security event.
-        
-        Args:
-            source: Event source
-            category: Event category
-            severity: Event severity
-            user_id: Optional user ID
-            session_id: Optional session ID
-            resource: Optional resource
-            action: Optional action
-            details: Optional event details
-            
-        Returns:
-            Event ID of the collected event
-            
-        Raises:
-            EventCollectionError: If event collection fails
-        """
+        """Collect a security event."""
         try:
-            # Create security event
             event_id = str(uuid.uuid4())
+            timestamp = datetime.now().isoformat()
+            
+            # Extract action from details if not provided directly
+            if not action and details:
+                action = details.get("action")
+            
             event = SecurityEvent(
                 event_id=event_id,
-                timestamp=datetime.now().isoformat(),
+                timestamp=timestamp,
                 source=source,
                 category=category,
                 severity=severity,
@@ -342,37 +329,31 @@ class SIEMMonitoring:
                 details=details or {}
             )
             
-            # Store event
             self.events.append(event)
             
-            # Index event for quick lookup
-            self.event_index[category.value].append(len(self.events) - 1)
-            if user_id:
-                self.event_index[f"user:{user_id}"].append(len(self.events) - 1)
-            if session_id:
-                self.event_index[f"session:{session_id}"].append(len(self.events) - 1)
+            # Check for threats
+            self._check_threats(event)
             
-            # Trigger threat detection
-            self._trigger_threat_detection(event)
+            # Create incident for high/critical severity events
+            if severity in [EventSeverity.HIGH, EventSeverity.CRITICAL]:
+                self._create_incident_for_event(event)
             
-            # Auto-alert for high severity events
-            if severity in [EventSeverity.HIGH, EventSeverity.CRITICAL] and self.config["high_severity_auto_alert"]:
-                self._create_high_severity_alert(event)
-            
-            self._log("security_event_collected", user_id, session_id, "event_collection", {
+            self._log("event_collected", source, user_id, "info", {
                 "event_id": event_id,
                 "category": category.value,
-                "severity": severity.value,
-                "source": source
+                "severity": severity.value
             })
             
             return event_id
             
         except Exception as e:
-            raise EventCollectionError(f"Failed to collect security event: {str(e)}") from e
+            self._log("event_collection_error", source, user_id, "error", {
+                "error": str(e)
+            })
+            raise SIEMError(f"Failed to collect event: {e}")
     
-    def _trigger_threat_detection(self, event: SecurityEvent):
-        """Trigger threat detection for a security event."""
+    def _check_threats(self, event: SecurityEvent):
+        """Check for threats based on the collected event."""
         try:
             for indicator_id, indicator in self.threat_indicators.items():
                 if not indicator.is_active:
@@ -644,6 +625,73 @@ class SIEMMonitoring:
                 "alert_id": alert.alert_id
             })
     
+    def _create_incident_for_event(self, event: SecurityEvent):
+        """Create an incident for a high-severity event."""
+        try:
+            incident_id = str(uuid.uuid4())
+            
+            # Determine incident type based on event category
+            if event.category == EventCategory.COMPLIANCE:
+                incident_type = "compliance_violation"
+                title = f"Compliance Violation: {event.action or 'Unknown violation'}"
+            elif event.category == EventCategory.AUTHENTICATION:
+                incident_type = "unauthorized_access"
+                title = f"Unauthorized Access Attempt: {event.action or 'Unknown action'}"
+            elif event.category == EventCategory.DATA_ACCESS:
+                incident_type = "data_breach"
+                title = f"Data Access Violation: {event.action or 'Unknown access'}"
+            else:
+                incident_type = "security_incident"
+                title = f"Security Incident: {event.category.value}"
+            
+            # Create a placeholder alert for the incident
+            alert_id = str(uuid.uuid4())
+            alert = SecurityAlert(
+                alert_id=alert_id,
+                threat_type=ThreatType.COMPLIANCE_VIOLATION if event.category == EventCategory.COMPLIANCE else ThreatType.SUSPICIOUS_ACCESS,
+                severity=event.severity,
+                description=f"High severity event detected: {event.action or 'Unknown action'}",
+                events=[event.event_id],
+                timestamp=event.timestamp,
+                status="new"
+            )
+            
+            # Create the incident
+            incident = SecurityIncident(
+                incident_id=incident_id,
+                alert_id=alert_id,
+                title=title,
+                description=f"Incident created for event {event.event_id}",
+                severity=event.severity,
+                status=IncidentStatus.OPEN,
+                created_at=event.timestamp,
+                updated_at=event.timestamp,
+                assigned_to=None,
+                events=[event.event_id],
+                actions_taken=[],
+                metadata={
+                    "source_event_id": event.event_id,
+                    "incident_type": incident_type,
+                    "auto_created": True
+                }
+            )
+            
+            self.incidents[incident_id] = incident
+            self.alerts[alert_id] = alert
+            
+            self._log("incident_created", event.source, event.user_id, "warning", {
+                "incident_id": incident_id,
+                "event_id": event.event_id,
+                "type": incident_type,
+                "severity": event.severity.value
+            })
+            
+        except Exception as e:
+            self._log("incident_creation_error", event.source, event.user_id, "error", {
+                "error": str(e),
+                "event_id": event.event_id
+            })
+    
     def update_incident_status(self, incident_id: str, status: IncidentStatus,
                               assigned_to: Optional[str] = None, action_taken: Optional[str] = None) -> bool:
         """
@@ -806,6 +854,21 @@ class SIEMMonitoring:
             if incident.status in [IncidentStatus.OPEN, IncidentStatus.INVESTIGATING]
         ]
     
+    def get_session_events(self, session_id: str, user_id: str) -> List[SecurityEvent]:
+        """Get events for a specific session and user."""
+        try:
+            session_events = []
+            for event in self.events:
+                if (event.session_id == session_id and 
+                    event.user_id == user_id):
+                    session_events.append(event)
+            return session_events
+        except Exception as e:
+            self._log("session_events_error", user_id, session_id, "error", {
+                "error": str(e)
+            })
+            return []
+    
     def export_security_report(self, user_id: str, start_date: Optional[str] = None,
                               end_date: Optional[str] = None) -> Dict[str, Any]:
         """Export comprehensive security report."""
@@ -892,6 +955,34 @@ class SIEMMonitoring:
                 
         except Exception:
             pass  # Don't let logging errors break SIEM functionality
+
+    def get_recent_events(self, minutes: int = 60) -> List[SecurityEvent]:
+        """
+        Get recent events within the specified time window.
+        
+        Args:
+            minutes: Time window in minutes
+            
+        Returns:
+            List of recent security events
+        """
+        try:
+            time_window = timedelta(minutes=minutes)
+            cutoff_time = datetime.now() - time_window
+            
+            recent_events = [
+                event for event in self.events
+                if datetime.fromisoformat(event.timestamp) >= cutoff_time
+            ]
+            
+            return recent_events
+            
+        except Exception as e:
+            self._log("get_recent_events_error", "system", None, "error", {
+                "error": str(e),
+                "minutes": minutes
+            })
+            return []
 
 
 def create_siem_monitoring(logger: Optional[HearthlinkLogger] = None) -> SIEMMonitoring:

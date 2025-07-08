@@ -261,6 +261,16 @@ class RBACABACSecurity:
                 priority=100
             ),
             Policy(
+                policy_id="deny_other_user_data",
+                name="Deny Other User Data Access",
+                description="Deny access to data owned by other users",
+                effect=PolicyEffect.DENY,
+                resources=["data:*"],
+                actions=["read", "write"],
+                conditions={"resource_owner": "not_user_id"},
+                priority=75
+            ),
+            Policy(
                 policy_id="allow_user_own_data",
                 name="Allow Users Own Data Access",
                 description="Allow users to access their own data",
@@ -684,6 +694,26 @@ class RBACABACSecurity:
                     "policies": ["rbac_specific_permission"]
                 }
             
+            # Check for 'own' permissions (e.g., read:own, write:own)
+            own_permission = f"{action}:own"
+            if own_permission in user_permissions:
+                return {
+                    "effect": PolicyEffect.ALLOW,
+                    "reason": f"User has {action}:own permission - ownership will be checked by ABAC",
+                    "policies": ["rbac_own_permission"]
+                }
+            
+            # --- Support legacy and simple patterns ---
+            # Allow 'action:resource' and 'resource:action' to match
+            legacy_perm1 = f"{action}:{resource}"
+            legacy_perm2 = f"{resource}:{action}"
+            if legacy_perm1 in user_permissions or legacy_perm2 in user_permissions:
+                return {
+                    "effect": PolicyEffect.ALLOW,
+                    "reason": f"User has permission ({legacy_perm1} or {legacy_perm2})",
+                    "policies": ["rbac_legacy_permission"]
+                }
+            
             return {
                 "effect": PolicyEffect.DENY,
                 "reason": "User lacks required permissions",
@@ -707,11 +737,9 @@ class RBACABACSecurity:
                 key=lambda p: p.priority,
                 reverse=True
             )
-            
             for policy in sorted_policies:
                 if not policy.is_active:
                     continue
-                
                 # Check if policy applies to this resource and action
                 if self._policy_applies(policy, resource, action):
                     # Evaluate policy conditions
@@ -721,13 +749,11 @@ class RBACABACSecurity:
                             "reason": f"Policy '{policy.name}' applied",
                             "policies": [policy.policy_id]
                         }
-            
             return {
                 "effect": PolicyEffect.ALLOW,
                 "reason": "No ABAC policies applied",
                 "policies": []
             }
-            
         except Exception as e:
             return {
                 "effect": PolicyEffect.DENY,
@@ -756,6 +782,12 @@ class RBACABACSecurity:
     def _pattern_matches(self, pattern: str, value: str) -> bool:
         """Check if a value matches a pattern (supports wildcards)."""
         try:
+            # Handle special case where pattern ends with :* and value doesn't have a colon
+            # This allows patterns like 'data:*' to match 'data'
+            if pattern.endswith(':*') and ':' not in value:
+                base_pattern = pattern[:-2]  # Remove ':*'
+                return value == base_pattern
+            
             # Convert pattern to regex
             regex_pattern = pattern.replace("*", ".*")
             return bool(re.match(regex_pattern, value))
@@ -766,11 +798,10 @@ class RBACABACSecurity:
                                   context: Dict[str, Any]) -> bool:
         """Evaluate policy conditions."""
         try:
+            # If the policy has a time_hour condition but time_hour is not in context, do not apply this policy
+            if "time_hour" in policy.conditions and "time_hour" not in context:
+                return False
             for condition_key, condition_value in policy.conditions.items():
-                # Skip time-based conditions if no time context is provided
-                if condition_key == "time_hour" and "time_hour" not in context:
-                    continue
-                
                 evaluator = self.policy_evaluators.get(condition_key)
                 if evaluator:
                     if not evaluator(condition_value, user_id, context):
@@ -779,9 +810,7 @@ class RBACABACSecurity:
                     # Default condition evaluation
                     if not self._evaluate_default_condition(condition_key, condition_value, user_id, context):
                         return False
-            
             return True
-            
         except Exception as e:
             self._log("condition_evaluation_error", user_id, None, "error", {
                 "error": str(e),
@@ -817,6 +846,10 @@ class RBACABACSecurity:
                 # Check if user is the owner of the resource
                 resource_owner = context.get("resource_owner")
                 return resource_owner == user_id
+            elif condition_value == "not_user_id":
+                # Check if user is NOT the owner of the resource
+                resource_owner = context.get("resource_owner")
+                return resource_owner != user_id
             
             return False
             
@@ -836,27 +869,25 @@ class RBACABACSecurity:
             
             time_hour = context["time_hour"]
             
-            # Handle direct integer comparison (e.g., time_hour: 23)
+            # Direct integer comparison (e.g., time_hour: 23)
             if isinstance(condition_value, int):
                 return time_hour == condition_value
             
+            # Handle 'not_between' (deny access if time is between start and end)
             if isinstance(condition_value, dict) and "not_between" in condition_value:
                 start, end = condition_value["not_between"]
-                # Handle the case where start > end (e.g., 22 to 6 spans midnight)
                 if start > end:
-                    # Return True if time is NOT between start and end (spans midnight)
+                    # Spans midnight
                     return not (start <= time_hour or time_hour <= end)
                 else:
-                    # Return True if time is NOT between start and end
                     return not (start <= time_hour <= end)
+            
+            # Handle 'between' (allow access only if time is between start and end)
             elif isinstance(condition_value, dict) and "between" in condition_value:
                 start, end = condition_value["between"]
-                # Handle the case where start > end (e.g., 22 to 6 spans midnight)
                 if start > end:
-                    # Return True if time is between start and end (spans midnight)
                     return start <= time_hour or time_hour <= end
                 else:
-                    # Return True if time is between start and end
                     return start <= time_hour <= end
             
             return True

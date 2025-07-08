@@ -1,1 +1,2 @@
-{"timestamp": "2025-07-08T00:38:42.506096", "level": "INFO", "logger": "Hearthlink", "message": "Removed persona mimic-9ce0c5f6 from session test-session-001", "module": "mimic_integration", "function": "remove_persona_from_session", "line": 438}
+{"timestamp": "2025-07-08T12:31:09.592417", "level": "INFO", "logger": "Hearthlink", "message": "Security rbac_abac_security_initialized", "module": "rbac_abac_security", "function": "_log", "line": 1038}
+{"timestamp": "2025-07-08T12:31:10.615072", "level": "INFO", "logger": "Hearthlink", "message": "Monitoring advanced_monitoring_initialized", "module": "advanced_monitoring", "function": "_log", "line": 946}
