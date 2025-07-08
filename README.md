@@ -732,6 +732,170 @@ This implementation follows:
 - **User Sovereignty**: User always has final authority
 - **Enterprise Standards**: Security, monitoring, and collaboration requirements
 
+## Beta Testing Program
+
+Hearthlink is currently in **closed beta testing** with comprehensive feedback collection and quality assurance processes.
+
+### 🧪 Beta Testing Overview
+
+**Status:** 🔄 ACTIVE BETA  
+**Duration:** 8 weeks (July 8 - September 1, 2025)  
+**Focus:** User experience validation, cross-platform compatibility, enterprise feature testing
+
+### 📋 Beta Testing Objectives
+
+1. **User Experience Validation**: Test the "gift/unboxing" installation experience
+2. **Persona Interaction Testing**: Validate all seven AI companions work as designed
+3. **Cross-Platform Compatibility**: Test on Windows, macOS, and Linux
+4. **Enterprise Feature Validation**: Test multi-user collaboration and security features
+5. **Feedback Collection**: Validate the integrated feedback system
+
+### 🚀 Getting Started with Beta Testing
+
+#### Prerequisites
+- Python 3.8 or higher
+- Windows 10+, macOS 10.15+, or Linux (Ubuntu 18.04+)
+- 4GB RAM minimum, 8GB recommended
+- 2GB free disk space
+
+#### Installation Options
+
+**Option 1 - Interactive Installation (Recommended):**
+```bash
+python test_installation_ux.py
+```
+
+**Option 2 - Direct Installation:**
+```bash
+git clone <repository-url>
+cd Hearthlink
+python src/main.py
+```
+
+### 📚 Beta Testing Documentation
+
+#### Essential Guides
+- **[Beta Testing Onboarding Pack](./docs/BETA_TESTING_ONBOARDING_PACK.md)** - Complete beta testing guide with objectives, timeline, and success metrics
+- **[Beta Testing FAQ](./docs/BETA_TESTING_FAQ.md)** - Frequently asked questions and troubleshooting
+- **[Known Issues](./docs/BETA_TESTING_KNOWN_ISSUES.md)** - Current limitations, workarounds, and planned fixes
+- **[Audit Trail](./docs/BETA_TESTING_AUDIT_TRAIL.md)** - Complete tracking of decisions, changes, and feedback
+
+#### Testing Checklists
+- **Installation & Setup**: System compatibility, dependency installation, audio setup
+- **Persona Interaction**: All seven AI companions, voice synthesis, memory persistence
+- **Enterprise Features**: Multi-user collaboration, RBAC/ABAC security, SIEM monitoring
+- **Cross-Platform**: Windows, macOS, and Linux compatibility testing
+- **Feedback System**: In-app feedback, GitHub integration, analytics
+
+### 🐛 Known Issues & Workarounds
+
+#### Critical Issues
+- **Enterprise Features Permission System**: Permission granting logic may prevent session joining
+- **Time-Based Policy Evaluation**: Time-based policies may return incorrect results
+
+#### High Priority Issues
+- **Audio Synthesis Performance**: Slight delays on slower systems
+- **Memory Usage**: Large conversations may consume significant memory
+- **Plugin Compatibility**: Some external plugins require additional configuration
+
+For complete details, workarounds, and planned fixes, see **[Known Issues](./docs/BETA_TESTING_KNOWN_ISSUES.md)**.
+
+### 📊 Success Metrics
+
+**Target Metrics:**
+- Installation success rate >95%
+- Onboarding completion rate >90%
+- Persona interaction satisfaction >4.0/5.0
+- Cross-platform compatibility >98%
+- Feedback submission rate >80%
+
+### 📞 Feedback Channels
+
+#### Primary Methods
+1. **In-App Feedback System**: Integrated throughout the application
+2. **GitHub Issues**: Automatic issue creation with full context
+3. **Email Support**: beta-feedback@hearthlink.local
+
+#### Feedback Categories
+- **Bug Reports**: Critical, high, medium, and low priority issues
+- **Feature Requests**: Enhancements, new features, integrations
+- **General Feedback**: User experience, documentation, performance
+
+### 🔧 Troubleshooting
+
+#### Common Issues
+- **Installation Problems**: Check Python version, dependencies, disk space
+- **Audio Issues**: Verify system audio, device connections, permissions
+- **Performance Issues**: Monitor system resources, close unnecessary applications
+- **Security Issues**: Check file permissions, antivirus exclusions
+
+For detailed troubleshooting, see **[Beta Testing FAQ](./docs/BETA_TESTING_FAQ.md)**.
+
+### 📈 Beta Testing Timeline
+
+- **Phase 1 (Weeks 1-2)**: Initial testing and setup
+- **Phase 2 (Weeks 3-4)**: Feature testing and validation
+- **Phase 3 (Weeks 5-6)**: Integration and security testing
+- **Phase 4 (Weeks 7-8)**: Final validation and preparation
+
+### 🎯 Quality Assurance
+
+#### Feedback Collection System
+- **Real-time Feedback**: Integrated throughout user interactions
+- **GitHub Integration**: Automatic issue creation for critical problems
+- **Analytics Engine**: Real-time feedback analysis and reporting
+- **Documentation Updates**: Automatic cross-referencing and updates
+
+#### Audit Trail
+- **Complete Tracking**: All decisions, changes, and feedback documented
+- **Cross-References**: All documentation linked and maintained
+- **SOP Compliance**: All processes follow platinum SOP standards
+- **Quality Metrics**: Continuous monitoring and improvement
+
+### 🔒 Security & Privacy
+
+#### Beta Testing Data
+- **Local Storage**: All data stored locally on user devices
+- **Anonymization**: All feedback data anonymized
+- **Zero-Trust**: No data leaves devices without explicit consent
+- **User Control**: Opt-out available for feedback collection
+
+#### Compliance
+- **Privacy-First**: Adherence to privacy best practices
+- **Transparency**: Clear documentation of data collection
+- **Security**: Comprehensive audit logging and monitoring
+- **User Sovereignty**: Users always have final authority
+
+### 📞 Support & Contact
+
+#### Beta Tester Support
+- **GitHub Issues**: [Repository Issues](https://github.com/your-repo/hearthlink/issues)
+- **Email**: beta-feedback@hearthlink.local
+- **Documentation**: [Docs Directory](./docs/)
+- **In-app Help**: Contextual help throughout the application
+
+#### Response Times
+- **Critical Issues**: Immediate attention
+- **High Priority**: 24-48 hours
+- **Medium Priority**: 1-2 weeks
+- **Low Priority**: Next release cycle
+
+### 🎉 Beta Testing Benefits
+
+#### For Beta Testers
+- **Early Access**: Experience cutting-edge AI companion technology
+- **Direct Influence**: Feedback directly shapes product development
+- **Exclusive Support**: Dedicated support channels and resources
+- **Recognition**: Acknowledgment in release notes and documentation
+
+#### For Development
+- **Real User Insights**: Authentic feedback from target users
+- **Quality Assurance**: Comprehensive testing across platforms
+- **Issue Discovery**: Early identification and resolution of problems
+- **Feature Validation**: Confirmation of feature effectiveness
+
+---
+
 ## Next Steps
 
 This scaffold provides the foundation for implementing:
