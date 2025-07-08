@@ -798,9 +798,6 @@ class RBACABACSecurity:
                                   context: Dict[str, Any]) -> bool:
         """Evaluate policy conditions."""
         try:
-            # If the policy has a time_hour condition but time_hour is not in context, do not apply this policy
-            if "time_hour" in policy.conditions and "time_hour" not in context:
-                return False
             for condition_key, condition_value in policy.conditions.items():
                 evaluator = self.policy_evaluators.get(condition_key)
                 if evaluator:

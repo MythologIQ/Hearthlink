@@ -1,0 +1,516 @@
+#!/usr/bin/env python3
+"""
+Comprehensive test suite for Sentry persona.
+
+Tests all core functionality including:
+- Security monitoring and alerting
+- Compliance mapping and validation
+- Audit logging and export
+- Incident management
+- Policy enforcement
+- Advanced anomaly detection
+- Risk assessment engine
+- User override capabilities
+- Kill switch functionality
+- Escalation management
+"""
+
+import asyncio
+import json
+import tempfile
+import unittest
+from datetime import datetime, timedelta
+from unittest.mock import Mock, patch, AsyncMock
+from pathlib import Path
+
+# Import Sentry persona
+from src.personas.sentry import (
+    Sentry, SentryMode, SecurityLevel, SecurityContext, 
+    ComplianceRequirement, PolicyEffect
+)
+
+# Import dependencies
+from src.vault.vault import Vault
+from src.core.behavioral_analysis import BehavioralAnalysis
+
+
+class TestSentryPersona(unittest.TestCase):
+    """Test suite for Sentry persona."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        # Mock dependencies
+        self.mock_vault = Mock(spec=Vault)
+        self.mock_vault.is_encrypted = True
+        
+        self.mock_behavioral_analysis = Mock(spec=BehavioralAnalysis)
+        
+        # Create Sentry instance
+        self.sentry = Sentry(self.mock_vault, self.mock_behavioral_analysis)
+    
+    def tearDown(self):
+        """Clean up after tests."""
+        if hasattr(self.sentry, 'shutdown'):
+            self.sentry.shutdown()
+    
+    def test_01_initialization(self):
+        """Test Sentry initialization."""
+        self.assertIsNotNone(self.sentry)
+        self.assertEqual(self.sentry.mode, SentryMode.MONITORING)
+        self.assertEqual(self.sentry.security_level, SecurityLevel.MEDIUM)
+        self.assertTrue(self.sentry.is_active)
+        self.assertFalse(self.sentry.override_enabled)
+        
+        # Check security components
+        self.assertIsNotNone(self.sentry.siem)
+        self.assertIsNotNone(self.sentry.rbac)
+        self.assertIsNotNone(self.sentry.monitoring)
+        
+        # Check compliance requirements
+        self.assertEqual(len(self.sentry.compliance_requirements), 5)
+        requirement_ids = [req.requirement_id for req in self.sentry.compliance_requirements]
+        expected_ids = ["SEC-001", "SEC-002", "SEC-003", "SEC-004", "SEC-005"]
+        self.assertEqual(requirement_ids, expected_ids)
+    
+    def test_02_mode_management(self):
+        """Test Sentry mode management."""
+        # Test mode transitions
+        self.sentry.set_mode(SentryMode.ACTIVE)
+        self.assertEqual(self.sentry.mode, SentryMode.ACTIVE)
+        self.assertEqual(self.sentry.security_level, SecurityLevel.HIGH)
+        
+        self.sentry.set_mode(SentryMode.LOCKDOWN)
+        self.assertEqual(self.sentry.mode, SentryMode.LOCKDOWN)
+        self.assertEqual(self.sentry.security_level, SecurityLevel.CRITICAL)
+        
+        self.sentry.set_mode(SentryMode.MONITORING)
+        self.assertEqual(self.sentry.mode, SentryMode.MONITORING)
+        self.assertEqual(self.sentry.security_level, SecurityLevel.MEDIUM)
+    
+    def test_03_override_management(self):
+        """Test security override functionality."""
+        # Test enable override
+        self.sentry.enable_override("admin", "Emergency maintenance")
+        self.assertTrue(self.sentry.override_enabled)
+        
+        # Test disable override
+        self.sentry.disable_override("admin")
+        self.assertFalse(self.sentry.override_enabled)
+    
+    def test_04_security_context_evaluation(self):
+        """Test security context evaluation."""
+        # Test normal access
+        context = SecurityContext(
+            user_id="user1",
+            session_id="session1",
+            resource="data",
+            action="read"
+        )
+        
+        # Mock the async method
+        with patch.object(self.sentry, '_log_security_event', new_callable=AsyncMock):
+            result = asyncio.run(self.sentry.evaluate_security_context(context))
+            self.assertIn(result, [PolicyEffect.ALLOW, PolicyEffect.DENY])
+    
+    def test_05_suspicious_activity_detection(self):
+        """Test suspicious activity detection."""
+        # Create context for suspicious activity
+        context = SecurityContext(
+            user_id="user1",
+            session_id="session1",
+            resource="admin_data",
+            action="read"
+        )
+        
+        # This should be detected as suspicious
+        self.assertTrue(self.sentry._is_suspicious_activity(context))
+        
+        # Normal context should not be suspicious
+        normal_context = SecurityContext(
+            user_id="user1",
+            session_id="session1",
+            resource="data",
+            action="read"
+        )
+        self.assertFalse(self.sentry._is_suspicious_activity(normal_context))
+    
+    def test_06_incident_management(self):
+        """Test incident management."""
+        # Create incident
+        with patch.object(self.sentry, '_log_security_event', new_callable=AsyncMock):
+            incident = asyncio.run(self.sentry.create_security_incident(
+                description="Test security incident",
+                severity="high"
+            ))
+
+        self.assertIsNotNone(incident)
+        # Enterprise behavior: high-severity incidents are auto-escalated
+        self.assertEqual(incident.status, "escalated")
+        self.assertIn(incident, self.sentry.active_incidents)
+        
+        # Test incident escalation
+        with patch.object(self.sentry, '_log_security_event', new_callable=AsyncMock):
+            asyncio.run(self.sentry._escalate_incident(incident))
+
+        self.assertEqual(incident.status, "escalated")
+        # Enterprise behavior: auto-escalation creates 1 alert, manual escalation creates another
+        self.assertEqual(len(self.sentry.security_alerts), 2)
+    
+    def test_07_compliance_monitoring(self):
+        """Test compliance monitoring."""
+        # Pre-seed risk assessments for enterprise behavior
+        self.sentry.risk_assessments = [
+            {
+                "assessment_id": "RISK-001",
+                "timestamp": datetime.now(),
+                "risk_level": "medium",
+                "description": "Test risk assessment",
+                "mitigation_status": "pending"
+            }
+        ]
+        
+        # Test compliance checks
+        self.assertTrue(self.sentry._check_encryption())
+        self.assertTrue(self.sentry._check_access_control())
+        self.assertTrue(self.sentry._check_audit_logging())
+        self.assertTrue(self.sentry._check_incident_response())
+        self.assertTrue(self.sentry._check_risk_assessment())
+    
+    def test_08_compliance_report(self):
+        """Test compliance reporting."""
+        report = self.sentry.get_compliance_report()
+        
+        self.assertIn("compliance_percentage", report)
+        self.assertIn("compliant_requirements", report)
+        self.assertIn("total_requirements", report)
+        self.assertIn("requirements", report)
+        
+        self.assertEqual(report["total_requirements"], 5)
+        self.assertGreaterEqual(report["compliance_percentage"], 0)
+        self.assertLessEqual(report["compliance_percentage"], 100)
+    
+    def test_09_security_status(self):
+        """Test security status reporting."""
+        status = self.sentry.get_security_status()
+        
+        expected_keys = [
+            "mode", "security_level", "is_active", "override_enabled",
+            "active_incidents", "security_alerts", "compliance_status",
+            "audit_log_entries", "risk_assessments"
+        ]
+        
+        for key in expected_keys:
+            self.assertIn(key, status)
+        
+        self.assertEqual(status["mode"], "monitoring")
+        self.assertEqual(status["security_level"], "medium")
+        self.assertTrue(status["is_active"])
+        self.assertFalse(status["override_enabled"])
+    
+    def test_10_audit_logging(self):
+        """Test audit logging functionality."""
+        # Test logging security event
+        with patch.object(self.sentry, '_log_security_event', new_callable=AsyncMock) as mock_log:
+            asyncio.run(self.sentry._log_security_event(
+                "test_event", "info", {"test": "data"}
+            ))
+            mock_log.assert_called_once()
+        
+        # Test audit summary
+        summary = self.sentry.get_audit_summary(hours=24)
+        
+        self.assertIn("period_hours", summary)
+        self.assertIn("total_events", summary)
+        self.assertIn("event_counts", summary)
+        self.assertIn("severity_counts", summary)
+        self.assertIn("recent_events", summary)
+        
+        self.assertEqual(summary["period_hours"], 24)
+    
+    def test_11_lockdown_mode_access_denial(self):
+        """Test that lockdown mode denies all access."""
+        # Set lockdown mode
+        self.sentry.set_mode(SentryMode.LOCKDOWN)
+        
+        # Create context
+        context = SecurityContext(
+            user_id="admin",
+            session_id="session1",
+            resource="data",
+            action="read"
+        )
+        
+        # Mock the async method
+        with patch.object(self.sentry, '_log_security_event', new_callable=AsyncMock):
+            result = asyncio.run(self.sentry.evaluate_security_context(context))
+            self.assertEqual(result, PolicyEffect.DENY)
+    
+    def test_12_rapid_access_detection(self):
+        """Test detection of rapid repeated access attempts."""
+        # Simulate rapid access attempts
+        for i in range(15):
+            event = {
+                "timestamp": datetime.now() - timedelta(seconds=i),
+                "event_type": "access_attempt",
+                "user_id": "user1"
+            }
+            self.sentry.audit_log.append(event)
+        
+        # Create context for same user
+        context = SecurityContext(
+            user_id="user1",
+            session_id="session1",
+            resource="data",
+            action="read"
+        )
+        
+        # Should be detected as suspicious
+        self.assertTrue(self.sentry._is_suspicious_activity(context))
+    
+    def test_13_compliance_alert_creation(self):
+        """Test compliance alert creation."""
+        # Create a non-compliant requirement
+        requirement = ComplianceRequirement(
+            requirement_id="TEST-001",
+            name="Test Requirement",
+            description="Test compliance requirement",
+            category="Test",
+            status="non_compliant"
+        )
+        
+        # Mock the async method
+        with patch.object(self.sentry, '_log_security_event', new_callable=AsyncMock):
+            asyncio.run(self.sentry._create_compliance_alert(requirement))
+        
+        # Check that alert was created
+        self.assertEqual(len(self.sentry.security_alerts), 1)
+        alert = self.sentry.security_alerts[0]
+        self.assertEqual(alert.severity, "high")
+        self.assertIn("Compliance violation", alert.message)
+    
+    def test_14_audit_log_persistence(self):
+        """Test audit log persistence."""
+        # Add some test events
+        test_events = [
+            {"timestamp": datetime.now(), "event_type": "test1", "severity": "info"},
+            {"timestamp": datetime.now(), "event_type": "test2", "severity": "warning"}
+        ]
+        self.sentry.audit_log.extend(test_events)
+        
+        # Test save functionality
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch('pathlib.Path') as mock_path:
+                mock_path.return_value.parent.mkdir.return_value = None
+                mock_path.return_value = Path(temp_dir) / "test_audit.log"
+                
+                with patch('builtins.open', create=True) as mock_open:
+                    mock_file = Mock()
+                    mock_open.return_value.__enter__.return_value = mock_file
+                    
+                    self.sentry._save_audit_log()
+                    
+                    mock_open.assert_called_once()
+                    mock_file.write.assert_called()
+    
+    def test_15_background_task_management(self):
+        """Test background task management."""
+        # Test that background tasks are started
+        self.assertTrue(self.sentry.is_active)
+        
+        # Test shutdown
+        self.sentry.shutdown()
+        self.assertFalse(self.sentry.is_active)
+    
+    def test_16_risk_assessment_tracking(self):
+        """Test risk assessment tracking."""
+        # Add some risk assessments
+        self.sentry.risk_assessments["user1"] = 0.7
+        self.sentry.risk_assessments["user2"] = 0.3
+        
+        # Check status includes risk assessments
+        status = self.sentry.get_security_status()
+        self.assertEqual(status["risk_assessments"], 2)
+    
+    def test_17_security_alert_management(self):
+        """Test security alert management."""
+        # Test alert limit enforcement
+        for i in range(60):  # Exceed max_alerts (50)
+            alert = Mock()
+            alert.alert_id = f"alert_{i}"
+            alert.timestamp = datetime.now()
+            alert.severity = "info"
+            alert.message = f"Test alert {i}"
+            alert.details = {}
+            self.sentry.security_alerts.append(alert)
+        
+        # Check that alerts are tracked
+        status = self.sentry.get_security_status()
+        self.assertEqual(status["security_alerts"], 60)
+    
+    def test_18_incident_timeout_cleanup(self):
+        """Test incident timeout cleanup."""
+        # Create old incident
+        old_incident = Mock()
+        old_incident.timestamp = datetime.now() - timedelta(hours=2)  # 2 hours old
+        old_incident.status = "open"
+        old_incident.severity = "medium"
+        old_incident.description = "Old incident"
+        old_incident.events = []
+        
+        self.sentry.active_incidents.append(old_incident)
+        
+        # Create recent incident
+        recent_incident = Mock()
+        recent_incident.timestamp = datetime.now() - timedelta(minutes=30)  # 30 minutes old
+        recent_incident.status = "open"
+        recent_incident.severity = "medium"
+        recent_incident.description = "Recent incident"
+        recent_incident.events = []
+        
+        self.sentry.active_incidents.append(recent_incident)
+        
+        # Run cleanup
+        asyncio.run(self.sentry._incident_cleanup())
+        
+        # Old incident should be removed, recent should remain
+        self.assertEqual(len(self.sentry.active_incidents), 1)
+        self.assertEqual(self.sentry.active_incidents[0], recent_incident)
+    
+    def test_19_audit_log_cleanup(self):
+        """Test audit log cleanup."""
+        # Add old audit entries
+        old_entry = {
+            "timestamp": datetime.now() - timedelta(days=100),  # 100 days old
+            "event_type": "old_event",
+            "severity": "info"
+        }
+        self.sentry.audit_log.append(old_entry)
+        
+        # Add recent audit entries
+        recent_entry = {
+            "timestamp": datetime.now() - timedelta(days=30),  # 30 days old
+            "event_type": "recent_event",
+            "severity": "info"
+        }
+        self.sentry.audit_log.append(recent_entry)
+        
+        # Run cleanup
+        asyncio.run(self.sentry._audit_cleanup())
+        
+        # Old entry should be removed, recent should remain
+        self.assertEqual(len(self.sentry.audit_log), 1)
+        self.assertEqual(self.sentry.audit_log[0]["event_type"], "recent_event")
+    
+    def test_20_comprehensive_integration(self):
+        """Test comprehensive integration of all Sentry features."""
+        # Set active mode
+        self.sentry.set_mode(SentryMode.ACTIVE)
+        
+        # Create security context
+        context = SecurityContext(
+            user_id="test_user",
+            session_id="test_session",
+            resource="sensitive_data",
+            action="write"
+        )
+        
+        # Mock async methods
+        with patch.object(self.sentry, '_log_security_event', new_callable=AsyncMock):
+            # Evaluate security context
+            result = asyncio.run(self.sentry.evaluate_security_context(context))
+            
+            # Create security incident
+            incident = asyncio.run(self.sentry.create_security_incident(
+                description="Integration test incident",
+                severity="critical"
+            ))
+            
+            # Enable override
+            self.sentry.enable_override("admin", "Integration testing")
+            
+            # Get status and reports
+            status = self.sentry.get_security_status()
+            compliance_report = self.sentry.get_compliance_report()
+            audit_summary = self.sentry.get_audit_summary()
+        
+        # Verify results
+        self.assertIn(result, [PolicyEffect.ALLOW, PolicyEffect.DENY])
+        self.assertIsNotNone(incident)
+        self.assertTrue(self.sentry.override_enabled)
+        self.assertEqual(status["mode"], "active")
+        self.assertEqual(status["security_level"], "high")
+        self.assertIn("compliance_percentage", compliance_report)
+        self.assertIn("total_events", audit_summary)
+
+
+class TestSentryComponents(unittest.TestCase):
+    """Test core security components."""
+    
+    def test_core_siem(self):
+        """Test CoreSIEM functionality."""
+        from src.personas.sentry import CoreSIEM, SecurityEvent
+        from src.enterprise.siem_monitoring import EventCategory, EventSeverity
+        
+        siem = CoreSIEM()
+        
+        # Test event collection
+        event = SecurityEvent(
+            event_id="test_event_001",
+            timestamp=datetime.now().isoformat(),
+            source="test",
+            category=EventCategory.AUDIT,
+            severity=EventSeverity.LOW,
+            details={"test": "data"}
+        )
+        
+        siem.collect_event(event)
+        self.assertEqual(len(siem.events), 1)
+        
+        # Test event retrieval
+        events = siem.get_events(hours=24)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].event_id, "test_event_001")
+    
+    def test_core_rbac(self):
+        """Test CoreRBAC functionality."""
+        from src.personas.sentry import CoreRBAC
+        
+        rbac = CoreRBAC()
+        
+        # Test admin access
+        decision = rbac.evaluate_access("admin", "any_resource", "any_action", {})
+        self.assertEqual(decision.decision, PolicyEffect.ALLOW)
+        
+        # Test admin resource access by non-admin
+        decision = rbac.evaluate_access("user1", "admin_data", "read", {})
+        self.assertEqual(decision.decision, PolicyEffect.DENY)
+        
+        # Test normal access
+        decision = rbac.evaluate_access("user1", "data", "read", {})
+        self.assertEqual(decision.decision, PolicyEffect.ALLOW)
+    
+    def test_core_monitoring(self):
+        """Test CoreMonitoring functionality."""
+        from src.personas.sentry import CoreMonitoring
+        
+        monitoring = CoreMonitoring()
+        
+        # Test metric recording
+        monitoring.record_metric("cpu_usage", 75.5, "gauge")
+        monitoring.record_metric("memory_usage", 60.2, "gauge")
+        
+        # Test metric retrieval
+        metrics = monitoring.get_metrics()
+        self.assertEqual(len(metrics), 2)
+        self.assertIn("cpu_usage", metrics)
+        self.assertIn("memory_usage", metrics)
+        self.assertEqual(metrics["cpu_usage"]["value"], 75.5)
+        self.assertEqual(metrics["memory_usage"]["value"], 60.2)
+
+
+if __name__ == "__main__":
+    # Set up logging for tests
+    logging.basicConfig(level=logging.INFO)
+    
+    # Run tests
+    unittest.main(verbosity=2) 

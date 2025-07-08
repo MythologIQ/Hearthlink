@@ -24,7 +24,7 @@ from datetime import datetime
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from main import HearthlinkLogger
+from src.main import HearthlinkLogger
 from llm.local_llm_client import (
     LLMConfig, LLMRequest, LLMResponse, LLMError, 
     LLMConnectionError, LLMResponseError, LLMTimeoutError,

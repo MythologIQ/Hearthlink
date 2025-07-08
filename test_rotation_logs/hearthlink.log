@@ -1,2 +1,1 @@
-{"timestamp": "2025-07-08T12:31:09.592417", "level": "INFO", "logger": "Hearthlink", "message": "Security rbac_abac_security_initialized", "module": "rbac_abac_security", "function": "_log", "line": 1038}
-{"timestamp": "2025-07-08T12:31:10.615072", "level": "INFO", "logger": "Hearthlink", "message": "Monitoring advanced_monitoring_initialized", "module": "advanced_monitoring", "function": "_log", "line": 946}
+{"timestamp": "2025-07-08T17:52:13.137516", "level": "INFO", "logger": "Hearthlink", "message": "Hearthlink container stopped", "module": "main", "function": "log_shutdown", "line": 282, "event_type": "container_shutdown", "reason": "test_completion"}
