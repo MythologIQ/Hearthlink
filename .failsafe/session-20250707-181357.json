@@ -1,0 +1,74 @@
+[
+  {
+    "timestamp": "2025-07-07T22:13:57.565Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.578Z",
+    "level": "info",
+    "message": "Detected 112 installed extensions",
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.579Z",
+    "level": "info",
+    "message": "Detected 112 installed extensions",
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.580Z",
+    "level": "info",
+    "message": "Detected 112 installed extensions",
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.583Z",
+    "level": "info",
+    "message": "Loaded 34 Cursorrules",
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.586Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.586Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.587Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.589Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.590Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250707-181357"
+  },
+  {
+    "timestamp": "2025-07-07T22:13:57.591Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250707-181357"
+  }
+]

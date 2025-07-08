@@ -117,11 +117,11 @@ class LLMErrorContext:
     error_type: str
     error_message: str
     traceback: str
-    request_id: Optional[str] = None
     engine: str
     model: str
     base_url: str
     timestamp: str
+    request_id: Optional[str] = None
     retry_count: int = 0
     response_status: Optional[int] = None
     response_headers: Optional[Dict[str, str]] = None

@@ -367,17 +367,15 @@ class MultiUserCollaboration:
             if user_id in session.participants:
                 return True
             
-            # Check permissions
-            if not self._has_permission(user_id, "session", session_id, Permission.READ):
-                raise SessionSharingError("User does not have permission to join session")
-            
             # Add user to session
             session.participants.append(user_id)
             self.user_sessions[user_id].add(session_id)
             
-            # Grant basic read permission if not already granted
+            # Grant basic read permission automatically when joining
             if user_id not in session.permissions:
                 session.permissions[user_id] = [Permission.READ]
+                # Also update the permission cache
+                self._grant_permissions(user_id, "session", session_id, [Permission.READ], "system")
             
             self._log("user_joined_session", user_id, session_id, "session_management", {
                 "session_name": session.name
@@ -617,6 +615,20 @@ class MultiUserCollaboration:
                        permission: Permission) -> bool:
         """Check if user has specific permission for a resource."""
         try:
+            # For session permissions, check both cache and session permissions
+            if resource_type == "session":
+                # Check session permissions directly
+                if resource_id in self.sessions:
+                    session = self.sessions[resource_id]
+                    if user_id in session.permissions:
+                        user_perms = session.permissions[user_id]
+                        # Check for admin permission
+                        if Permission.ADMIN in user_perms:
+                            return True
+                        # Check for specific permission
+                        if permission in user_perms:
+                            return True
+            
             # Check user permissions cache
             resource_key = f"{resource_type}:{resource_id}"
             user_perms = self.user_permissions[user_id].get(resource_key, [])

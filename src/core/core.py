@@ -37,7 +37,8 @@ from .error_handling import (
 # Import behavioral analysis
 from .behavioral_analysis import (
     BehavioralAnalysis, ExternalSignal, SignalType, BehavioralInsight,
-    AdaptiveFeedback, BehavioralReport, BehavioralAnalysisError
+    AdaptiveFeedback, BehavioralReport, BehavioralAnalysisError, SessionAnalysis,
+    TextAnalysis
 )
 
 class ParticipantType(Enum):

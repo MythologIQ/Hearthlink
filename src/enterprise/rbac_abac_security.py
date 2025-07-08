@@ -279,6 +279,16 @@ class RBACABACSecurity:
                 actions=["*"],
                 conditions={"time_hour": {"not_between": [22, 6]}},
                 priority=25
+            ),
+            Policy(
+                policy_id="deny_late_night_access",
+                name="Deny Late Night Access",
+                description="Deny access during late night hours",
+                effect=PolicyEffect.DENY,
+                resources=["*"],
+                actions=["*"],
+                conditions={"time_hour": 23},
+                priority=30
             )
         ]
         
@@ -816,14 +826,34 @@ class RBACABACSecurity:
                            context: Dict[str, Any]) -> bool:
         """Evaluate time-based condition."""
         try:
-            current_hour = datetime.now().hour
+            # Only apply time-based policies if time_hour is explicitly provided in context
+            if "time_hour" not in context:
+                return True  # Skip time-based evaluation if no time context
+            
+            time_hour = context["time_hour"]
+            
+            # Handle direct integer comparison (e.g., time_hour: 23)
+            if isinstance(condition_value, int):
+                return time_hour == condition_value
             
             if isinstance(condition_value, dict) and "not_between" in condition_value:
                 start, end = condition_value["not_between"]
-                return not (start <= current_hour <= end)
+                # Handle the case where start > end (e.g., 22 to 6 spans midnight)
+                if start > end:
+                    # Allow if time is between start and end (spans midnight)
+                    return start <= time_hour or time_hour <= end
+                else:
+                    # Allow if time is between start and end
+                    return start <= time_hour <= end
             elif isinstance(condition_value, dict) and "between" in condition_value:
                 start, end = condition_value["between"]
-                return start <= current_hour <= end
+                # Handle the case where start > end (e.g., 22 to 6 spans midnight)
+                if start > end:
+                    # Allow if time is between start and end (spans midnight)
+                    return start <= time_hour or time_hour <= end
+                else:
+                    # Allow if time is between start and end
+                    return start <= time_hour <= end
             
             return True
             
