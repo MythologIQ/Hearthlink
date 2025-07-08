@@ -767,6 +767,10 @@ class RBACABACSecurity:
         """Evaluate policy conditions."""
         try:
             for condition_key, condition_value in policy.conditions.items():
+                # Skip time-based conditions if no time context is provided
+                if condition_key == "time_hour" and "time_hour" not in context:
+                    continue
+                
                 evaluator = self.policy_evaluators.get(condition_key)
                 if evaluator:
                     if not evaluator(condition_value, user_id, context):
@@ -840,19 +844,19 @@ class RBACABACSecurity:
                 start, end = condition_value["not_between"]
                 # Handle the case where start > end (e.g., 22 to 6 spans midnight)
                 if start > end:
-                    # Allow if time is between start and end (spans midnight)
-                    return start <= time_hour or time_hour <= end
+                    # Return True if time is NOT between start and end (spans midnight)
+                    return not (start <= time_hour or time_hour <= end)
                 else:
-                    # Allow if time is between start and end
-                    return start <= time_hour <= end
+                    # Return True if time is NOT between start and end
+                    return not (start <= time_hour <= end)
             elif isinstance(condition_value, dict) and "between" in condition_value:
                 start, end = condition_value["between"]
                 # Handle the case where start > end (e.g., 22 to 6 spans midnight)
                 if start > end:
-                    # Allow if time is between start and end (spans midnight)
+                    # Return True if time is between start and end (spans midnight)
                     return start <= time_hour or time_hour <= end
                 else:
-                    # Allow if time is between start and end
+                    # Return True if time is between start and end
                     return start <= time_hour <= end
             
             return True

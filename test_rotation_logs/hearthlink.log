@@ -1,1 +1,1 @@
-{"timestamp": "2025-07-07T22:24:34.617989", "level": "INFO", "logger": "Hearthlink", "message": "Removed persona mimic-1e9e163b from session test-session-001", "module": "mimic_integration", "function": "remove_persona_from_session", "line": 438}
+{"timestamp": "2025-07-08T00:38:42.506096", "level": "INFO", "logger": "Hearthlink", "message": "Removed persona mimic-9ce0c5f6 from session test-session-001", "module": "mimic_integration", "function": "remove_persona_from_session", "line": 438}
