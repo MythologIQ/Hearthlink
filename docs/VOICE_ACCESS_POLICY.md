@@ -43,7 +43,8 @@ This document outlines voice access rules, boundaries, and system behavior acros
 
 * Disabled by default for security.
 * **Per-agent permissions**: Enabled via **Core → Agent Settings → [Agent Name] → Voice Interaction**
-* **Global default rules**: Configured via **Settings → Hearthlink Voice Settings → External Agent Defaults**
+* **Global default rules**: Configured via **Settings → Hearthlink Voice Settings → External Agent Defaults (SET-003)**
+* **Override Model**: Global defaults can override per-agent permissions at the system level
 
 ### Permission Layers
 
@@ -52,6 +53,7 @@ This document outlines voice access rules, boundaries, and system behavior acros
   * Explicit user activation.
   * Agent connection to **Core** (not direct access to Vault or UI).
   * Active session tracking via Synapse.
+  * Compliance with both per-agent and global default rules.
 
 ---
 
@@ -92,14 +94,15 @@ This document outlines voice access rules, boundaries, and system behavior acros
 
 ## 📴 Offline Mode / No Internet
 
-### Dynamic Detection
+### Dynamic Detection Logic
 
-* **Not a boolean flag** - implements dynamic detection using:
-  * Failed outbound pings
-  * Windows "no internet" flag
-  * Null modem activity
-  * External agent timeout events
-* **Detection Method**: `network_status.check()` function
+* **Not a boolean flag** - implements dynamic, observable detection using:
+  * Failed ping attempts to known good IPs
+  * OS-level "no internet" state detection
+  * Timeout events from known external agents
+  * Null modem activity monitoring
+* **Detection Method**: `network_status.check()` function with multiple validation points
+* **Observable Model**: System continuously monitors network state and adjusts behavior dynamically
 
 ### Behavior:
 
@@ -126,18 +129,22 @@ This document outlines voice access rules, boundaries, and system behavior acros
 
 ### Voice Misrouting Handling (Alden Recovery Protocol)
 
-* **No rigid fallback prompts** - Alden handles all misroutes via recovery dialogue
+* **No rigid fallback prompts** - Alden handles all misroutes via intelligent recovery dialogue
+* **Alden as Default Handler**: Alden is the default handler for misrouted input and gracefully reroutes or requests clarification
 * **Recovery Scenarios**:
   * "I think you meant to talk to Alice about that. Would you like me to switch you over?"
   * "That's outside my expertise, but I can connect you with Mimic who specializes in that area."
   * "Let me help you get to the right agent for this request."
+  * "I'm not sure I'm the best agent for this. Would you like me to connect you with someone more specialized?"
 
 ### Agent Deference Protocol (Feature ID: AGENT-004)
 
-* **Passive Suggestion**: "Alice might be better at this…"
-* **Direct Request**: "Can I talk to Alice?"
-* **Delegation**: "Hand this off to Alice."
+* **Three Interaction Styles**:
+  1. **Passive Suggestion**: "Alice might be better at this…"
+  2. **User-Initiated Handoff**: "Can I talk to Alice?"
+  3. **Direct Delegation**: "Hand this off to Alice."
 * **Implementation**: Agents can suggest better-suited agents for specific tasks
+* **UI Integration**: Deference logic hooks integrated into agent interface code stubs and UI flows
 
 ---
 

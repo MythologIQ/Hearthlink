@@ -12,26 +12,29 @@ This document maps all Hearthlink features to their implementation status, requi
 - **Test Coverage**: 17/17 tests passing (100%)
 
 ### AGENT-003: Misroute Handling via Alden
-- **Status**: ✅ Defined (Owner Resolution)
-- **Description**: Alden handles all voice misroutes via recovery dialogue
+- **Status**: ✅ Defined (Owner Resolution - Enhanced)
+- **Description**: Alden handles all voice misroutes via intelligent recovery dialogue
 - **Policy Reference**: `/docs/VOICE_ACCESS_POLICY.md` - Fallback & Error States
-- **Implementation**: No rigid fallback prompts, Alden recovery protocol
+- **Implementation**: No rigid fallback prompts, Alden recovery protocol with graceful rerouting
+- **Default Handler**: Alden is the default handler for misrouted input
 
 ### AGENT-004: Agent Deference Protocol
-- **Status**: ✅ Defined (Owner Resolution)
-- **Description**: Agents can suggest better-suited agents for specific tasks
+- **Status**: ✅ Defined (Owner Resolution - Enhanced)
+- **Description**: Agents can suggest better-suited agents for specific tasks with three interaction styles
 - **Policy Reference**: `/docs/VOICE_ACCESS_POLICY.md` - Agent Deference Protocol
-- **Scenarios**:
-  - Passive suggestion: "Alice might be better at this…"
-  - Direct request: "Can I talk to Alice?"
-  - Delegation: "Hand this off to Alice."
+- **Interaction Styles**:
+  1. **Passive Suggestion**: "Alice might be better at this…"
+  2. **User-Initiated Handoff**: "Can I talk to Alice?"
+  3. **Direct Delegation**: "Hand this off to Alice."
+- **UI Integration**: Deference logic hooks integrated into agent interface code stubs and UI flows
 
 ## Settings & Configuration Features
 
 ### SET-003: External Agent Defaults (Settings)
-- **Status**: ✅ Defined (Owner Resolution)
-- **Description**: Global default rules for external agent permissions
+- **Status**: ✅ Defined (Owner Resolution - Enhanced)
+- **Description**: Global default rules for external agent permissions with override capability
 - **Location**: Settings → Hearthlink Voice Settings → External Agent Defaults
+- **Override Model**: Global defaults can override per-agent permissions at the system level
 - **Policy Reference**: `/docs/VOICE_ACCESS_POLICY.md` - External Agent Voice Permissions
 
 ## UI Features

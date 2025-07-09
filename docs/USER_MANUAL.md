@@ -12,10 +12,10 @@ This manual provides user guidance for Hearthlink's voice interaction system and
 - **Automatic Routing**: If no agent is specified, Core delegates to the currently active agent
 
 ### Deference Protocol
-Agents can suggest better-suited agents for specific tasks:
+Agents can suggest better-suited agents for specific tasks through three interaction styles:
 - **Passive Suggestion**: "Alice might be better at this..."
-- **Direct Request**: "Can I talk to Alice?"
-- **Delegation**: "Hand this off to Alice."
+- **User-Initiated Handoff**: "Can I talk to Alice?"
+- **Direct Delegation**: "Hand this off to Alice."
 
 ### Voice HUD Behavior
 The Voice Interaction HUD provides:
@@ -23,22 +23,27 @@ The Voice Interaction HUD provides:
 - **Active Agent Display**: Clear indication of which agent is currently active
 - **Reroute Handling Visual**: Visual feedback when voice input is rerouted between agents
 - **Agent Selection Interface**: Visual controls for switching between available agents
+- **Misrouting Recovery UI**: Visual indicators when Alden handles misrouted input
+- **Agent Deference Interface**: UI elements for agent suggestions and handoff requests
 
 ## Troubleshooting Voice Issues
 
 ### Misrouting Handling
-- **Recovery Protocol**: Alden handles all voice misroutes via recovery dialogue
+- **Alden as Default Handler**: Alden handles all voice misroutes via intelligent recovery dialogue
+- **No Rigid Prompts**: System uses graceful recovery instead of rigid fallback commands
 - **Common Scenarios**:
   - "I think you meant to talk to Alice about that. Would you like me to switch you over?"
   - "That's outside my expertise, but I can connect you with Mimic who specializes in that area."
   - "Let me help you get to the right agent for this request."
+  - "I'm not sure I'm the best agent for this. Would you like me to connect you with someone more specialized?"
 
 ### Offline Fallback Behavior
 When offline or no internet connection is detected:
+- **Dynamic Detection**: System uses multiple validation points (failed pings, OS state, timeouts, modem activity)
 - **Local Agents**: Alden, Alice, Mimic, and Sentry remain fully functional
 - **External Services**: All outbound requests to external APIs are blocked
 - **User Alert**: "External services unavailable. Local systems fully operational."
-- **Detection**: System uses dynamic detection (failed pings, Windows flags, timeout events)
+- **Observable Model**: System continuously monitors network state and adjusts behavior dynamically
 
 ### Expected Authentication Flow
 - **Dev Mode Activation**: Activation phrase → Challenge phrase → PIN entry → Dev Mode UI
@@ -47,7 +52,8 @@ When offline or no internet connection is detected:
 
 ### Voice Settings Configuration
 - **Per-Agent Permissions**: Core → Agent Settings → [Agent Name] → Voice Interaction
-- **Global Defaults**: Settings → Hearthlink Voice Settings → External Agent Defaults
+- **Global Defaults**: Settings → Hearthlink Voice Settings → External Agent Defaults (SET-003)
+- **Override Model**: Global defaults can override per-agent permissions at the system level
 - **External Agents**: Disabled by default for security, require explicit activation
 
 ## Voice Access States

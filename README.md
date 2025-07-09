@@ -8,14 +8,16 @@ Hearthlink is an AI agent orchestration system with voice interaction capabiliti
 ### Voice Routing & Agent Management
 - **Multi-Agent Support**: Alden, Alice, Mimic, Sentry, and external agents
 - **Voice HUD**: Real-time voice input display and agent selection interface
-- **Misroute Recovery**: Alden handles all voice misroutes via intelligent recovery dialogue
-- **Agent Deference**: Agents can suggest better-suited agents for specific tasks
+- **Misroute Recovery**: Alden handles all voice misroutes via intelligent recovery dialogue (no rigid prompts)
+- **Agent Deference**: Agents can suggest better-suited agents through three interaction styles
+- **Default Handler**: Alden serves as the default handler for misrouted input
 
 ### Voice Policy Compliance
 - **Local Agents**: Fully conversational with name-based addressing
 - **External Agents**: Disabled by default, require explicit permission activation
-- **Offline Mode**: Dynamic detection with local agent fallback
+- **Offline Mode**: Dynamic, observable detection using multiple validation points
 - **Authentication**: Secure mode activation with challenge/PIN system
+- **Permission Override**: Global defaults can override per-agent permissions
 
 ## Test-Driven Development
 

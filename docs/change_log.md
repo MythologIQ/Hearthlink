@@ -1,5 +1,14 @@
 # Change Log
 
+## [Sprint 2025-07-10] Post-Sprint Addendum - Owner Clarifications
+- **External Agent Permissions (SET-003) Enhanced**: Confirmed split responsibility with override model - per-agent permissions in Core Agent Settings, global defaults in Settings Voice Settings with override capability
+- **Offline Mode Detection Enhanced**: Rejected boolean toggle, implemented dynamic observable detection using failed pings, OS-level state, timeouts, and null modem activity
+- **Agent Deference Protocol (AGENT-004) Enhanced**: Added three interaction styles - passive suggestion, user-initiated handoff, and direct delegation with UI integration hooks
+- **Voice Misrouting Behavior Clarified**: Alden confirmed as default handler for misrouted input with graceful recovery dialogue (no rigid prompts)
+- **Documentation Updates**: Updated VOICE_ACCESS_POLICY.md, FEATURE_MAP.md, UI_ALIGNMENT_AUDIT.md, USER_MANUAL.md, and README.md with enhanced behavior specifications
+- **UI Requirements Clarified**: Added misrouting recovery UI, agent deference interface, and external agent permissions override UI to alignment audit
+- **Infrastructure Readiness**: Noted dynamic network detection model in README.md
+
 ## [Sprint 2025-07-10] Sprint Finalization & Documentation Updates
 - **Owner Resolutions Implemented**: All 7 implementation uncertainties resolved and documented
 - **VOICE_ACCESS_POLICY.md Updated**: Added misroute handling via Alden recovery protocol, agent deference protocol (AGENT-004), clarified offline detection behavior, Vault logging requirements, and permissions delegation model
