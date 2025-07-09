@@ -171,7 +171,9 @@ python tests/env/setup_ui_env.py && python -m pytest tests/feature/ui-test-*/
 
 ### Test Documentation
 - `tests/TEST_REFERENCE.md` - Test traceability and references
-- `tests/TEST_PLAN.md` - Test coverage goals and descriptions
+- `/docs/process_refinement.md` - Test planning requirements and implementation standards
+- `/docs/VOICE_ACCESS_POLICY.md` - Voice functionality test requirements
+- `/docs/UI_ALIGNMENT_AUDIT.md` - UI screen validation requirements
 
 ### Audit Documentation
 - Voice Access States

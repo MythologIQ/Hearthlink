@@ -1,0 +1,31 @@
+{
+  "test_name": "Voice Routing - Agent Agnostic Mode",
+  "timestamp": "20250709_144155",
+  "results": {
+    "agent_specified_routing": true,
+    "delegation_routing": true,
+    "routing_decisions_correct": true
+  },
+  "resource_data": {
+    "test_name": "Voice Routing - Agent Agnostic Mode",
+    "timestamp": "20250709_144155",
+    "initial_state": {
+      "cpu_percent": 67.3,
+      "memory_percent": 75.3,
+      "disk_percent": 35.6
+    },
+    "monitoring_start": 1752086516.9877498,
+    "final_state": {
+      "cpu_percent": 37.3,
+      "memory_percent": 75.3,
+      "disk_percent": 35.6
+    },
+    "monitoring_end": 1752086517.99372,
+    "duration": 1.0059702396392822
+  },
+  "environment": {
+    "python_version": "3.13.3 (tags/v3.13.3:6280bb5, Apr  8 2025, 14:47:33) [MSC v.1943 64 bit (AMD64)]",
+    "platform": "win32",
+    "working_directory": "G:\\MythologIQ\\Hearthlink"
+  }
+}

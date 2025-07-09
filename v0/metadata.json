@@ -1,0 +1,6 @@
+{
+  "name": "Nexus Command Console",
+  "description": "A command console to monitor, maintain, and control localized AI, MCP server, code data hub, and browser extension environments.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

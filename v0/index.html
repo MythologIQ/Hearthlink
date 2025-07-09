@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Command Console      by MythologIQ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-primary-bg: #1C1C2E;
+      --brand-primary-bg-light: #25253A; /* Slightly lighter for panels */
+      --brand-primary-bg-lighter: #303048; /* Even lighter for hover/active elements */
+      --brand-accent1: #8F48FF;
+      --brand-accent1-hover: #7a38e0;
+      --brand-accent2: #48FFE1;
+      --brand-alert: #FF3864;
+      --brand-success: #32CD32; /* Corrected from #2332CD32 */
+      --brand-text-primary: #E0E0E0;
+      --brand-text-secondary: #A0A0B0;
+      --brand-border: #3A3A5A;
+
+      /* Scrollbar colors for Firefox */
+      scrollbar-color: var(--brand-accent1) var(--brand-primary-bg-light);
+      scrollbar-width: thin; /* Or "auto" or "none" */
+    }
+
+    body {
+      background-color: var(--brand-primary-bg);
+      font-family: 'Inter', sans-serif;
+      color: var(--brand-text-primary);
+    }
+
+    /* Custom scrollbar for webkit browsers (Chrome, Safari, Edge Chromium) */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--brand-primary-bg-light);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--brand-accent1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--brand-accent1-hover);
+    }
+
+    /* For Firefox, ensure elements that need custom scrollbars get them */
+    /* This can be applied to specific scrollable divs if needed, or globally if desired */
+    * {
+      scrollbar-color: var(--brand-accent1) var(--brand-primary-bg-light);
+      scrollbar-width: thin;
+    }
+
+
+    .font-orbitron {
+      font-family: 'Orbitron', sans-serif;
+    }
+    .font-jetbrains-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Toast Animation - Segment 1 */
+    @keyframes fadeInRight {
+      from { 
+        opacity: 0; 
+        transform: translateX(20px) scale(0.95); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateX(0) scale(1); 
+      }
+    }
+    .animate-fadeInRight { 
+      animation: fadeInRight 0.3s ease-out forwards; 
+    }
+    /* End Toast Animation */
+
+  </style>
+<!-- 
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "recharts": "https://esm.sh/recharts@^2.15.3",
+    "express": "https://esm.sh/express@^5.1.0",
+    "url": "https://esm.sh/url@^0.11.4",
+    "ws": "https://esm.sh/ws@^8.18.2",
+    "cors": "https://esm.sh/cors@^2.8.5",
+    "fs": "https://esm.sh/fs@^0.0.1-security",
+    "path": "https://esm.sh/path@^0.12.7",
+    "https": "https://esm.sh/https@^1.0.0",
+    "zlib": "https://esm.sh/zlib@^1.0.5",
+    "events": "https://esm.sh/events@^3.3.0",
+    "assert": "https://esm.sh/assert@^2.1.0",
+    "formdata-polyfill/": "https://esm.sh/formdata-polyfill@^4.0.10/",
+    "crypto": "https://esm.sh/crypto@^1.0.1",
+    "minipass": "https://esm.sh/minipass@^7.1.2",
+    "fetch-blob/": "https://esm.sh/fetch-blob@^4.0.0/",
+    "fetch-blob": "https://esm.sh/fetch-blob@^4.0.0",
+    "mkdirp": "https://esm.sh/mkdirp@^3.0.1",
+    "node-domexception": "https://esm.sh/node-domexception@^2.0.2",
+    "bin-links": "https://esm.sh/bin-links@^5.0.0",
+    "yallist": "https://esm.sh/yallist@^5.0.0",
+    "@isaacs/fs-minipass": "https://esm.sh/@isaacs/fs-minipass@^4.0.1",
+    "data-uri-to-buffer": "https://esm.sh/data-uri-to-buffer@^6.0.2",
+    "node-fetch": "https://esm.sh/node-fetch@^3.3.2",
+    "minizlib": "https://esm.sh/minizlib@^3.0.2",
+    "buffer": "https://esm.sh/buffer@^6.0.3",
+    "https-proxy-agent": "https://esm.sh/https-proxy-agent@^7.0.6",
+    "chownr": "https://esm.sh/chownr@^3.0.0",
+    "tar": "https://esm.sh/tar@^7.4.3",
+    "@google/genai": "https://esm.sh/@google/genai@^1.0.0",
+    "http": "https://esm.sh/http@^0.0.1-security",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.49.7",
+    "dotenv": "https://esm.sh/dotenv@^16.5.0",
+    "child_process": "https://esm.sh/child_process@^1.0.2",
+    "multer": "https://esm.sh/multer@^2.0.0",
+    "systeminformation": "https://esm.sh/systeminformation@^5.26.0",
+    "vite": "https://esm.sh/vite@^6.3.5"
+  }
+}
+</script>
+-->
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="h-full">
+  <div id="root" class="h-full"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

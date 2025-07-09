@@ -85,7 +85,86 @@ This document is a living record of our evolving standard operating procedures (
 
 ---
 
-## 9. Lessons Learned & Further Refinement (Phase 2+)
+## 9. UI Planning & Alignment Enforcement
+
+### UI Planning Requirements
+
+1. **UI_ALIGNMENT_AUDIT.md is the Single Source of Truth**
+
+   * All UI planning MUST begin from `/docs/UI_ALIGNMENT_AUDIT.md`, not inference or ad-hoc screen generation.
+   * No new UI screens can be added without explicit approval and documentation in the audit.
+   * Redundant or misaligned screens identified in the audit must be immediately reconciled.
+
+2. **UI Screen Validation Process**
+
+   * Every proposed UI screen must be cross-referenced against the audit's confirmed screen list.
+   * Screens marked as "Misaligned or Redundant" in the audit must be merged, consolidated, or removed.
+   * Missing screens identified in the audit must be added to the implementation plan.
+
+3. **UI Implementation Compliance**
+
+   * All UI wireframes, testing, and development must align with the audit-confirmed screen structure.
+   * No UI work can proceed until the screen structure is fully reconciled with the audit.
+   * Implementation status must be tracked in `/docs/UI_IMPLEMENTATION_CHECKLIST.md`.
+
+---
+
+## 11. UI Test Policy & Compliance
+
+### Distributed Test Policy Structure
+
+UI test planning and compliance requirements are distributed across multiple source documents rather than centralized in a single test plan:
+
+1. **Test Planning Requirements** - `/docs/process_refinement.md`
+2. **Voice Functionality Tests** - `/docs/VOICE_ACCESS_POLICY.md`
+3. **UI Screen Validation** - `/docs/UI_ALIGNMENT_AUDIT.md`
+4. **Test Reference & Traceability** - `/docs/TEST_REFERENCE.md`
+
+### UI Test Implementation Standards
+
+1. **Branch Naming Convention**
+   * All UI tests must be developed under `feature/ui-test-*` branches
+   * Example: `feature/ui-test-voice-routing`, `feature/ui-test-alden-dashboard`
+
+2. **Commit Message Format**
+   * Format: `UI_TEST: [FEATURE_ID] - [Description] (Source: [audit/sprint/etc.])`
+   * Example: `UI_TEST: VOICE-001 - Voice routing to local agents (Source: VOICE_ACCESS_POLICY.md)`
+
+3. **Test Traceability Requirements**
+   * Every test must reference the specific document that defines its requirements
+   * All tests must be linked in `/docs/TEST_REFERENCE.md`
+   * Test results must be logged in change_log.md
+
+4. **Voice Test Compliance**
+   * Voice routing tests must validate agent selection logic per VOICE_ACCESS_POLICY.md
+   * External agent access tests must verify default disabled state and explicit activation
+   * Voice HUD tests must confirm routing feedback and session context
+
+5. **UI Screen Validation**
+   * All UI tests must map to screens approved in UI_ALIGNMENT_AUDIT.md
+   * Tests for redundant/misaligned screens must be removed or consolidated
+   * Missing screens identified in audit must have corresponding tests created
+
+### Test Execution & Review Flow
+
+1. **Pre-Test Validation**
+   * Confirm test maps to approved screen/feature in audit
+   * Verify test logic aligns with voice policy requirements
+   * Check test branch naming and commit format compliance
+
+2. **Test Execution**
+   * Run tests under proper feature branch
+   * Log all test results and any failures
+   * Document any implementation uncertainties
+
+3. **Post-Test Review**
+   * Update TEST_REFERENCE.md with test results
+   * Log changes in change_log.md
+   * Flag any issues in SPRINT_COMPLETION_LOG.md
+
+---
+
+## 12. Lessons Learned & Further Refinement (Phase 2+)
 
 ### Key Lessons Learned
 
@@ -132,4 +211,4 @@ This document is a living record of our evolving standard operating procedures (
 
 ---
 
-*Latest update: 2025-07-07 (Phase 2 lessons learned and further refinements appended)*
+*Latest update: 2025-07-10 (UI test policy and distributed test structure added)*

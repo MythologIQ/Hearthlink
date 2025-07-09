@@ -1,0 +1,1 @@
+// PresenceRoom - Agent presence and UI state tracking

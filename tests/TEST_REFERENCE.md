@@ -1,7 +1,13 @@
 # Test Reference Documentation
 
 ## Overview
-This document provides traceability for all UI tests to their originating design prompts, audit line items, or sprint documentation.
+This document provides traceability for all UI tests to their originating design prompts, audit line items, or sprint documentation. Test requirements are distributed across multiple source documents rather than centralized in a single test plan.
+
+## Source Documents for Test Requirements
+- **Test Planning Requirements**: `/docs/process_refinement.md`
+- **Voice Functionality Tests**: `/docs/VOICE_ACCESS_POLICY.md`
+- **UI Screen Validation**: `/docs/UI_ALIGNMENT_AUDIT.md`
+- **Test Reference & Traceability**: `/docs/TEST_REFERENCE.md` (this document)
 
 ## Test Traceability Requirements
 - All test files must include a comment or metadata block referencing:

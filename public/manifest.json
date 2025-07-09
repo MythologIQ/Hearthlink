@@ -1,0 +1,71 @@
+{
+  "short_name": "Hearthlink",
+  "name": "Hearthlink - AI Productivity System",
+  "description": "AI-Powered Productivity System with Voice Commands and Accessibility Features",
+  "icons": [
+    {
+      "src": "assets/icon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "assets/Hearthlink.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "assets/Hearthlink.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#667eea",
+  "background_color": "#667eea",
+  "orientation": "landscape-primary",
+  "categories": ["productivity", "utilities", "accessibility"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "Open Alden",
+      "short_name": "Alden",
+      "description": "Open Alden AI assistant",
+      "url": "/?persona=alden",
+      "icons": [
+        {
+          "src": "assets/Alden.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Open Dashboard",
+      "short_name": "Dashboard",
+      "description": "Open productivity dashboard",
+      "url": "/?persona=dashboard",
+      "icons": [
+        {
+          "src": "assets/Core.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Voice Commands",
+      "short_name": "Voice",
+      "description": "Activate voice interface",
+      "url": "/?voice=true",
+      "icons": [
+        {
+          "src": "assets/icon.ico",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+} 

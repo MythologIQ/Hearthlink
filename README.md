@@ -1,130 +1,85 @@
-# ![Hearthlink](https://github.com/user-attachments/assets/a4ef30dd-d0f0-4150-8eb1-f7945c2f6897)
-
-> ⚡ **This README is the authoritative project overview for Hearthlink. All module and test documentation is found in `/docs/` or per-module folders. Please keep this README as the single source of truth.**
-
----
-
 # Hearthlink
 
-Hearthlink is a local-first, persona-aware AI companion framework designed for collaborative, ethical, and privacy-respecting AI orchestration on your desktop.
+## Overview
+Hearthlink is an AI agent orchestration system with voice interaction capabilities, designed for secure, multi-agent collaboration and user assistance.
 
-## 🔥 Overview
+## Voice Interaction System
 
-- **Persona-Aware**: Evolutionary and behavioral AI companions (Alden, Alice, Mimic)
-- **Modular**: Every major feature is its own independently versioned, audited module
-- **Privacy-First**: Local encrypted memory, no forced cloud, full user control
-- **Platinum-Standard Safety**: Ethical rails, audit trails, dependency mitigation
-- **Zero-Trust Security**: Sentry oversight, plugin sandboxing, no auto-internet calls
+### Voice Routing & Agent Management
+- **Multi-Agent Support**: Alden, Alice, Mimic, Sentry, and external agents
+- **Voice HUD**: Real-time voice input display and agent selection interface
+- **Misroute Recovery**: Alden handles all voice misroutes via intelligent recovery dialogue
+- **Agent Deference**: Agents can suggest better-suited agents for specific tasks
 
-## 🏗️ System Architecture
+### Voice Policy Compliance
+- **Local Agents**: Fully conversational with name-based addressing
+- **External Agents**: Disabled by default, require explicit permission activation
+- **Offline Mode**: Dynamic detection with local agent fallback
+- **Authentication**: Secure mode activation with challenge/PIN system
 
-**Core Modules:**
-- **Alden** – Evolutionary Companion AI
-- **Alice** – Behavioral/Cognitive Support
-- **Mimic** – Dynamic Persona Engine
-- **Vault** – Persona-Aware Secure Memory Store
-- **Core** – Communication Switch & Moderator
-- **Synapse** – Secure Plugin/API Gateway
-- **Sentry** – Security, Compliance, Oversight
+## Test-Driven Development
 
-> **See [`/docs/hearthlink_system_documentation_master.md`](./docs/hearthlink_system_documentation_master.md) for full architecture diagrams and system flow.**
+### Distributed Test Policy Structure
+Test requirements are distributed across multiple source documents rather than centralized in a single test plan:
 
----
+- **Test Planning Requirements**: `/docs/process_refinement.md`
+- **Voice Functionality Tests**: `/docs/VOICE_ACCESS_POLICY.md`
+- **UI Screen Validation**: `/docs/UI_ALIGNMENT_AUDIT.md`
+- **Test Reference & Traceability**: `/docs/TEST_REFERENCE.md`
 
-## 🚀 Quick Start
+### Test Implementation Standards
+- **Feature Branches**: All tests under `feature/ui-test-*` branches
+- **Commit Format**: `UI_TEST: [FEATURE_ID] - [Description] (Source: [audit/sprint/etc.])`
+- **Pass Rate**: 100% required for merge approval
+- **JSON Logging**: Required for all state/data tests
 
-### Prerequisites
-- Python 3.8 or higher
-- Windows 10+ (primary target), macOS, or Linux
+## Documentation Structure
 
-### Installation
+### Core Policy Documents
+- **Voice Access Policy**: `/docs/VOICE_ACCESS_POLICY.md` - Voice interaction rules and system behavior
+- **UI Alignment Audit**: `/docs/UI_ALIGNMENT_AUDIT.md` - Approved UI screens and validation requirements
+- **Process Refinement**: `/docs/process_refinement.md` - Development standards and compliance requirements
 
-```bash
-git clone https://github.com/WulfForge/Hearthlink.git
-cd Hearthlink
-python src/main.py
-Logs:
-Windows: %LOCALAPPDATA%\Hearthlink\logs\hearthlink.log
-Unix-like: ~/.hearthlink/logs/hearthlink.log
-(Automatic directory creation, 10MB rotation, 5 backup files)
+### User Documentation
+- **User Manual**: `/docs/USER_MANUAL.md` - Voice interaction guide and troubleshooting
+- **Feature Map**: `/docs/FEATURE_MAP.md` - Feature implementation status and traceability
 
-Tests:
+### Test Documentation
+- **Test Reference**: `/docs/TEST_REFERENCE.md` - Test traceability and compliance documentation
+- **Sprint Completion Log**: `/docs/SPRINT_COMPLETION_LOG.md` - Sprint status and implementation uncertainties
 
-python tests/test_logging.py
-See /docs/ for complete test suites and QA checklists.
+## Quick Start
 
-🌟 Key Features
-Global Orchestration: Run background across all processes (desktop, terminal, system tray)
+### Voice Interaction
+1. **Enable Voice**: Ensure voice interaction is enabled in settings
+2. **Address Agents**: Say "Hey Alden" or "Alice, can you help me..."
+3. **Use Voice HUD**: Visual interface for agent selection and input display
+4. **Trust Recovery**: Let Alden handle misroutes and suggest better agents
 
-Alice: Empathic, neurodivergent-aware support, non-clinical
+### Development
+1. **Feature Branches**: Create `feature/ui-test-*` branches for all UI work
+2. **Test Compliance**: Ensure 100% test pass rate before merge
+3. **Documentation**: Update relevant policy and audit documents
+4. **Traceability**: Link all changes to source documents and feature IDs
 
-Alden: Evolutionary feedback, context-tracking, LLM integration
+## Architecture
 
-Mimic: Extensible persona, plugin system, audit sandbox
+### Core Components
+- **Core**: Agent orchestration and session management
+- **Vault**: Memory management and audit logging
+- **Synapse**: Plugin management and external integrations
+- **Sentry**: Security monitoring and kill switch functionality
 
-Vault: Secure, encrypted, persona & communal memory
+### Voice System
+- **Voice HUD**: Universal voice interface with live transcript
+- **Agent Routing**: Intelligent routing with misroute recovery
+- **Authentication**: Secure mode activation for system modifications
+- **Logging**: Complete session logging and audit trail
 
-Core: Multi-agent orchestration, roundtable, session management
+## Support
 
-Sentry: Local-only security, audit, anomaly detection
-
-Synapse: Plugin manifest system, sandboxed external API
-
-🛡️ Compliance & Safety
-PLATINUM_BLOCKERS.md: See /docs/PLATINUM_BLOCKERS.md for all compliance, ethics, and neurodivergent support standards
-
-User Sovereignty: User is always in control
-
-MIT License: Permissive, but users are reminded of ethical guardrails
-
-📚 Module & Testing Index
-Major Modules (Details in /docs/ or /src/<module>/README.md)
-
-Alden: /src/personas/alden.py
-
-Alice: /src/personas/alice.py
-
-Mimic: /src/personas/mimic.py
-
-Vault: /src/vault/vault.py
-
-Core: /src/core/core.py
-
-Synapse: /src/synapse/synapse.py
-
-Sentry: /src/sentry/sentry.py
-
-Testing:
-
-Core tests: /tests/test_core_multi_agent.py, /tests/test_core_memory_management.py, /tests/run_core_tests.py
-
-QA Checklist: /docs/appendix_h_developer_qa_platinum_checklists.md
-
-See /docs/ for all implementation, integration, and testing details.
-
-⚙️ Development Workflow
-Modular, Branch-Per-Feature:
-See Process Refinement
-
-Regular pushes to GitHub required for every milestone
-
-Single README in root is authoritative (all others are legacy and will be removed)
-
-🤝 Contribution & Access
-Private Repo: Access by invitation
-
-Development managed via feature branches and issue tracker
-
-All PRs require review and variance report for merge
-
-📝 License
-MIT License – See LICENSE
-
-📞 Contact, Status, Disclaimer
-Closed Beta – Not public, request access via maintainer
-
-Disclaimer: Hearthlink and Alice are for productivity/support only—not medical or therapeutic tools.
-
-Open, honest, transparent… Real.
-
-This README supersedes all prior module-specific or legacy README files. Please maintain this file as the project’s single authoritative overview.
+For questions about voice interaction, testing, or development:
+- **Voice Policy**: `/docs/VOICE_ACCESS_POLICY.md`
+- **UI Requirements**: `/docs/UI_ALIGNMENT_AUDIT.md`
+- **Process Standards**: `/docs/process_refinement.md`
+- **Contact**: `system@hearthlink.local`

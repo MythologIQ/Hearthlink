@@ -1,0 +1,13 @@
+/* Ensure Tailwind is loaded first from CDN */
+/* Basic body fallback - Tailwind should override this if loaded correctly */
+body {
+  background-color: #1C1C2E; /* Matches --brand-primary-bg from index.html */
+  margin: 0;
+  font-family: 'Inter', sans-serif; /* Matches default font */
+  height: 100%;
+  overflow: hidden; /* To prevent scrollbars if content overflows initially */
+}
+
+#root {
+  height: 100%;
+}
