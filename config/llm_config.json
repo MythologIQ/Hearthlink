@@ -1,0 +1,80 @@
+{
+  "local_llm": {
+    "provider": "ollama",
+    "host": "localhost",
+    "port": 11434,
+    "model": "llama3.2:latest",
+    "context_length": 32768,
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "timeout": 120000,
+    "max_tokens": 4096,
+    "stream": true
+  },
+  "embedding_model": {
+    "provider": "ollama",
+    "model": "nomic-embed-text:latest",
+    "dimensions": 1536,
+    "max_input_length": 8192,
+    "batch_size": 32
+  },
+  "rag_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+    "max_retrieved_chunks": 5,
+    "similarity_threshold": 0.7,
+    "rerank_enabled": true,
+    "rerank_model": "cross-encoder/ms-marco-TinyBERT-L-2-v2"
+  },
+  "cag_config": {
+    "context_window": 16384,
+    "max_context_chunks": 10,
+    "context_decay_factor": 0.8,
+    "relevance_threshold": 0.6,
+    "dynamic_context_enabled": true
+  },
+  "memory_slices": {
+    "episodic_memory": {
+      "max_episodes": 1000,
+      "retention_days": 90,
+      "importance_threshold": 0.5,
+      "compression_enabled": true
+    },
+    "semantic_memory": {
+      "max_concepts": 10000,
+      "relationship_depth": 3,
+      "concept_decay_rate": 0.01,
+      "auto_consolidation": true
+    },
+    "procedural_memory": {
+      "max_procedures": 500,
+      "success_threshold": 0.8,
+      "adaptation_rate": 0.1,
+      "optimization_enabled": true
+    }
+  },
+  "knowledge_graph": {
+    "entity_extraction": {
+      "model": "spacy/en_core_web_sm",
+      "confidence_threshold": 0.8,
+      "max_entities_per_chunk": 20
+    },
+    "relationship_extraction": {
+      "model": "rebel-large",
+      "confidence_threshold": 0.7,
+      "max_relationships_per_chunk": 15
+    },
+    "graph_construction": {
+      "merge_threshold": 0.9,
+      "prune_threshold": 0.3,
+      "max_depth": 5,
+      "community_detection": true
+    }
+  },
+  "fallback_config": {
+    "enabled": true,
+    "cached_responses": true,
+    "offline_mode": true,
+    "static_knowledge_base": "/data/fallback_knowledge.json"
+  }
+}

@@ -577,6 +577,69 @@ async def cleanup_system(
         logger.error(f"System cleanup failed: {e}")
         raise HTTPException(status_code=500, detail="System cleanup failed")
 
+# Settings management endpoints
+
+class SettingsUpdateRequest(BaseModel):
+    """Settings update request."""
+    settings: Dict[str, Any] = Field(..., description="Settings data")
+
+@app.post("/api/settings", response_model=APIResponse)
+async def save_settings(request: SettingsUpdateRequest):
+    """Save Hearthlink settings."""
+    try:
+        import os
+        import json
+        from pathlib import Path
+        
+        # Create settings directory if it doesn't exist
+        settings_dir = Path("hearthlink_data/settings")
+        settings_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Save settings to file
+        settings_file = settings_dir / "hearthlink_settings.json"
+        with open(settings_file, 'w') as f:
+            json.dump(request.settings, f, indent=2)
+        
+        return APIResponse(
+            status="success",
+            message="Settings saved successfully",
+            data={"settings_file": str(settings_file)}
+        )
+    except Exception as e:
+        logger.error(f"Failed to save settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to save settings: {str(e)}")
+
+@app.get("/api/settings", response_model=APIResponse)
+async def get_settings():
+    """Get Hearthlink settings."""
+    try:
+        import os
+        import json
+        from pathlib import Path
+        
+        settings_file = Path("hearthlink_data/settings/hearthlink_settings.json")
+        
+        if settings_file.exists():
+            with open(settings_file, 'r') as f:
+                settings = json.load(f)
+        else:
+            # Return default settings
+            settings = {
+                "llm": {"model": "llama3.2", "temperature": 0.7},
+                "vault": {"encryption": True},
+                "synapse": {"sandbox": True},
+                "sentry": {"monitoring": True}
+            }
+        
+        return APIResponse(
+            status="success",
+            message="Settings retrieved successfully",
+            data=settings
+        )
+    except Exception as e:
+        logger.error(f"Failed to get settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get settings: {str(e)}")
+
 # Health check endpoint
 
 @app.get("/api/synapse/health", response_model=APIResponse)

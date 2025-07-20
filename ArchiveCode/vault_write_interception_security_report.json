@@ -1,0 +1,83 @@
+{
+  "security_compliance_report": {
+    "test_suite": "Vault Write Interception Security Test",
+    "timestamp": "2025-07-11T18:36:40.376987",
+    "compliance_status": "NON-COMPLIANT",
+    "security_score": 0,
+    "summary": {
+      "total_tests": 6,
+      "passed": 4,
+      "failed": 2,
+      "critical_failures": 2,
+      "security_score": 0
+    },
+    "test_results": [
+      {
+        "test_name": "Direct File Write Blocking",
+        "status": "FAIL",
+        "details": "CRITICAL: Direct file writes are not intercepted - 4 files written without authorization",
+        "critical": true,
+        "timestamp": "2025-07-11T18:36:40.361159"
+      },
+      {
+        "test_name": "Vault Proxy Routing Security",
+        "status": "PASS",
+        "details": "All unauthorized write operations blocked: 4/4",
+        "critical": false,
+        "timestamp": "2025-07-11T18:36:40.364089"
+      },
+      {
+        "test_name": "Token Validation Bypass Attempts",
+        "status": "PASS",
+        "details": "All bypass attempts blocked: 11/11",
+        "critical": false,
+        "timestamp": "2025-07-11T18:36:40.366060"
+      },
+      {
+        "test_name": "Permission Escalation Attempts",
+        "status": "PASS",
+        "details": "All escalation attempts blocked: 4/4",
+        "critical": false,
+        "timestamp": "2025-07-11T18:36:40.367796"
+      },
+      {
+        "test_name": "Audit Trail Integrity",
+        "status": "PASS",
+        "details": "Audit trail complete: 7 entries, 4 token events, 1 blocked operations",
+        "critical": false,
+        "timestamp": "2025-07-11T18:36:40.371296"
+      },
+      {
+        "test_name": "File System Protection",
+        "status": "FAIL",
+        "details": "File system vulnerable to attacks: 0/7 blocked",
+        "critical": true,
+        "timestamp": "2025-07-11T18:36:40.375458"
+      }
+    ],
+    "security_violations": [
+      {
+        "test": "Direct File Write Blocking",
+        "details": "CRITICAL: Direct file writes are not intercepted - 4 files written without authorization",
+        "timestamp": "2025-07-11T18:36:40.361164"
+      },
+      {
+        "test": "File System Protection",
+        "details": "File system vulnerable to attacks: 0/7 blocked",
+        "timestamp": "2025-07-11T18:36:40.375462"
+      }
+    ],
+    "recommendations": [
+      "Implement OS-level file system access controls",
+      "Add application-level write interception middleware",
+      "Implement mandatory access control (MAC) policies",
+      "Add real-time monitoring for unauthorized file access",
+      "Implement file system sandboxing for application processes",
+      "Strengthen token validation mechanisms",
+      "Implement additional permission checks",
+      "Add rate limiting for write operations",
+      "Enhance audit logging with detailed stack traces",
+      "Implement automated security testing in CI/CD pipeline"
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "servers": {
+    "filesystem": {
+      "command": "mcp-server-filesystem",
+      "args": ["/mnt/g/MythologIQ/Hearthlink"],
+      "env": {}
+    },
+    "github": {
+      "command": "mcp-server-github",
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+      }
+    },
+    "memory": {
+      "command": "mcp-server-memory",
+      "env": {}
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "env": {}
+    },
+    "magic-ui": {
+      "command": "mcp",
+      "env": {}
+    },
+    "puppeteer": {
+      "command": "mcp-server-puppeteer",
+      "env": {}
+    },
+    "sequential": {
+      "command": "mcp-server-sequential-thinking",
+      "env": {}
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp"],
+      "env": {}
+    },
+    "discord": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-discord"],
+      "env": {
+        "DISCORD_BOT_TOKEN": "",
+        "DISCORD_APPLICATION_ID": ""
+      }
+    }
+  }
+}

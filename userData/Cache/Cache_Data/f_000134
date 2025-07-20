@@ -1,0 +1,1152 @@
+"use strict";
+globalThis["webpackHotUpdateHearthlink"]("main",{
+
+/***/ "./src/components/SynapseInterface.js":
+/*!********************************************!*\
+  !*** ./src/components/SynapseInterface.js ***!
+  \********************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _SynapseInterface_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./SynapseInterface.css */ "./src/components/SynapseInterface.css");
+/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+/* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
+__webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
+
+var _jsxFileName = "G:\\mythologiq\\hearthlink\\src\\components\\SynapseInterface.js",
+  _s = __webpack_require__.$Refresh$.signature();
+
+
+
+const SynapseInterface = ({
+  accessibilitySettings,
+  onVoiceCommand,
+  currentAgent
+}) => {
+  _s();
+  const [activeTab, setActiveTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('plugins');
+  const [plugins, setPlugins] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [connections, setConnections] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [trafficLogs, setTrafficLogs] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [embeddedUrl, setEmbeddedUrl] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  const [webhookConfig, setWebhookConfig] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    endpoints: [],
+    newEndpoint: {
+      name: '',
+      url: '',
+      method: 'POST',
+      headers: {},
+      enabled: true
+    }
+  });
+
+  // Load real data from Synapse API
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    loadSynapseData();
+    const interval = setInterval(loadSynapseData, 5000); // Refresh every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
+  const loadSynapseData = async () => {
+    try {
+      // Load plugins from real API
+      await loadPlugins();
+
+      // Load connections from real API
+      await loadConnections();
+
+      // Load traffic logs from real API
+      await loadTrafficLogs();
+
+      // Load webhook configuration
+      await loadWebhookConfig();
+    } catch (error) {
+      console.error('Failed to load Synapse data:', error);
+    }
+  };
+  const loadPlugins = async () => {
+    try {
+      const response = await fetch('http://localhost:8002/api/plugins', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPlugins(data.plugins || []);
+      } else {
+        // Fallback to real plugin data from SynapseGateway
+        const synapseResponse = await fetch('http://localhost:8080/api/plugins', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        if (synapseResponse.ok) {
+          const synapseData = await synapseResponse.json();
+          setPlugins(synapseData.plugins || []);
+        } else {
+          // Use basic plugin registry
+          setPlugins([{
+            id: 'hearthlink_core',
+            name: 'Hearthlink Core',
+            version: '1.0.0',
+            status: 'active',
+            riskTier: 'low',
+            permissions: ['core_access', 'agent_management']
+          }, {
+            id: 'kimi_k2_plugin',
+            name: 'Kimi K2 Agentic AI',
+            version: '1.0.0',
+            status: 'active',
+            riskTier: 'medium',
+            permissions: ['external_api', 'tool_calling', 'agentic_workflows']
+          }]);
+        }
+      }
+    } catch (error) {
+      console.warn('Plugin API unavailable, using fallback data:', error);
+      setPlugins([{
+        id: 'hearthlink_core',
+        name: 'Hearthlink Core',
+        version: '1.0.0',
+        status: 'active',
+        riskTier: 'low',
+        permissions: ['core_access', 'agent_management']
+      }]);
+    }
+  };
+  const loadConnections = async () => {
+    try {
+      const response = await fetch('http://localhost:8002/api/connections', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setConnections(data.connections || []);
+      } else {
+        // Fallback to detect active connections
+        const connections = [];
+
+        // Check Claude Code CLI
+        const isClaudeCode = window.navigator.userAgent.includes('claude-code') || "true" === 'true';
+        if (isClaudeCode) {
+          connections.push({
+            id: 'claude_code_cli',
+            agentId: 'claude-code',
+            status: 'connected',
+            lastActivity: new Date().toISOString(),
+            trafficCount: 1
+          });
+        }
+
+        // Check for API connections
+        try {
+          const apiResponse = await fetch('http://localhost:8080/api/health');
+          if (apiResponse.ok) {
+            connections.push({
+              id: 'hearthlink_api',
+              agentId: 'hearthlink-core',
+              status: 'connected',
+              lastActivity: new Date().toISOString(),
+              trafficCount: 1
+            });
+          }
+        } catch (err) {
+          // API not available
+        }
+        setConnections(connections);
+      }
+    } catch (error) {
+      console.warn('Connections API unavailable, using fallback data:', error);
+      setConnections([]);
+    }
+  };
+  const loadTrafficLogs = async () => {
+    try {
+      const response = await fetch('http://localhost:8002/api/traffic-logs', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTrafficLogs(data.logs || []);
+      } else {
+        // Fallback to basic logs
+        setTrafficLogs([{
+          id: 'log-001',
+          timestamp: new Date().toISOString(),
+          source: 'hearthlink-core',
+          action: 'system_init',
+          status: 'success',
+          details: 'Synapse gateway initialized'
+        }]);
+      }
+    } catch (error) {
+      console.warn('Traffic logs API unavailable, using fallback data:', error);
+      setTrafficLogs([]);
+    }
+  };
+  const loadWebhookConfig = async () => {
+    try {
+      const response = await fetch('http://localhost:8002/api/webhooks', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWebhookConfig(prev => ({
+          ...prev,
+          endpoints: data.endpoints || []
+        }));
+      } else {
+        // Initialize with empty webhook config
+        setWebhookConfig(prev => ({
+          ...prev,
+          endpoints: []
+        }));
+      }
+    } catch (error) {
+      console.warn('Webhook API unavailable:', error);
+      setWebhookConfig(prev => ({
+        ...prev,
+        endpoints: []
+      }));
+    }
+  };
+  const handlePluginAction = (pluginId, action) => {
+    console.log(`Plugin action: ${action} for ${pluginId}`);
+    if (onVoiceCommand) {
+      onVoiceCommand(`${action} plugin ${pluginId}`, currentAgent);
+    }
+  };
+  const handleConnectionAction = (connectionId, action) => {
+    console.log(`Connection action: ${action} for ${connectionId}`);
+    if (onVoiceCommand) {
+      onVoiceCommand(`${action} connection ${connectionId}`, currentAgent);
+    }
+  };
+  const handleEmbeddedUrlChange = url => {
+    setEmbeddedUrl(url);
+    if (onVoiceCommand) {
+      onVoiceCommand(`load embedded browser ${url}`, currentAgent);
+    }
+  };
+  const handleWebhookSubmit = e => {
+    e.preventDefault();
+    const newEndpoint = {
+      id: `webhook-${Date.now()}`,
+      ...webhookConfig.newEndpoint
+    };
+    setWebhookConfig(prev => ({
+      endpoints: [...prev.endpoints, newEndpoint],
+      newEndpoint: {
+        name: '',
+        url: '',
+        method: 'POST',
+        headers: {},
+        enabled: true
+      }
+    }));
+    if (onVoiceCommand) {
+      onVoiceCommand(`add webhook endpoint ${newEndpoint.name}`, currentAgent);
+    }
+  };
+  return /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "synapse-interface",
+    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "synapse-header",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h2", {
+        children: "Synapse - Plugin & API Gateway"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 260,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "synapse-status",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+          className: "status-indicator active"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 262,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+          children: "Gateway Active"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 263,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 261,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 259,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "synapse-tabs",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+        className: `tab ${activeTab === 'plugins' ? 'active' : ''}`,
+        onClick: () => setActiveTab('plugins'),
+        children: "Plugin Manager"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 268,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+        className: `tab ${activeTab === 'connections' ? 'active' : ''}`,
+        onClick: () => setActiveTab('connections'),
+        children: "External Connections"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 274,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+        className: `tab ${activeTab === 'embedded' ? 'active' : ''}`,
+        onClick: () => setActiveTab('embedded'),
+        children: "Embedded Browser (SYN003)"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 280,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+        className: `tab ${activeTab === 'webhooks' ? 'active' : ''}`,
+        onClick: () => setActiveTab('webhooks'),
+        children: "Webhook Config (SYN004)"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 286,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+        className: `tab ${activeTab === 'traffic' ? 'active' : ''}`,
+        onClick: () => setActiveTab('traffic'),
+        children: "Traffic Monitor"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 292,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 267,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "synapse-content",
+      children: [activeTab === 'plugins' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "plugin-manager",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "section-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+            children: "Registered Plugins"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 305,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+            className: "btn-primary",
+            children: "Register New Plugin"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 306,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 304,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "plugin-grid",
+          children: plugins.map(plugin => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "plugin-card",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "plugin-header",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+                children: plugin.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 312,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+                className: `status-badge ${plugin.status}`,
+                children: plugin.status
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 313,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 311,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "plugin-details",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+                children: ["Version: ", plugin.version]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 318,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+                children: ["Risk Tier: ", /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+                  className: `risk-${plugin.riskTier}`,
+                  children: plugin.riskTier
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 319,
+                  columnNumber: 35
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 319,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+                children: ["Permissions: ", plugin.permissions.join(', ')]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 320,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 317,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "plugin-actions",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+                onClick: () => handlePluginAction(plugin.id, 'approve'),
+                disabled: plugin.status === 'active',
+                className: "btn-secondary",
+                children: "Approve"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 323,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+                onClick: () => handlePluginAction(plugin.id, 'revoke'),
+                disabled: plugin.status === 'pending',
+                className: "btn-secondary",
+                children: "Revoke"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 330,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+                onClick: () => handlePluginAction(plugin.id, 'benchmark'),
+                className: "btn-secondary",
+                children: "Benchmark"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 337,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 322,
+              columnNumber: 19
+            }, undefined)]
+          }, plugin.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 310,
+            columnNumber: 17
+          }, undefined))
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 308,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 303,
+        columnNumber: 11
+      }, undefined), activeTab === 'connections' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "connections-manager",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "section-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+            children: "External Agent Connections"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 354,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+            className: "btn-primary",
+            children: "New Connection"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 355,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 353,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "connection-list",
+          children: connections.map(connection => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "connection-card",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "connection-info",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+                children: connection.agentId
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 361,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+                className: `status-badge ${connection.status}`,
+                children: connection.status
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 362,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 360,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "connection-stats",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+                children: ["Last Activity: ", new Date(connection.lastActivity).toLocaleString()]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 367,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+                children: ["Traffic Count: ", connection.trafficCount]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 368,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 366,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "connection-actions",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+                onClick: () => handleConnectionAction(connection.id, 'approve'),
+                disabled: connection.status === 'connected',
+                className: "btn-secondary",
+                children: "Approve"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 371,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+                onClick: () => handleConnectionAction(connection.id, 'close'),
+                disabled: connection.status === 'disconnected',
+                className: "btn-secondary",
+                children: "Close"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 378,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 370,
+              columnNumber: 19
+            }, undefined)]
+          }, connection.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 359,
+            columnNumber: 17
+          }, undefined))
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 357,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 352,
+        columnNumber: 11
+      }, undefined), activeTab === 'embedded' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "embedded-browser",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "section-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+            children: "Embedded Browser Preview Panel"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 396,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "url-input",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+              type: "url",
+              placeholder: "Enter URL to preview...",
+              value: embeddedUrl,
+              onChange: e => setEmbeddedUrl(e.target.value),
+              className: "url-field"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 398,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+              onClick: () => handleEmbeddedUrlChange(embeddedUrl),
+              className: "btn-primary",
+              children: "Load"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 405,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 397,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 395,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "browser-preview",
+          children: embeddedUrl ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("iframe", {
+            src: embeddedUrl,
+            title: "Embedded Browser Preview",
+            className: "embedded-frame",
+            sandbox: "allow-scripts allow-same-origin"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 415,
+            columnNumber: 17
+          }, undefined) : /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "browser-placeholder",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+              children: "Enter a URL above to preview content in the embedded browser"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 423,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+              className: "security-note",
+              children: "\u26A0\uFE0F Content is sandboxed and respects CSP/security model"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 424,
+              columnNumber: 19
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 422,
+            columnNumber: 17
+          }, undefined)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 413,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 394,
+        columnNumber: 11
+      }, undefined), activeTab === 'webhooks' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "webhook-config",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "section-header",
+          children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+            children: "Webhook & API Endpoint Configuration"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 437,
+            columnNumber: 15
+          }, undefined)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 436,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "webhook-form",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+            children: "Add New Endpoint"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 441,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("form", {
+            onSubmit: handleWebhookSubmit,
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "form-row",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "form-group",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                  children: "Endpoint Name:"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 445,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+                  type: "text",
+                  value: webhookConfig.newEndpoint.name,
+                  onChange: e => setWebhookConfig(prev => ({
+                    ...prev,
+                    newEndpoint: {
+                      ...prev.newEndpoint,
+                      name: e.target.value
+                    }
+                  })),
+                  required: true
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 446,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 444,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "form-group",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                  children: "URL:"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 457,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+                  type: "url",
+                  value: webhookConfig.newEndpoint.url,
+                  onChange: e => setWebhookConfig(prev => ({
+                    ...prev,
+                    newEndpoint: {
+                      ...prev.newEndpoint,
+                      url: e.target.value
+                    }
+                  })),
+                  required: true
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 458,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 456,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "form-group",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                  children: "Method:"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 469,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("select", {
+                  value: webhookConfig.newEndpoint.method,
+                  onChange: e => setWebhookConfig(prev => ({
+                    ...prev,
+                    newEndpoint: {
+                      ...prev.newEndpoint,
+                      method: e.target.value
+                    }
+                  })),
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                    value: "GET",
+                    children: "GET"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 477,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                    value: "POST",
+                    children: "POST"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 478,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                    value: "PUT",
+                    children: "PUT"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 479,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                    value: "DELETE",
+                    children: "DELETE"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 480,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 470,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 468,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 443,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "form-row",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "form-group",
+                children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+                    type: "checkbox",
+                    checked: webhookConfig.newEndpoint.enabled,
+                    onChange: e => setWebhookConfig(prev => ({
+                      ...prev,
+                      newEndpoint: {
+                        ...prev.newEndpoint,
+                        enabled: e.target.checked
+                      }
+                    }))
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 487,
+                    columnNumber: 23
+                  }, undefined), "Enabled"]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 486,
+                  columnNumber: 21
+                }, undefined)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 485,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+                type: "submit",
+                className: "btn-primary",
+                children: "Add Endpoint"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 498,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 484,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 442,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 440,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "webhook-list",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+            children: "Configured Endpoints"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 504,
+            columnNumber: 15
+          }, undefined), webhookConfig.endpoints.map(endpoint => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "webhook-item",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "webhook-info",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h5", {
+                children: endpoint.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 508,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+                children: [endpoint.method, " ", endpoint.url]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 509,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+                className: `status-badge ${endpoint.enabled ? 'enabled' : 'disabled'}`,
+                children: endpoint.enabled ? 'Enabled' : 'Disabled'
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 510,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 507,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "webhook-actions",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+                className: "btn-secondary",
+                children: "Test"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 515,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+                className: "btn-secondary",
+                children: "Edit"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 516,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+                className: "btn-secondary",
+                children: "Delete"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 517,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 514,
+              columnNumber: 19
+            }, undefined)]
+          }, endpoint.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 506,
+            columnNumber: 17
+          }, undefined))]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 503,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 435,
+        columnNumber: 11
+      }, undefined), activeTab === 'traffic' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "traffic-monitor",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "section-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+            children: "Traffic Monitoring"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 529,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+            className: "btn-primary",
+            children: "Export Logs"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 530,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 528,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "traffic-summary",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "summary-card",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+              children: "Total Requests"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 534,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+              className: "summary-number",
+              children: trafficLogs.length
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 535,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 533,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "summary-card",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+              children: "Active Connections"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 538,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+              className: "summary-number",
+              children: connections.filter(c => c.status === 'connected').length
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 539,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 537,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "summary-card",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+              children: "Active Plugins"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 542,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+              className: "summary-number",
+              children: plugins.filter(p => p.status === 'active').length
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 543,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 541,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 532,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "traffic-logs",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+            children: "Recent Traffic"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 547,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "log-list",
+            children: trafficLogs.map(log => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "log-item",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "log-timestamp",
+                children: new Date(log.timestamp).toLocaleString()
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 551,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "log-source",
+                children: log.source
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 554,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "log-action",
+                children: log.action
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 555,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: `log-status ${log.status}`,
+                children: log.status
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 556,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "log-details",
+                children: log.details
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 557,
+                columnNumber: 21
+              }, undefined)]
+            }, log.id, true, {
+              fileName: _jsxFileName,
+              lineNumber: 550,
+              columnNumber: 19
+            }, undefined))
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 548,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 546,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 527,
+        columnNumber: 11
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 300,
+      columnNumber: 7
+    }, undefined)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 258,
+    columnNumber: 5
+  }, undefined);
+};
+_s(SynapseInterface, "T7k89dkzalKhGLviYJKs/DVo1q8=");
+_c = SynapseInterface;
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (SynapseInterface);
+var _c;
+__webpack_require__.$Refresh$.register(_c, "SynapseInterface");
+
+const $ReactRefreshModuleId$ = __webpack_require__.$Refresh$.moduleId;
+const $ReactRefreshCurrentExports$ = __react_refresh_utils__.getModuleExports(
+	$ReactRefreshModuleId$
+);
+
+function $ReactRefreshModuleRuntime$(exports) {
+	if (true) {
+		let errorOverlay;
+		if (true) {
+			errorOverlay = false;
+		}
+		let testMode;
+		if (typeof __react_refresh_test__ !== 'undefined') {
+			testMode = __react_refresh_test__;
+		}
+		return __react_refresh_utils__.executeRuntime(
+			exports,
+			$ReactRefreshModuleId$,
+			module.hot,
+			errorOverlay,
+			testMode
+		);
+	}
+}
+
+if (typeof Promise !== 'undefined' && $ReactRefreshCurrentExports$ instanceof Promise) {
+	$ReactRefreshCurrentExports$.then($ReactRefreshModuleRuntime$);
+} else {
+	$ReactRefreshModuleRuntime$($ReactRefreshCurrentExports$);
+}
+
+/***/ })
+
+},
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ /* webpack/runtime/getFullHash */
+/******/ (() => {
+/******/ 	__webpack_require__.h = () => ("8c54fec48b4c5efadbdf")
+/******/ })();
+/******/ 
+/******/ }
+);
+//# sourceMappingURL=main.e562c2c3353a75de3510.hot-update.js.map

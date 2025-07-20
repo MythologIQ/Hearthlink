@@ -25,11 +25,15 @@ import time
 import requests
 import logging
 import traceback
+import threading
+import queue
 from typing import Dict, Any, Optional, List, Union
 from pathlib import Path
 from datetime import datetime
 from dataclasses import dataclass, asdict
 from requests.exceptions import RequestException, Timeout, ConnectionError as RequestsConnectionError
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -117,11 +121,11 @@ class LLMErrorContext:
     error_type: str
     error_message: str
     traceback: str
-    request_id: Optional[str] = None
     engine: str
     model: str
     base_url: str
     timestamp: str
+    request_id: Optional[str] = None
     retry_count: int = 0
     response_status: Optional[int] = None
     response_headers: Optional[Dict[str, str]] = None
@@ -162,6 +166,102 @@ class CircuitBreaker:
             raise e
 
 
+class LLMConnectionPool:
+    """Connection pool manager for Local LLM stability."""
+    
+    def __init__(self, max_connections: int = 10, max_retries: int = 3):
+        self.max_connections = max_connections
+        self.max_retries = max_retries
+        self.active_connections = {}
+        self.pool_lock = threading.Lock()
+        self.health_check_interval = 30  # seconds
+        self.last_health_check = 0
+        
+        # Create session with retry strategy
+        self.session = requests.Session()
+        retry_strategy = Retry(
+            total=max_retries,
+            status_forcelist=[429, 500, 502, 503, 504],
+            method_whitelist=["HEAD", "GET", "POST"],
+            backoff_factor=1
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
+    
+    def get_connection(self, endpoint: str) -> requests.Session:
+        """Get or create a connection for the endpoint."""
+        with self.pool_lock:
+            if endpoint not in self.active_connections:
+                if len(self.active_connections) >= self.max_connections:
+                    # Remove oldest connection
+                    oldest_endpoint = min(self.active_connections.keys(), 
+                                        key=lambda k: self.active_connections[k]['last_used'])
+                    del self.active_connections[oldest_endpoint]
+                
+                self.active_connections[endpoint] = {
+                    'session': self.session,
+                    'last_used': time.time(),
+                    'error_count': 0,
+                    'last_error': None
+                }
+            
+            # Update last used time
+            self.active_connections[endpoint]['last_used'] = time.time()
+            return self.active_connections[endpoint]['session']
+    
+    def record_error(self, endpoint: str, error: Exception):
+        """Record an error for connection tracking."""
+        with self.pool_lock:
+            if endpoint in self.active_connections:
+                self.active_connections[endpoint]['error_count'] += 1
+                self.active_connections[endpoint]['last_error'] = str(error)
+    
+    def record_success(self, endpoint: str):
+        """Record a successful request."""
+        with self.pool_lock:
+            if endpoint in self.active_connections:
+                self.active_connections[endpoint]['error_count'] = 0
+                self.active_connections[endpoint]['last_error'] = None
+    
+    def health_check(self, endpoints: List[str]) -> Dict[str, bool]:
+        """Perform health check on all endpoints."""
+        current_time = time.time()
+        if current_time - self.last_health_check < self.health_check_interval:
+            return {}  # Skip if checked recently
+        
+        health_status = {}
+        for endpoint in endpoints:
+            try:
+                session = self.get_connection(endpoint)
+                response = session.get(f"{endpoint}/api/tags", timeout=5)
+                health_status[endpoint] = response.status_code == 200
+                if response.status_code == 200:
+                    self.record_success(endpoint)
+            except Exception as e:
+                health_status[endpoint] = False
+                self.record_error(endpoint, e)
+        
+        self.last_health_check = current_time
+        return health_status
+    
+    def get_pool_stats(self) -> Dict[str, Any]:
+        """Get connection pool statistics."""
+        with self.pool_lock:
+            return {
+                'active_connections': len(self.active_connections),
+                'max_connections': self.max_connections,
+                'connection_details': {
+                    endpoint: {
+                        'error_count': details['error_count'],
+                        'last_error': details['last_error'],
+                        'last_used': details['last_used']
+                    }
+                    for endpoint, details in self.active_connections.items()
+                }
+            }
+
+
 class LocalLLMClient:
     """
     Unified client for local LLM engines.
@@ -184,6 +284,13 @@ class LocalLLMClient:
         try:
             self.config = config
             self.logger = logger or HearthlinkLogger()
+            
+            # Initialize connection pool for stability
+            self.connection_pool = LLMConnectionPool(
+                max_connections=10,
+                max_retries=3
+            )
+            
             self.session = requests.Session()
             self.circuit_breaker = CircuitBreaker(
                 config.circuit_breaker_threshold,
@@ -610,13 +717,23 @@ class LocalLLMClient:
     def get_status(self) -> Dict[str, Any]:
         """Get LLM client status and health information."""
         try:
+            # Get connection pool health status
+            pool_stats = self.connection_pool.get_pool_stats()
+            health_status = self.connection_pool.health_check([self.config.base_url])
+            
             return {
                 "engine": self.config.engine,
                 "model": self.config.model,
                 "base_url": self.config.base_url,
                 "connected": True,
                 "timestamp": datetime.now().isoformat(),
-                "circuit_breaker_state": self.circuit_breaker.state if self.circuit_breaker else "disabled"
+                "circuit_breaker_state": self.circuit_breaker.state if self.circuit_breaker else "disabled",
+                "connection_pool": {
+                    "active_connections": pool_stats["active_connections"],
+                    "max_connections": pool_stats["max_connections"],
+                    "health_status": health_status
+                },
+                "endpoint_health": health_status.get(self.config.base_url, False)
             }
         except Exception as e:
             error_context = LLMErrorContext(

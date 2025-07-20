@@ -1,0 +1,1658 @@
+"use strict";
+globalThis["webpackHotUpdateHearthlink"]("main",{
+
+/***/ "./src/components/LocalLLMInterface.js":
+/*!*********************************************!*\
+  !*** ./src/components/LocalLLMInterface.js ***!
+  \*********************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _LocalLLMInterface_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./LocalLLMInterface.css */ "./src/components/LocalLLMInterface.css");
+/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+/* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
+__webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
+
+var _jsxFileName = "G:\\mythologiq\\hearthlink\\src\\components\\LocalLLMInterface.js",
+  _s = __webpack_require__.$Refresh$.signature();
+
+
+
+const LocalLLMInterface = ({
+  isVisible,
+  onClose
+}) => {
+  _s();
+  // Core state management
+  const [activeTab, setActiveTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('configuration');
+  const [llmConfig, setLlmConfig] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    engine: 'ollama',
+    base_url: 'http://localhost:11434',
+    model: 'llama2',
+    timeout: 30,
+    max_retries: 3,
+    temperature: 0.7,
+    max_tokens: 2048,
+    enable_retry: true,
+    enable_circuit_breaker: true
+  });
+
+  // Connection state
+  const [connectionStatus, setConnectionStatus] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('disconnected');
+  const [availableModels, setAvailableModels] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [isConnecting, setIsConnecting] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [connectionError, setConnectionError] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+
+  // Chat/Testing state
+  const [testMessages, setTestMessages] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [testInput, setTestInput] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  const [isGenerating, setIsGenerating] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+
+  // Voice integration state
+  const [voiceConfig, setVoiceConfig] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    enabled: false,
+    engine: 'web_speech_api',
+    voice: null,
+    language: 'en-US',
+    rate: 1.0,
+    pitch: 1.0,
+    volume: 1.0,
+    auto_speak: false
+  });
+  const [availableVoices, setAvailableVoices] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [isListening, setIsListening] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [isSpeaking, setIsSpeaking] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+
+  // Performance monitoring
+  const [performanceMetrics, setPerformanceMetrics] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    total_requests: 0,
+    successful_requests: 0,
+    failed_requests: 0,
+    average_response_time: 0,
+    last_response_time: 0,
+    circuit_breaker_state: 'CLOSED'
+  });
+
+  // Plugin state
+  const [installedPlugins, setInstalledPlugins] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [availablePlugins, setAvailablePlugins] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([{
+    id: 'ollama-optimizer',
+    name: 'Ollama Optimizer',
+    version: '1.0.0',
+    description: 'Optimizes Ollama model parameters for better performance',
+    compatible_engines: ['ollama'],
+    installed: false
+  }, {
+    id: 'voice-enhancer',
+    name: 'Voice Quality Enhancer',
+    version: '1.2.0',
+    description: 'Improves voice synthesis quality and naturalness',
+    compatible_engines: ['all'],
+    installed: false
+  }, {
+    id: 'response-analyzer',
+    name: 'Response Quality Analyzer',
+    version: '1.1.0',
+    description: 'Analyzes and scores LLM response quality',
+    compatible_engines: ['all'],
+    installed: false
+  }]);
+  const speechSynthesis = window.speechSynthesis;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (isVisible) {
+      loadConfiguration();
+      loadAvailableVoices();
+      initializeSpeechRecognition();
+    }
+  }, [isVisible]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (voiceConfig.enabled && voiceConfig.auto_speak && testMessages.length > 0) {
+      const lastMessage = testMessages[testMessages.length - 1];
+      if (lastMessage.type === 'assistant' && !lastMessage.spoken) {
+        speakText(lastMessage.content);
+        setTestMessages(prev => prev.map(msg => msg.id === lastMessage.id ? {
+          ...msg,
+          spoken: true
+        } : msg));
+      }
+    }
+  }, [testMessages, voiceConfig]);
+  const loadConfiguration = async () => {
+    try {
+      // Load configuration from Settings API
+      const response = await fetch('http://localhost:8003/api/settings');
+      if (response.ok) {
+        const settings = await response.json();
+
+        // Update LLM configuration with settings
+        if (settings.localLLM) {
+          setLlmConfig(prev => ({
+            ...prev,
+            engine: settings.localLLM.provider || prev.engine,
+            base_url: settings.localLLM.endpoint || prev.base_url,
+            model: settings.localLLM.model || prev.model,
+            temperature: settings.localLLM.temperature || prev.temperature,
+            max_tokens: settings.localLLM.maxTokens || prev.max_tokens,
+            timeout: settings.localLLM.healthCheckInterval ? settings.localLLM.healthCheckInterval / 1000 : prev.timeout
+          }));
+        }
+
+        // Update voice configuration if available
+        if (settings.voice) {
+          setVoiceConfig(prev => ({
+            ...prev,
+            enabled: settings.voice.enabled || prev.enabled,
+            language: settings.voice.language || prev.language
+          }));
+        }
+      } else {
+        console.warn('Could not load settings from API, using defaults');
+      }
+
+      // Load additional config from localStorage as fallback
+      const savedConfig = localStorage.getItem('hearthlink_llm_config');
+      if (savedConfig) {
+        const localConfig = JSON.parse(savedConfig);
+        setLlmConfig(prev => ({
+          ...prev,
+          ...localConfig
+        }));
+      }
+      const savedVoiceConfig = localStorage.getItem('hearthlink_voice_config');
+      if (savedVoiceConfig) {
+        const localVoiceConfig = JSON.parse(savedVoiceConfig);
+        setVoiceConfig(prev => ({
+          ...prev,
+          ...localVoiceConfig
+        }));
+      }
+
+      // Load performance metrics
+      const savedMetrics = localStorage.getItem('hearthlink_llm_metrics');
+      if (savedMetrics) {
+        setPerformanceMetrics(prev => ({
+          ...prev,
+          ...JSON.parse(savedMetrics)
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load configuration:', error);
+    }
+  };
+  const saveConfiguration = async () => {
+    try {
+      // Save to localStorage first
+      localStorage.setItem('hearthlink_llm_config', JSON.stringify(llmConfig));
+      localStorage.setItem('hearthlink_voice_config', JSON.stringify(voiceConfig));
+
+      // Save to Settings API
+      const response = await fetch('http://localhost:8003/api/settings');
+      if (response.ok) {
+        const currentSettings = await response.json();
+
+        // Update with current LLM and voice config
+        const updatedSettings = {
+          ...currentSettings,
+          localLLM: {
+            ...currentSettings.localLLM,
+            provider: llmConfig.engine,
+            endpoint: llmConfig.base_url,
+            model: llmConfig.model,
+            temperature: llmConfig.temperature,
+            maxTokens: llmConfig.max_tokens,
+            healthCheckInterval: llmConfig.timeout * 1000
+          },
+          voice: {
+            ...currentSettings.voice,
+            enabled: voiceConfig.enabled,
+            language: voiceConfig.language
+          }
+        };
+
+        // Save updated settings
+        const saveResponse = await fetch('http://localhost:8003/api/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updatedSettings)
+        });
+        if (saveResponse.ok) {
+          console.log('Configuration saved successfully');
+        } else {
+          console.warn('Failed to save configuration to API');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to save configuration:', error);
+    }
+  };
+  const loadAvailableVoices = () => {
+    if (speechSynthesis) {
+      const voices = speechSynthesis.getVoices();
+      setAvailableVoices(voices);
+      if (voices.length > 0 && !voiceConfig.voice) {
+        const defaultVoice = voices.find(voice => voice.default) || voices[0];
+        setVoiceConfig(prev => ({
+          ...prev,
+          voice: defaultVoice.name
+        }));
+      }
+    }
+  };
+  const initializeSpeechRecognition = () => {
+    if (SpeechRecognition) {
+      recognition.current = new SpeechRecognition();
+      recognition.current.continuous = false;
+      recognition.current.interimResults = false;
+      recognition.current.lang = voiceConfig.language;
+      recognition.current.onstart = () => {
+        setIsListening(true);
+      };
+      recognition.current.onend = () => {
+        setIsListening(false);
+      };
+      recognition.current.onresult = event => {
+        const transcript = event.results[0][0].transcript;
+        setTestInput(transcript);
+        handleSendMessage(transcript);
+      };
+      recognition.current.onerror = event => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+    }
+  };
+  const testConnection = async () => {
+    setIsConnecting(true);
+    setConnectionError(null);
+    const startTime = Date.now();
+    try {
+      // Test connection using Settings API
+      const testResponse = await fetch('http://localhost:8003/api/test/local-llm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          localLLM: llmConfig
+        })
+      });
+      const testResult = await testResponse.json();
+      if (testResult.success) {
+        setConnectionStatus('connected');
+
+        // Try to get available models
+        if (llmConfig.engine === 'ollama') {
+          try {
+            const modelsResponse = await fetch('http://localhost:8003/api/models/ollama');
+            const modelsData = await modelsResponse.json();
+            if (modelsData.success) {
+              setAvailableModels(modelsData.models.map(model => model.name));
+            } else {
+              setAvailableModels([llmConfig.model]);
+            }
+          } catch (error) {
+            console.warn('Could not fetch models:', error);
+            setAvailableModels([llmConfig.model]);
+          }
+        } else {
+          setAvailableModels([llmConfig.model]);
+        }
+        const responseTime = (Date.now() - startTime) / 1000;
+
+        // Update metrics
+        setPerformanceMetrics(prev => ({
+          ...prev,
+          total_requests: prev.total_requests + 1,
+          successful_requests: prev.successful_requests + 1,
+          last_response_time: responseTime,
+          average_response_time: (prev.average_response_time * (prev.total_requests - 1) + responseTime) / prev.total_requests
+        }));
+      } else {
+        throw new Error(testResult.error || 'Connection test failed');
+      }
+    } catch (error) {
+      setConnectionStatus('error');
+      setConnectionError(error.message);
+      const responseTime = (Date.now() - startTime) / 1000;
+      setPerformanceMetrics(prev => ({
+        ...prev,
+        total_requests: prev.total_requests + 1,
+        failed_requests: prev.failed_requests + 1,
+        last_response_time: responseTime
+      }));
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+  const handleSendMessage = async (message = testInput) => {
+    if (!message.trim() || isGenerating) return;
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: message.trim(),
+      timestamp: new Date()
+    };
+    setTestMessages(prev => [...prev, userMessage]);
+    setTestInput('');
+    setIsGenerating(true);
+    const startTime = Date.now();
+    try {
+      // Make actual API call to local LLM
+      const response = await fetch(`${llmConfig.base_url}/api/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: llmConfig.model,
+          prompt: message.trim(),
+          stream: false,
+          options: {
+            temperature: llmConfig.temperature,
+            num_predict: llmConfig.max_tokens,
+            num_ctx: 2048,
+            timeout: llmConfig.timeout * 1000
+          }
+        })
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      const assistantMessage = {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: data.response || 'No response generated',
+        timestamp: new Date(),
+        spoken: false
+      };
+      setTestMessages(prev => [...prev, assistantMessage]);
+      const responseTime = (Date.now() - startTime) / 1000;
+
+      // Update metrics
+      setPerformanceMetrics(prev => ({
+        ...prev,
+        total_requests: prev.total_requests + 1,
+        successful_requests: prev.successful_requests + 1,
+        last_response_time: responseTime,
+        average_response_time: (prev.average_response_time * (prev.total_requests - 1) + responseTime) / prev.total_requests
+      }));
+    } catch (error) {
+      console.error('LLM API Error:', error);
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'error',
+        content: `Error: ${error.message}`,
+        timestamp: new Date()
+      };
+      setTestMessages(prev => [...prev, errorMessage]);
+      const responseTime = (Date.now() - startTime) / 1000;
+      setPerformanceMetrics(prev => ({
+        ...prev,
+        total_requests: prev.total_requests + 1,
+        failed_requests: prev.failed_requests + 1,
+        last_response_time: responseTime
+      }));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  const speakText = text => {
+    if (!speechSynthesis || !voiceConfig.enabled) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    const selectedVoice = availableVoices.find(voice => voice.name === voiceConfig.voice);
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    utterance.rate = voiceConfig.rate;
+    utterance.pitch = voiceConfig.pitch;
+    utterance.volume = voiceConfig.volume;
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = event => {
+      console.error('Speech synthesis error:', event.error);
+      setIsSpeaking(false);
+    };
+    speechSynthesis.speak(utterance);
+  };
+  const startListening = () => {
+    if (recognition.current && !isListening) {
+      recognition.current.start();
+    }
+  };
+  const stopListening = () => {
+    if (recognition.current && isListening) {
+      recognition.current.stop();
+    }
+  };
+  const installPlugin = pluginId => {
+    const plugin = availablePlugins.find(p => p.id === pluginId);
+    if (plugin) {
+      setInstalledPlugins(prev => [...prev, {
+        ...plugin,
+        installed: true
+      }]);
+      setAvailablePlugins(prev => prev.map(p => p.id === pluginId ? {
+        ...p,
+        installed: true
+      } : p));
+    }
+  };
+  const uninstallPlugin = pluginId => {
+    setInstalledPlugins(prev => prev.filter(p => p.id !== pluginId));
+    setAvailablePlugins(prev => prev.map(p => p.id === pluginId ? {
+      ...p,
+      installed: false
+    } : p));
+  };
+  const renderConfigurationTab = () => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "llm-tab-content",
+    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "config-sections",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "config-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+          children: "LLM Engine Configuration"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 473,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "config-grid",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "config-field",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+              children: "Engine"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 476,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("select", {
+              value: llmConfig.engine,
+              onChange: e => setLlmConfig(prev => ({
+                ...prev,
+                engine: e.target.value
+              })),
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                value: "ollama",
+                children: "Ollama"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 481,
+                columnNumber: 17
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                value: "lmstudio",
+                children: "LM Studio"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 482,
+                columnNumber: 17
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                value: "custom",
+                children: "Custom Endpoint"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 483,
+                columnNumber: 17
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 477,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 475,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "config-field",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+              children: "Base URL"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 488,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+              type: "text",
+              value: llmConfig.base_url,
+              onChange: e => setLlmConfig(prev => ({
+                ...prev,
+                base_url: e.target.value
+              })),
+              placeholder: "http://localhost:11434"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 489,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 487,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "config-field",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+              children: "Model"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 498,
+              columnNumber: 15
+            }, undefined), availableModels.length > 0 ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("select", {
+              value: llmConfig.model,
+              onChange: e => setLlmConfig(prev => ({
+                ...prev,
+                model: e.target.value
+              })),
+              children: availableModels.map(model => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                value: model,
+                children: model
+              }, model, false, {
+                fileName: _jsxFileName,
+                lineNumber: 505,
+                columnNumber: 21
+              }, undefined))
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 500,
+              columnNumber: 17
+            }, undefined) : /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+              type: "text",
+              value: llmConfig.model,
+              onChange: e => setLlmConfig(prev => ({
+                ...prev,
+                model: e.target.value
+              })),
+              placeholder: "llama2"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 509,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 497,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "config-field",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+              children: "Temperature"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 519,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+              type: "range",
+              min: "0",
+              max: "2",
+              step: "0.1",
+              value: llmConfig.temperature,
+              onChange: e => setLlmConfig(prev => ({
+                ...prev,
+                temperature: parseFloat(e.target.value)
+              }))
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 520,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+              children: llmConfig.temperature
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 528,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 518,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "config-field",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+              children: "Max Tokens"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 532,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+              type: "number",
+              value: llmConfig.max_tokens,
+              onChange: e => setLlmConfig(prev => ({
+                ...prev,
+                max_tokens: parseInt(e.target.value)
+              })),
+              min: "1",
+              max: "8192"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 533,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 531,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "config-field",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+              children: "Timeout (seconds)"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 543,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+              type: "number",
+              value: llmConfig.timeout,
+              onChange: e => setLlmConfig(prev => ({
+                ...prev,
+                timeout: parseInt(e.target.value)
+              })),
+              min: "1",
+              max: "300"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 544,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 542,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 474,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "config-actions",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+            onClick: testConnection,
+            disabled: isConnecting,
+            children: isConnecting ? 'Testing...' : 'Test Connection'
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 555,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+            onClick: saveConfiguration,
+            children: "Save Configuration"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 558,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 554,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "connection-status",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: `status-indicator ${connectionStatus}`,
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+              className: "status-dot"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 563,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+              className: "status-text",
+              children: [connectionStatus === 'connected' && 'Connected', connectionStatus === 'disconnected' && 'Disconnected', connectionStatus === 'error' && 'Connection Error']
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 564,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 562,
+            columnNumber: 13
+          }, undefined), connectionError && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "error-details",
+            children: connectionError
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 571,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 561,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 472,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "config-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+          children: "Voice Integration"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 577,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "voice-config",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "config-field",
+            children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+                type: "checkbox",
+                checked: voiceConfig.enabled,
+                onChange: e => setVoiceConfig(prev => ({
+                  ...prev,
+                  enabled: e.target.checked
+                }))
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 581,
+                columnNumber: 17
+              }, undefined), "Enable Voice Integration"]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 580,
+              columnNumber: 15
+            }, undefined)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 579,
+            columnNumber: 13
+          }, undefined), voiceConfig.enabled && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)(react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "config-field",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                children: "Voice"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 593,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("select", {
+                value: voiceConfig.voice || '',
+                onChange: e => setVoiceConfig(prev => ({
+                  ...prev,
+                  voice: e.target.value
+                })),
+                children: availableVoices.map(voice => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                  value: voice.name,
+                  children: [voice.name, " (", voice.lang, ")"]
+                }, voice.name, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 599,
+                  columnNumber: 23
+                }, undefined))
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 594,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 592,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "config-field",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                children: "Language"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 607,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("select", {
+                value: voiceConfig.language,
+                onChange: e => setVoiceConfig(prev => ({
+                  ...prev,
+                  language: e.target.value
+                })),
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                  value: "en-US",
+                  children: "English (US)"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 612,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                  value: "en-GB",
+                  children: "English (UK)"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 613,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                  value: "es-ES",
+                  children: "Spanish"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 614,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                  value: "fr-FR",
+                  children: "French"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 615,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                  value: "de-DE",
+                  children: "German"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 616,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+                  value: "ja-JP",
+                  children: "Japanese"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 617,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 608,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 606,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "voice-controls",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "config-field",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                  children: ["Rate: ", voiceConfig.rate]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 623,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+                  type: "range",
+                  min: "0.5",
+                  max: "2",
+                  step: "0.1",
+                  value: voiceConfig.rate,
+                  onChange: e => setVoiceConfig(prev => ({
+                    ...prev,
+                    rate: parseFloat(e.target.value)
+                  }))
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 624,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 622,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "config-field",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                  children: ["Pitch: ", voiceConfig.pitch]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 635,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+                  type: "range",
+                  min: "0.5",
+                  max: "2",
+                  step: "0.1",
+                  value: voiceConfig.pitch,
+                  onChange: e => setVoiceConfig(prev => ({
+                    ...prev,
+                    pitch: parseFloat(e.target.value)
+                  }))
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 636,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 634,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "config-field",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                  children: ["Volume: ", voiceConfig.volume]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 647,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+                  type: "range",
+                  min: "0",
+                  max: "1",
+                  step: "0.1",
+                  value: voiceConfig.volume,
+                  onChange: e => setVoiceConfig(prev => ({
+                    ...prev,
+                    volume: parseFloat(e.target.value)
+                  }))
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 648,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 646,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 621,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "config-field",
+              children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+                  type: "checkbox",
+                  checked: voiceConfig.auto_speak,
+                  onChange: e => setVoiceConfig(prev => ({
+                    ...prev,
+                    auto_speak: e.target.checked
+                  }))
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 661,
+                  columnNumber: 21
+                }, undefined), "Auto-speak responses"]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 660,
+                columnNumber: 19
+              }, undefined)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 659,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 578,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 576,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 471,
+      columnNumber: 7
+    }, undefined)
+  }, void 0, false, {
+    fileName: _jsxFileName,
+    lineNumber: 470,
+    columnNumber: 5
+  }, undefined);
+  const renderTestingTab = () => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "llm-tab-content",
+    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "testing-interface",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "chat-messages",
+        children: [testMessages.map(message => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: `chat-message ${message.type}`,
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "message-content",
+            children: message.content
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 683,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "message-timestamp",
+            children: message.timestamp.toLocaleTimeString()
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 684,
+            columnNumber: 15
+          }, undefined), message.type === 'assistant' && voiceConfig.enabled && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+            className: "speak-button",
+            onClick: () => speakText(message.content),
+            disabled: isSpeaking,
+            children: "\uD83D\uDD0A"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 688,
+            columnNumber: 17
+          }, undefined)]
+        }, message.id, true, {
+          fileName: _jsxFileName,
+          lineNumber: 682,
+          columnNumber: 13
+        }, undefined)), isGenerating && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "chat-message assistant generating",
+          children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "typing-indicator",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {}, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 702,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {}, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 702,
+              columnNumber: 30
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {}, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 702,
+              columnNumber: 43
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 701,
+            columnNumber: 15
+          }, undefined)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 700,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 680,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "chat-input-area",
+        children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "input-controls",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("textarea", {
+            value: testInput,
+            onChange: e => setTestInput(e.target.value),
+            onKeyPress: e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            },
+            placeholder: "Type your message or use voice input...",
+            disabled: isGenerating,
+            rows: "2"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 710,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "input-buttons",
+            children: [voiceConfig.enabled && SpeechRecognition && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+              className: `voice-button ${isListening ? 'listening' : ''}`,
+              onClick: isListening ? stopListening : startListening,
+              disabled: isGenerating,
+              children: "\uD83C\uDFA4"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 726,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+              onClick: () => handleSendMessage(),
+              disabled: !testInput.trim() || isGenerating,
+              className: "send-button",
+              children: "Send"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 735,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 724,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 709,
+          columnNumber: 11
+        }, undefined)
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 708,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 679,
+      columnNumber: 7
+    }, undefined)
+  }, void 0, false, {
+    fileName: _jsxFileName,
+    lineNumber: 678,
+    columnNumber: 5
+  }, undefined);
+  const renderMonitoringTab = () => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "llm-tab-content",
+    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "monitoring-sections",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "metrics-grid",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "metric-card",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+            children: "Total Requests"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 754,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "metric-value",
+            children: performanceMetrics.total_requests
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 755,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 753,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "metric-card",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+            children: "Success Rate"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 759,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "metric-value",
+            children: [performanceMetrics.total_requests > 0 ? (performanceMetrics.successful_requests / performanceMetrics.total_requests * 100).toFixed(1) : 0, "%"]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 760,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 758,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "metric-card",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+            children: "Average Response Time"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 768,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "metric-value",
+            children: [performanceMetrics.average_response_time.toFixed(2), "s"]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 769,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 767,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "metric-card",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+            children: "Circuit Breaker"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 773,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: `metric-value status-${performanceMetrics.circuit_breaker_state.toLowerCase()}`,
+            children: performanceMetrics.circuit_breaker_state
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 774,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 772,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 752,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "monitoring-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+          children: "System Health"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 781,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "health-indicators",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "health-item",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+              className: "health-label",
+              children: "LLM Connection"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 784,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+              className: `health-status ${connectionStatus}`,
+              children: connectionStatus.toUpperCase()
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 785,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 783,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "health-item",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+              className: "health-label",
+              children: "Voice Integration"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 791,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+              className: `health-status ${voiceConfig.enabled ? 'connected' : 'disabled'}`,
+              children: voiceConfig.enabled ? 'ENABLED' : 'DISABLED'
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 792,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 790,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "health-item",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+              className: "health-label",
+              children: "Speech Recognition"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 798,
+              columnNumber: 15
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+              className: `health-status ${SpeechRecognition ? 'connected' : 'error'}`,
+              children: SpeechRecognition ? 'AVAILABLE' : 'NOT SUPPORTED'
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 799,
+              columnNumber: 15
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 797,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 782,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 780,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 751,
+      columnNumber: 7
+    }, undefined)
+  }, void 0, false, {
+    fileName: _jsxFileName,
+    lineNumber: 750,
+    columnNumber: 5
+  }, undefined);
+  const renderPluginsTab = () => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "llm-tab-content",
+    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "plugins-sections",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "plugins-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+          children: "Installed Plugins"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 813,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "plugins-list",
+          children: installedPlugins.length > 0 ? installedPlugins.map(plugin => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "plugin-card installed",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "plugin-info",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+                children: plugin.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 819,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+                children: plugin.description
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 820,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+                className: "plugin-version",
+                children: ["v", plugin.version]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 821,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 818,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+              className: "plugin-action uninstall",
+              onClick: () => uninstallPlugin(plugin.id),
+              children: "Uninstall"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 823,
+              columnNumber: 19
+            }, undefined)]
+          }, plugin.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 817,
+            columnNumber: 17
+          }, undefined)) : /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "no-plugins",
+            children: "No plugins installed"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 832,
+            columnNumber: 15
+          }, undefined)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 814,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 812,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "plugins-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+          children: "Available Plugins"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 838,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "plugins-list",
+          children: availablePlugins.filter(p => !p.installed).map(plugin => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+            className: "plugin-card available",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+              className: "plugin-info",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h4", {
+                children: plugin.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 843,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("p", {
+                children: plugin.description
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 844,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+                className: "plugin-version",
+                children: ["v", plugin.version]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 845,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+                className: "plugin-compatibility",
+                children: ["Compatible: ", plugin.compatible_engines.join(', ')]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 846,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 842,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+              className: "plugin-action install",
+              onClick: () => installPlugin(plugin.id),
+              children: "Install"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 850,
+              columnNumber: 17
+            }, undefined)]
+          }, plugin.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 841,
+            columnNumber: 15
+          }, undefined))
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 839,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 837,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 811,
+      columnNumber: 7
+    }, undefined)
+  }, void 0, false, {
+    fileName: _jsxFileName,
+    lineNumber: 810,
+    columnNumber: 5
+  }, undefined);
+  if (!isVisible) return null;
+  return /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "llm-interface-overlay",
+    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "llm-interface",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "llm-header",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "header-title",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h2", {
+            children: "Local LLM & Voice Integration"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 871,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+            className: `connection-badge ${connectionStatus}`,
+            children: connectionStatus.toUpperCase()
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 872,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 870,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          className: "close-button",
+          onClick: onClose,
+          children: "\u2715"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 876,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 869,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "llm-navigation",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          className: `nav-tab ${activeTab === 'configuration' ? 'active' : ''}`,
+          onClick: () => setActiveTab('configuration'),
+          children: "Configuration"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 880,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          className: `nav-tab ${activeTab === 'testing' ? 'active' : ''}`,
+          onClick: () => setActiveTab('testing'),
+          children: "Testing"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 886,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          className: `nav-tab ${activeTab === 'monitoring' ? 'active' : ''}`,
+          onClick: () => setActiveTab('monitoring'),
+          children: "Monitoring"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 892,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          className: `nav-tab ${activeTab === 'plugins' ? 'active' : ''}`,
+          onClick: () => setActiveTab('plugins'),
+          children: "Plugins"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 898,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 879,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "llm-content",
+        children: [activeTab === 'configuration' && renderConfigurationTab(), activeTab === 'testing' && renderTestingTab(), activeTab === 'monitoring' && renderMonitoringTab(), activeTab === 'plugins' && renderPluginsTab()]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 906,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "llm-footer",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "footer-info",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+            children: ["Engine: ", llmConfig.engine]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 915,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+            children: ["Model: ", llmConfig.model]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 916,
+            columnNumber: 13
+          }, undefined), voiceConfig.enabled && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+            children: "Voice: Enabled"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 917,
+            columnNumber: 37
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 914,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "footer-metrics",
+          children: ["Requests: ", performanceMetrics.total_requests, " | Success Rate: ", performanceMetrics.total_requests > 0 ? (performanceMetrics.successful_requests / performanceMetrics.total_requests * 100).toFixed(1) : 0, "%"]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 919,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 913,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 868,
+      columnNumber: 7
+    }, undefined)
+  }, void 0, false, {
+    fileName: _jsxFileName,
+    lineNumber: 867,
+    columnNumber: 5
+  }, undefined);
+};
+_s(LocalLLMInterface, "Q/45wsWDvfBJOPNV8XGop32FGi0=");
+_c = LocalLLMInterface;
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (LocalLLMInterface);
+var _c;
+__webpack_require__.$Refresh$.register(_c, "LocalLLMInterface");
+
+const $ReactRefreshModuleId$ = __webpack_require__.$Refresh$.moduleId;
+const $ReactRefreshCurrentExports$ = __react_refresh_utils__.getModuleExports(
+	$ReactRefreshModuleId$
+);
+
+function $ReactRefreshModuleRuntime$(exports) {
+	if (true) {
+		let errorOverlay;
+		if (true) {
+			errorOverlay = false;
+		}
+		let testMode;
+		if (typeof __react_refresh_test__ !== 'undefined') {
+			testMode = __react_refresh_test__;
+		}
+		return __react_refresh_utils__.executeRuntime(
+			exports,
+			$ReactRefreshModuleId$,
+			module.hot,
+			errorOverlay,
+			testMode
+		);
+	}
+}
+
+if (typeof Promise !== 'undefined' && $ReactRefreshCurrentExports$ instanceof Promise) {
+	$ReactRefreshCurrentExports$.then($ReactRefreshModuleRuntime$);
+} else {
+	$ReactRefreshModuleRuntime$($ReactRefreshCurrentExports$);
+}
+
+/***/ })
+
+},
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ /* webpack/runtime/getFullHash */
+/******/ (() => {
+/******/ 	__webpack_require__.h = () => ("89ddf99cc7d5531f03b9")
+/******/ })();
+/******/ 
+/******/ }
+);
+//# sourceMappingURL=main.93a5568f220f30b38bd7.hot-update.js.map

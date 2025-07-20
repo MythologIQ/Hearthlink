@@ -1,0 +1,78 @@
+{
+  "plugin_id": "gemini-cli",
+  "name": "Gemini CLI External Agent",
+  "version": "1.0.0", 
+  "description": "External agent integration with Gemini CLI for command-line AI operations",
+  "type": "external_agent",
+  "author": "Hearthlink Core Team",
+  "capabilities": [
+    "command_line_interface",
+    "text_generation",
+    "file_processing",
+    "code_analysis",
+    "file_operations"
+  ],
+  "permissions": [
+    "SYSTEM_COMMANDS",
+    "FILE_SYSTEM", 
+    "NETWORK_ACCESS",
+    "READ_VAULT",
+    "WRITE_VAULT",
+    "READ_CORE"
+  ],
+  "executable": {
+    "command": "gemini",
+    "args": ["--interactive", "--json-output"],
+    "working_directory": "./workspace",
+    "environment_vars": {
+      "GEMINI_API_KEY": "${GEMINI_API_KEY}"
+    }
+  },
+  "file_access": {
+    "allowed_paths": [
+      "/tmp/hearthlink",
+      "./hearthlink_data",
+      "./workspace", 
+      "./outputs",
+      "./temp"
+    ],
+    "read_only_paths": [
+      "./config",
+      "./src"
+    ],
+    "max_file_size_mb": 500,
+    "allowed_extensions": [
+      ".txt", ".json", ".csv", ".md", ".log", ".yml", ".yaml",
+      ".py", ".js", ".ts", ".html", ".css", ".sh", ".bat"
+    ]
+  },
+  "risk_assessment": {
+    "overall_risk": 65,
+    "data_privacy": 50,
+    "system_security": 75,
+    "network_access": 40,
+    "file_access": 80,
+    "command_execution": 85
+  },
+  "communication": {
+    "input_formats": ["text", "json", "cli"],
+    "output_formats": ["text", "json", "cli"],
+    "protocols": ["CLI", "stdin/stdout"],
+    "authentication": "environment_variable"
+  },
+  "sandbox_config": {
+    "max_cpu_percent": 50.0,
+    "max_memory_mb": 512,
+    "max_disk_mb": 200,
+    "max_execution_time": 300,
+    "network_isolation": false,
+    "allowed_commands": ["gemini", "cat", "ls", "pwd", "echo"]
+  },
+  "core_integration": {
+    "participant_type": "EXTERNAL",
+    "session_capable": true,
+    "voice_routing_enabled": false,
+    "delegation_priority": 3,
+    "auto_approval_allowed": false
+  }
+}

@@ -37,8 +37,8 @@ class PluginExecutionResult:
     plugin_id: str
     success: bool
     output: Any
-    error: Optional[str] = None
     execution_time: float
+    error: Optional[str] = None
     sandbox_result: Optional[SandboxResult] = None
     benchmark_summary: Optional[Dict[str, Any]] = None
 

@@ -1,1 +1,0 @@
-// Cain thread timeout logic placeholder

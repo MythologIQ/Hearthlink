@@ -1,0 +1,16 @@
+======================================== 
+Hearthlink Minimal Launch Log 
+======================================== 
+Launch Time: Thu 07/10/2025 14:03:21.78 
+App Directory: G:\MythologIQ\Hearthlink\ 
+Log File: G:\MythologIQ\Hearthlink\logs\hearthlink_launch_Thu 07-10-2025_14-03-21.log 
+======================================== 
+[14:03:21.78] Launching Electron with npm start... 
+
+> hearthlink@1.1.0 start
+> electron .
+
+
+Static server running on port 3001
+Static server started on port 3001
+Main window loaded successfully

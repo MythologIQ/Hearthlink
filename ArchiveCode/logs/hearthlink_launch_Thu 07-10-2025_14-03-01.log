@@ -1,0 +1,35 @@
+======================================== 
+Hearthlink Minimal Launch Log 
+======================================== 
+Launch Time: Thu 07/10/2025 14:03:01.84 
+App Directory: G:\MythologIQ\Hearthlink\ 
+Log File: G:\MythologIQ\Hearthlink\logs\hearthlink_launch_Thu 07-10-2025_14-03-01.log 
+======================================== 
+[14:03:01.85] Launching Electron with npm start... 
+
+> hearthlink@1.1.0 start
+> electron .
+
+
+Static server failed to start: Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1817:16)
+    at listenInCluster (node:net:1865:12)
+    at Server.listen (node:net:1953:7)
+    at G:\MythologIQ\Hearthlink\main.js:134:18
+    at new Promise (<anonymous>)
+    at startStaticServer (G:\MythologIQ\Hearthlink\main.js:64:10)
+    at G:\MythologIQ\Hearthlink\main.js:336:30 {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+Static server failed to start, using file protocol: listen EADDRINUSE: address already in use :::3001
+[34600:0710/140302.613:ERROR:cache_util_win.cc(20)] Unable to move the cache: Access is denied. (0x5)
+[34600:0710/140302.614:ERROR:cache_util_win.cc(20)] Unable to move the cache: Access is denied. (0x5)
+[34600:0710/140302.616:ERROR:disk_cache.cc(208)] Unable to create cache
+[34600:0710/140302.616:ERROR:gpu_disk_cache.cc(676)] Gpu Cache Creation failed: -2
+[34600:0710/140302.616:ERROR:disk_cache.cc(208)] Unable to create cache
+[34600:0710/140302.616:ERROR:gpu_disk_cache.cc(676)] Gpu Cache Creation failed: -2
+[14:03:04.67] Launch completed successfully! 

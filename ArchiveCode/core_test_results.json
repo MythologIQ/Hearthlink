@@ -1,0 +1,25 @@
+{
+  "test_run": {
+    "timestamp": "2025-07-11T17:55:49.523002",
+    "total_tests": 2,
+    "passed": 1,
+    "failed": 1,
+    "success_rate": 50.0,
+    "total_duration": 0.6421146392822266
+  },
+  "results": [
+    {
+      "test_suite": "Multi-Agent Session Tests",
+      "status": "FAILED",
+      "error": "name 'ErrorCategory' is not defined",
+      "duration": 0,
+      "timestamp": "2025-07-11T17:55:48.973650"
+    },
+    {
+      "test_suite": "Memory Management Tests",
+      "status": "PASSED",
+      "duration": 0.5493109226226807,
+      "timestamp": "2025-07-11T17:55:49.522982"
+    }
+  ]
+}

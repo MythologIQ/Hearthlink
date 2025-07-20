@@ -44,8 +44,8 @@ class PermissionGrant:
     user_id: str
     permissions: List[str]
     granted_at: str
-    expires_at: Optional[str] = None
     granted_by: str
+    expires_at: Optional[str] = None
     conditions: Dict[str, Any] = field(default_factory=dict)
 
 class PermissionManager:

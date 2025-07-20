@@ -1,0 +1,75 @@
+name = "hearthlink-api"
+main = "src/index.js"
+compatibility_date = "2024-07-14"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment variables
+[env.development.vars]
+ENVIRONMENT = "development"
+API_VERSION = "v1"
+RATE_LIMIT_PER_MINUTE = 100
+CORS_ORIGINS = "*"
+DEBUG_MODE = true
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+API_VERSION = "v1"
+RATE_LIMIT_PER_MINUTE = 200
+CORS_ORIGINS = "https://staging.hearthlink.ai,https://localhost:3000"
+DEBUG_MODE = false
+
+[env.production.vars]
+ENVIRONMENT = "production"
+API_VERSION = "v1"
+RATE_LIMIT_PER_MINUTE = 500
+CORS_ORIGINS = "https://hearthlink.ai,https://app.hearthlink.ai"
+DEBUG_MODE = false
+
+# KV Namespaces for data storage
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "hearthlink_sessions"
+preview_id = "hearthlink_sessions_preview"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "hearthlink_cache"
+preview_id = "hearthlink_cache_preview"
+
+[[kv_namespaces]]
+binding = "RATE_LIMITS"
+id = "hearthlink_rate_limits"
+preview_id = "hearthlink_rate_limits_preview"
+
+# Durable Objects for stateful operations
+[[durable_objects.bindings]]
+name = "SESSION_MANAGER"
+class_name = "SessionManager"
+script_name = "hearthlink-api"
+
+[[durable_objects.bindings]]
+name = "WEBSOCKET_HANDLER"
+class_name = "WebSocketHandler"
+script_name = "hearthlink-api"
+
+# R2 Storage for file operations (optional)
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "hearthlink-files"
+preview_bucket_name = "hearthlink-files-preview"
+
+# Custom domains (to be configured)
+# routes = [
+#   "api.hearthlink.ai/*",
+#   "api-staging.hearthlink.ai/*"
+# ]
+
+# Analytics and monitoring
+[observability]
+enabled = true
+
+# Build configuration
+[build]
+command = "npm run build"
+cwd = "."
+watch_dir = "src"

@@ -1,0 +1,89 @@
+Traceback (most recent call last):
+  File "/mnt/g/MythologIQ/Hearthlink/src/api/vault_api.py", line 51, in initialize_vault
+    vault_service = Vault(vault_config)
+  File "/mnt/g/MythologIQ/Hearthlink/src/vault/vault.py", line 24, in __init__
+    self._init_storage()
+  File "/mnt/g/MythologIQ/Hearthlink/src/vault/vault.py", line 61, in _init_storage
+    storage_path = self.config["storage"]["file_path"]
+KeyError: 'file_path'
+Failed to initialize Vault services: 'file_path'
+Starting Hearthlink Vault API...
+Endpoints available:
+  GET  /api/vault/health - Health check
+  GET  /api/vault/stats - Get vault statistics
+  GET  /api/vault/memories - Get memories
+  POST /api/vault/memories - Create memory
+  GET  /api/vault/memories/<id> - Get specific memory
+  PUT  /api/vault/memories/<id> - Update memory
+  DELETE /api/vault/memories/<id> - Delete memory
+  GET  /api/vault/audit-log - Get audit log
+  POST /api/vault/backup - Create backup
+  GET  /api/vault/integrity - Check integrity
+  POST /api/vault/search - Search memories
+\nStarting server on port 8001...
+ * Serving Flask app 'vault_api'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://192.168.0.29:8001
+Press CTRL+C to quit
+ * Restarting with stat
+Traceback (most recent call last):
+  File "/mnt/g/MythologIQ/Hearthlink/src/api/vault_api.py", line 51, in initialize_vault
+    vault_service = Vault(vault_config)
+  File "/mnt/g/MythologIQ/Hearthlink/src/vault/vault.py", line 24, in __init__
+    self._init_storage()
+  File "/mnt/g/MythologIQ/Hearthlink/src/vault/vault.py", line 61, in _init_storage
+    storage_path = self.config["storage"]["file_path"]
+KeyError: 'file_path'
+ * Debugger is active!
+ * Debugger PIN: 400-997-232
+ * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/vault_api.py', reloading
+Failed to initialize Vault services: 'file_path'
+Starting Hearthlink Vault API...
+Endpoints available:
+  GET  /api/vault/health - Health check
+  GET  /api/vault/stats - Get vault statistics
+  GET  /api/vault/memories - Get memories
+  POST /api/vault/memories - Create memory
+  GET  /api/vault/memories/<id> - Get specific memory
+  PUT  /api/vault/memories/<id> - Update memory
+  DELETE /api/vault/memories/<id> - Delete memory
+  GET  /api/vault/audit-log - Get audit log
+  POST /api/vault/backup - Create backup
+  GET  /api/vault/integrity - Check integrity
+  POST /api/vault/search - Search memories
+\nStarting server on port 8001...
+ * Restarting with stat
+Traceback (most recent call last):
+  File "/mnt/g/MythologIQ/Hearthlink/src/api/vault_api.py", line 51, in initialize_vault
+    vault_service = Vault(vault_config)
+  File "/mnt/g/MythologIQ/Hearthlink/src/vault/vault.py", line 24, in __init__
+    self._init_storage()
+  File "/mnt/g/MythologIQ/Hearthlink/src/vault/vault.py", line 66, in _init_storage
+    f.write(self._encrypt(json.dumps({"persona": {}, "communal": {}}).encode()))
+  File "/mnt/g/MythologIQ/Hearthlink/src/vault/vault.py", line 69, in _encrypt
+    aesgcm = AESGCM(self.key)
+ValueError: AESGCM key must be 128, 192, or 256 bits.
+ * Debugger is active!
+ * Debugger PIN: 400-997-232
+ * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/vault_api.py', reloading
+Failed to initialize Vault services: AESGCM key must be 128, 192, or 256 bits.
+Starting Hearthlink Vault API...
+Endpoints available:
+  GET  /api/vault/health - Health check
+  GET  /api/vault/stats - Get vault statistics
+  GET  /api/vault/memories - Get memories
+  POST /api/vault/memories - Create memory
+  GET  /api/vault/memories/<id> - Get specific memory
+  PUT  /api/vault/memories/<id> - Update memory
+  DELETE /api/vault/memories/<id> - Delete memory
+  GET  /api/vault/audit-log - Get audit log
+  POST /api/vault/backup - Create backup
+  GET  /api/vault/integrity - Check integrity
+  POST /api/vault/search - Search memories
+\nStarting server on port 8001...
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 400-997-232

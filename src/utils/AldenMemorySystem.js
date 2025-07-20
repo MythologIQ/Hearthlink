@@ -1,0 +1,566 @@
+/**
+ * Alden Memory System - Advanced Learning and Retention
+ * Implements episodic, semantic, and procedural memory for the Alden AI construct
+ */
+
+class AldenMemorySystem {
+  constructor() {
+    this.episodicMemory = new Map(); // Specific experiences and interactions
+    this.semanticMemory = new Map();  // General knowledge and facts
+    this.proceduralMemory = new Map(); // Skills and procedures
+    this.workingMemory = new Map();   // Temporary active information
+    this.memoryMetrics = {
+      totalMemories: 0,
+      sessionMemories: 0,
+      retentionRate: 1.0,
+      learningRate: 0.85,
+      lastConsolidation: Date.now()
+    };
+    
+    // Memory consolidation settings
+    this.consolidationThreshold = 100; // Trigger consolidation after N memories
+    this.retentionPeriod = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+    this.importanceThreshold = 0.3; // Minimum importance to retain
+    
+    // Initialize memory from persistence
+    this.loadMemoryFromStorage();
+    
+    // Start periodic memory consolidation
+    this.startMemoryConsolidation();
+  }
+
+  /**
+   * Store a new episodic memory (specific interaction/experience)
+   */
+  storeEpisodicMemory(interaction) {
+    const memoryId = `episodic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const memory = {
+      id: memoryId,
+      type: 'episodic',
+      timestamp: new Date().toISOString(),
+      content: interaction.content,
+      context: interaction.context || '',
+      userInput: interaction.userInput || '',
+      systemResponse: interaction.systemResponse || '',
+      emotional_tone: this.analyzeEmotionalTone(interaction.content),
+      importance: this.calculateImportance(interaction),
+      retrieval_count: 0,
+      associated_memories: [],
+      tags: this.extractTags(interaction.content),
+      success_outcome: interaction.success !== undefined ? interaction.success : null
+    };
+
+    this.episodicMemory.set(memoryId, memory);
+    this.memoryMetrics.totalMemories++;
+    this.memoryMetrics.sessionMemories++;
+    
+    // Create associations with existing memories
+    this.createMemoryAssociations(memory);
+    
+    // console.log(`[ALDEN MEMORY] Stored episodic memory: ${memory.content.substring(0, 50)}...`);
+    
+    return memoryId;
+  }
+
+  /**
+   * Store semantic memory (general knowledge)
+   */
+  storeSemanticMemory(concept, knowledge) {
+    const memoryId = `semantic_${concept.toLowerCase().replace(/\s+/g, '_')}`;
+    const existingMemory = this.semanticMemory.get(memoryId);
+    
+    if (existingMemory) {
+      // Update existing knowledge
+      existingMemory.knowledge = this.mergeKnowledge(existingMemory.knowledge, knowledge);
+      existingMemory.last_updated = new Date().toISOString();
+      existingMemory.confidence = Math.min(existingMemory.confidence + 0.1, 1.0);
+    } else {
+      // Create new semantic memory
+      const memory = {
+        id: memoryId,
+        type: 'semantic',
+        concept: concept,
+        knowledge: knowledge,
+        confidence: 0.7,
+        sources: [],
+        last_updated: new Date().toISOString(),
+        retrieval_count: 0,
+        related_concepts: []
+      };
+      
+      this.semanticMemory.set(memoryId, memory);
+      this.memoryMetrics.totalMemories++;
+    }
+    
+    // console.log(`[ALDEN MEMORY] Updated semantic memory for: ${concept}`);
+    return memoryId;
+  }
+
+  /**
+   * Store procedural memory (skills and procedures)
+   */
+  storeProceduralMemory(skill, procedure) {
+    const memoryId = `procedural_${skill.toLowerCase().replace(/\s+/g, '_')}`;
+    const memory = {
+      id: memoryId,
+      type: 'procedural',
+      skill: skill,
+      procedure: procedure,
+      success_rate: 0.5,
+      usage_count: 0,
+      last_used: new Date().toISOString(),
+      effectiveness_score: 0.7,
+      prerequisites: procedure.prerequisites || [],
+      expected_outcomes: procedure.outcomes || []
+    };
+
+    this.proceduralMemory.set(memoryId, memory);
+    this.memoryMetrics.totalMemories++;
+    
+    // console.log(`[ALDEN MEMORY] Stored procedural memory: ${skill}`);
+    return memoryId;
+  }
+
+  /**
+   * Retrieve memories based on context and relevance
+   */
+  retrieveMemories(query, type = 'all', limit = 10) {
+    const results = [];
+    const queryVector = this.createQueryVector(query);
+    
+    // Search episodic memories
+    if (type === 'all' || type === 'episodic') {
+      this.episodicMemory.forEach(memory => {
+        const relevance = this.calculateRelevance(memory, queryVector);
+        if (relevance > 0.3) {
+          results.push({ ...memory, relevance, memory_type: 'episodic' });
+          memory.retrieval_count++;
+        }
+      });
+    }
+    
+    // Search semantic memories
+    if (type === 'all' || type === 'semantic') {
+      this.semanticMemory.forEach(memory => {
+        const relevance = this.calculateSemanticRelevance(memory, query);
+        if (relevance > 0.3) {
+          results.push({ ...memory, relevance, memory_type: 'semantic' });
+          memory.retrieval_count++;
+        }
+      });
+    }
+    
+    // Search procedural memories
+    if (type === 'all' || type === 'procedural') {
+      this.proceduralMemory.forEach(memory => {
+        const relevance = this.calculateProceduralRelevance(memory, query);
+        if (relevance > 0.3) {
+          results.push({ ...memory, relevance, memory_type: 'procedural' });
+          memory.usage_count++;
+          memory.last_used = new Date().toISOString();
+        }
+      });
+    }
+    
+    // Sort by relevance and return top results
+    return results
+      .sort((a, b) => b.relevance - a.relevance)
+      .slice(0, limit);
+  }
+
+  /**
+   * Learn from user interactions and outcomes
+   */
+  learnFromInteraction(interaction, outcome) {
+    // Store the interaction as episodic memory
+    const memoryId = this.storeEpisodicMemory({
+      content: interaction.content,
+      context: interaction.context,
+      userInput: interaction.userInput,
+      systemResponse: interaction.systemResponse,
+      success: outcome.success
+    });
+    
+    // Extract and store knowledge
+    if (outcome.success) {
+      this.extractAndStoreKnowledge(interaction, outcome);
+    }
+    
+    // Update procedural memory based on outcomes
+    this.updateProceduralMemory(interaction, outcome);
+    
+    // Update learning metrics
+    this.updateLearningMetrics(outcome);
+    
+    // console.log(`[ALDEN MEMORY] Learned from interaction with outcome: ${outcome.success ? 'SUCCESS' : 'FAILURE'}`);
+    
+    return memoryId;
+  }
+
+  /**
+   * Memory consolidation - strengthen important memories, fade unimportant ones
+   */
+  consolidateMemory() {
+    // console.log('[ALDEN MEMORY] Starting memory consolidation...');
+    
+    let consolidated = 0;
+    let faded = 0;
+    
+    // Process episodic memories
+    this.episodicMemory.forEach((memory, id) => {
+      const age = Date.now() - new Date(memory.timestamp).getTime();
+      const importance = this.recalculateImportance(memory);
+      
+      if (age > this.retentionPeriod && importance < this.importanceThreshold) {
+        // Fade unimportant old memories
+        this.episodicMemory.delete(id);
+        faded++;
+      } else if (importance > 0.7 || memory.retrieval_count > 5) {
+        // Strengthen important memories
+        memory.importance = Math.min(memory.importance + 0.1, 1.0);
+        consolidated++;
+      }
+    });
+    
+    // Update metrics
+    this.memoryMetrics.lastConsolidation = Date.now();
+    this.memoryMetrics.totalMemories = this.episodicMemory.size + this.semanticMemory.size + this.proceduralMemory.size;
+    this.memoryMetrics.retentionRate = (this.memoryMetrics.totalMemories - faded) / this.memoryMetrics.totalMemories;
+    
+    // Persist consolidated memories
+    this.saveMemoryToStorage();
+    
+    // console.log(`[ALDEN MEMORY] Consolidation complete: ${consolidated} strengthened, ${faded} faded`);
+    
+    return {
+      consolidated,
+      faded,
+      totalMemories: this.memoryMetrics.totalMemories,
+      retentionRate: this.memoryMetrics.retentionRate
+    };
+  }
+
+  /**
+   * Generate contextual responses based on memory
+   */
+  generateContextualResponse(userInput, baseResponse) {
+    // Retrieve relevant memories
+    const relevantMemories = this.retrieveMemories(userInput, 'all', 5);
+    
+    if (relevantMemories.length === 0) {
+      return baseResponse;
+    }
+    
+    // Analyze patterns in memories
+    const patterns = this.analyzeMemoryPatterns(relevantMemories);
+    
+    // Enhance response with learned context
+    let enhancedResponse = baseResponse;
+    
+    if (patterns.userPreferences.length > 0) {
+      enhancedResponse += `\n\n[MEMORY CONTEXT] Based on our previous interactions, I recall you prefer: ${patterns.userPreferences.join(', ')}.`;
+    }
+    
+    if (patterns.successfulStrategies.length > 0) {
+      enhancedResponse += `\n\n[LEARNED APPROACH] Previously successful strategies: ${patterns.successfulStrategies.join(', ')}.`;
+    }
+    
+    if (patterns.commonChallenges.length > 0) {
+      enhancedResponse += `\n\n[ANTICIPATING] Common challenges you've faced: ${patterns.commonChallenges.join(', ')}. I'm prepared to help with these.`;
+    }
+    
+    return enhancedResponse;
+  }
+
+  /**
+   * Get memory system status for display
+   */
+  getMemoryStatus() {
+    return {
+      episodicCount: this.episodicMemory.size,
+      semanticCount: this.semanticMemory.size,
+      proceduralCount: this.proceduralMemory.size,
+      totalMemories: this.memoryMetrics.totalMemories,
+      sessionMemories: this.memoryMetrics.sessionMemories,
+      retentionRate: this.memoryMetrics.retentionRate,
+      learningRate: this.memoryMetrics.learningRate,
+      lastConsolidation: new Date(this.memoryMetrics.lastConsolidation).toLocaleString(),
+      memoryHealth: this.assessMemoryHealth()
+    };
+  }
+
+  // Helper methods
+  
+  analyzeEmotionalTone(content) {
+    const positiveWords = ['good', 'great', 'excellent', 'helpful', 'thank', 'love', 'perfect'];
+    const negativeWords = ['bad', 'terrible', 'wrong', 'error', 'problem', 'failed', 'broken'];
+    
+    const words = content.toLowerCase().split(/\s+/);
+    const positive = words.filter(word => positiveWords.includes(word)).length;
+    const negative = words.filter(word => negativeWords.includes(word)).length;
+    
+    if (positive > negative) return 'positive';
+    if (negative > positive) return 'negative';
+    return 'neutral';
+  }
+
+  calculateImportance(interaction) {
+    let importance = 0.5; // Base importance
+    
+    // Higher importance for successful outcomes
+    if (interaction.success === true) importance += 0.3;
+    if (interaction.success === false) importance += 0.2; // Failures are also important to learn from
+    
+    // Higher importance for project-related interactions
+    if (interaction.content && interaction.content.toLowerCase().includes('project')) importance += 0.2;
+    if (interaction.content && interaction.content.toLowerCase().includes('orchestrate')) importance += 0.3;
+    
+    // Higher importance for file operations
+    if (interaction.content && interaction.content.toLowerCase().includes('write')) importance += 0.2;
+    
+    return Math.min(importance, 1.0);
+  }
+
+  extractTags(content) {
+    const tags = [];
+    const words = content.toLowerCase().split(/\s+/);
+    
+    // Common tags
+    const tagPatterns = {
+      'project-management': ['project', 'orchestrate', 'manage', 'plan'],
+      'file-operations': ['write', 'file', 'create', 'save'],
+      'ai-delegation': ['delegate', 'ai', 'google', 'analyze'],
+      'adhd-support': ['focus', 'task', 'break', 'overwhelm'],
+      'code-analysis': ['analyze', 'code', 'review', 'optimize']
+    };
+    
+    Object.entries(tagPatterns).forEach(([tag, patterns]) => {
+      if (patterns.some(pattern => words.includes(pattern))) {
+        tags.push(tag);
+      }
+    });
+    
+    return tags;
+  }
+
+  createMemoryAssociations(newMemory) {
+    // Find related memories based on tags and content similarity
+    this.episodicMemory.forEach((memory, id) => {
+      if (memory.id === newMemory.id) return;
+      
+      const similarity = this.calculateContentSimilarity(newMemory.content, memory.content);
+      const tagOverlap = this.calculateTagOverlap(newMemory.tags, memory.tags);
+      
+      if (similarity > 0.5 || tagOverlap > 0.3) {
+        newMemory.associated_memories.push(id);
+        memory.associated_memories.push(newMemory.id);
+      }
+    });
+  }
+
+  calculateContentSimilarity(content1, content2) {
+    const words1 = new Set(content1.toLowerCase().split(/\s+/));
+    const words2 = new Set(content2.toLowerCase().split(/\s+/));
+    
+    const intersection = new Set([...words1].filter(x => words2.has(x)));
+    const union = new Set([...words1, ...words2]);
+    
+    return intersection.size / union.size;
+  }
+
+  calculateTagOverlap(tags1, tags2) {
+    if (tags1.length === 0 || tags2.length === 0) return 0;
+    
+    const set1 = new Set(tags1);
+    const set2 = new Set(tags2);
+    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    
+    return intersection.size / Math.max(set1.size, set2.size);
+  }
+
+  analyzeMemoryPatterns(memories) {
+    const patterns = {
+      userPreferences: [],
+      successfulStrategies: [],
+      commonChallenges: []
+    };
+    
+    memories.forEach(memory => {
+      if (memory.emotional_tone === 'positive' && memory.success_outcome === true) {
+        memory.tags.forEach(tag => {
+          if (!patterns.successfulStrategies.includes(tag)) {
+            patterns.successfulStrategies.push(tag);
+          }
+        });
+      }
+      
+      if (memory.emotional_tone === 'negative' || memory.success_outcome === false) {
+        memory.tags.forEach(tag => {
+          if (!patterns.commonChallenges.includes(tag)) {
+            patterns.commonChallenges.push(tag);
+          }
+        });
+      }
+    });
+    
+    return patterns;
+  }
+
+  assessMemoryHealth() {
+    const episodicHealth = this.episodicMemory.size > 10 ? 'good' : 'low';
+    const semanticHealth = this.semanticMemory.size > 5 ? 'good' : 'developing';
+    const proceduralHealth = this.proceduralMemory.size > 3 ? 'good' : 'learning';
+    
+    if (episodicHealth === 'good' && semanticHealth === 'good' && proceduralHealth === 'good') {
+      return 'excellent';
+    } else if (episodicHealth !== 'low') {
+      return 'good';
+    } else {
+      return 'developing';
+    }
+  }
+
+  createQueryVector(query) {
+    // Simple word-based vector for relevance calculation
+    return query.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+  }
+
+  calculateRelevance(memory, queryVector) {
+    const memoryWords = (memory.content + ' ' + memory.context).toLowerCase().split(/\s+/);
+    const matches = queryVector.filter(word => memoryWords.includes(word));
+    return matches.length / queryVector.length;
+  }
+
+  calculateSemanticRelevance(memory, query) {
+    const queryLower = query.toLowerCase();
+    return queryLower.includes(memory.concept.toLowerCase()) ? 0.8 : 0.2;
+  }
+
+  calculateProceduralRelevance(memory, query) {
+    const queryLower = query.toLowerCase();
+    return queryLower.includes(memory.skill.toLowerCase()) ? 0.9 : 0.1;
+  }
+
+  // Persistence methods
+  saveMemoryToStorage() {
+    try {
+      const memoryData = {
+        episodic: Array.from(this.episodicMemory.entries()),
+        semantic: Array.from(this.semanticMemory.entries()),
+        procedural: Array.from(this.proceduralMemory.entries()),
+        metrics: this.memoryMetrics,
+        lastSaved: new Date().toISOString()
+      };
+      
+      localStorage.setItem('alden_memory_system', JSON.stringify(memoryData));
+      // console.log('[ALDEN MEMORY] Memory saved to storage');
+    } catch (error) {
+      console.error('[ALDEN MEMORY] Failed to save memory:', error);
+    }
+  }
+
+  loadMemoryFromStorage() {
+    try {
+      const savedMemory = localStorage.getItem('alden_memory_system');
+      if (savedMemory) {
+        const memoryData = JSON.parse(savedMemory);
+        
+        this.episodicMemory = new Map(memoryData.episodic || []);
+        this.semanticMemory = new Map(memoryData.semantic || []);
+        this.proceduralMemory = new Map(memoryData.procedural || []);
+        this.memoryMetrics = { ...this.memoryMetrics, ...memoryData.metrics };
+        
+        // console.log('[ALDEN MEMORY] Memory loaded from storage');
+      }
+    } catch (error) {
+      console.error('[ALDEN MEMORY] Failed to load memory:', error);
+    }
+  }
+
+  startMemoryConsolidation() {
+    // Run consolidation every 30 minutes
+    setInterval(() => {
+      if (this.memoryMetrics.sessionMemories >= this.consolidationThreshold) {
+        this.consolidateMemory();
+        this.memoryMetrics.sessionMemories = 0;
+      }
+    }, 30 * 60 * 1000);
+    
+    // Save memory every 10 minutes
+    setInterval(() => {
+      this.saveMemoryToStorage();
+    }, 10 * 60 * 1000);
+  }
+
+  // Additional learning methods
+  extractAndStoreKnowledge(interaction, outcome) {
+    // Extract concepts and procedures from successful interactions
+    if (outcome.success) {
+      const content = interaction.content.toLowerCase();
+      
+      if (content.includes('write') && content.includes('to')) {
+        this.storeProceduralMemory('File Creation', {
+          description: 'Write code or content to files in workspace',
+          steps: ['Parse write command', 'Extract content and path', 'Create directories if needed', 'Write file'],
+          prerequisites: ['Valid file path', 'Write permissions'],
+          outcomes: ['File created successfully', 'Directory structure established']
+        });
+      }
+      
+      if (content.includes('orchestrate') || content.includes('project')) {
+        this.storeSemanticMemory('Project Orchestration', {
+          definition: 'Coordinating AI agents and resources for coding projects',
+          capabilities: ['Task breakdown', 'Agent delegation', 'Progress monitoring'],
+          benefits: ['ADHD-friendly workflow', 'Automated assistance', 'Quality assurance']
+        });
+      }
+    }
+  }
+
+  updateProceduralMemory(interaction, outcome) {
+    // Update success rates for procedural memories
+    this.proceduralMemory.forEach(memory => {
+      if (interaction.content.toLowerCase().includes(memory.skill.toLowerCase())) {
+        memory.usage_count++;
+        if (outcome.success) {
+          memory.success_rate = (memory.success_rate * (memory.usage_count - 1) + 1) / memory.usage_count;
+        } else {
+          memory.success_rate = (memory.success_rate * (memory.usage_count - 1) + 0) / memory.usage_count;
+        }
+        memory.effectiveness_score = memory.success_rate * 0.8 + (memory.usage_count / 100) * 0.2;
+      }
+    });
+  }
+
+  updateLearningMetrics(outcome) {
+    if (outcome.success) {
+      this.memoryMetrics.learningRate = Math.min(this.memoryMetrics.learningRate + 0.01, 1.0);
+    } else {
+      this.memoryMetrics.learningRate = Math.max(this.memoryMetrics.learningRate - 0.005, 0.1);
+    }
+  }
+
+  mergeKnowledge(existing, newKnowledge) {
+    // Simple knowledge merging - in practice this would be more sophisticated
+    if (typeof existing === 'object' && typeof newKnowledge === 'object') {
+      return { ...existing, ...newKnowledge };
+    }
+    return newKnowledge;
+  }
+
+  recalculateImportance(memory) {
+    let importance = memory.importance;
+    
+    // Increase importance based on retrieval frequency
+    importance += memory.retrieval_count * 0.05;
+    
+    // Decrease importance with age (gradual forgetting)
+    const age = Date.now() - new Date(memory.timestamp).getTime();
+    const ageFactor = Math.max(0, 1 - (age / (365 * 24 * 60 * 60 * 1000))); // Year-based decay
+    importance *= ageFactor;
+    
+    return Math.max(0, Math.min(1, importance));
+  }
+}
+
+export default AldenMemorySystem;

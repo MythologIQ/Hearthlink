@@ -34,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from main import HearthlinkLogger, HearthlinkError
 from llm.local_llm_client import LocalLLMClient, LLMRequest, LLMResponse, LLMError
+from log_handling.agent_token_tracker import log_agent_token_usage, AgentType
 
 
 class MimicError(HearthlinkError):

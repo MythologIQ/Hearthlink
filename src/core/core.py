@@ -23,11 +23,11 @@ from enum import Enum
 import logging
 
 # Import Vault for communal memory mediation
-from ..vault.vault import Vault
-from ..vault.schema import CommunalMemory
+from vault.vault import Vault
+from vault.schema import CommunalMemory
 
 # Import error handling
-from .error_handling import (
+from core.error_handling import (
     CoreErrorHandler, CoreErrorRecovery, CoreErrorValidator, CoreErrorMetrics,
     SessionNotFoundError, ParticipantNotFoundError, InvalidOperationError,
     TurnTakingError, BreakoutRoomError, CommunalMemoryError, VaultIntegrationError,
@@ -46,6 +46,68 @@ class SessionStatus(Enum):
     PAUSED = "paused"
     ENDED = "ended"
     ARCHIVED = "archived"
+
+class PerformanceMetricType(Enum):
+    """Types of performance metrics tracked by Core."""
+    SESSION_DURATION = "session_duration"
+    TURN_DURATION = "turn_duration"
+    PARTICIPANT_RESPONSE_TIME = "participant_response_time"
+    MEMORY_OPERATIONS = "memory_operations"
+    BREAKOUT_EFFICIENCY = "breakout_efficiency"
+    ERROR_RATE = "error_rate"
+    USER_SATISFACTION = "user_satisfaction"
+    THROUGHPUT = "throughput"
+    CONTEXT_SWITCH_LATENCY = "context_switch_latency"
+
+@dataclass
+class PerformanceMetric:
+    """Individual performance metric measurement."""
+    metric_id: str
+    metric_type: PerformanceMetricType
+    session_id: str
+    participant_id: Optional[str]
+    timestamp: str
+    value: float
+    unit: str
+    context: Dict[str, Any] = field(default_factory=dict)
+    tags: List[str] = field(default_factory=list)
+
+@dataclass
+class SessionPerformanceStats:
+    """Aggregated performance statistics for a session."""
+    session_id: str
+    start_time: str
+    end_time: Optional[str]
+    total_duration: float = 0.0
+    participant_count: int = 0
+    total_turns: int = 0
+    total_messages: int = 0
+    breakout_rooms_created: int = 0
+    error_count: int = 0
+    memory_operations: int = 0
+    average_turn_duration: float = 0.0
+    average_response_time: float = 0.0
+    success_rate: float = 0.0
+    user_satisfaction_score: float = 0.0
+    context_switches: int = 0
+    performance_score: float = 0.0
+
+@dataclass
+class ParticipantPerformanceStats:
+    """Performance statistics for individual participants."""
+    participant_id: str
+    participant_type: ParticipantType
+    session_id: str
+    join_time: str
+    leave_time: Optional[str]
+    total_turns: int = 0
+    total_messages: int = 0
+    average_response_time: float = 0.0
+    longest_turn_duration: float = 0.0
+    shortest_turn_duration: float = 0.0
+    contribution_score: float = 0.0
+    engagement_score: float = 0.0
+    accuracy_score: float = 0.0
 
 class TurnStatus(Enum):
     """Turn-taking status."""
@@ -153,6 +215,16 @@ class Core:
         self.error_handler = CoreErrorHandler(self.logger)
         self.error_metrics = CoreErrorMetrics()
         self.error_validator = CoreErrorValidator()
+        
+        # Initialize performance tracking
+        self.performance_metrics: List[PerformanceMetric] = []
+        self.session_performance: Dict[str, SessionPerformanceStats] = {}
+        self.participant_performance: Dict[str, ParticipantPerformanceStats] = {}
+        self.performance_enabled = config.get('performance_tracking', True)
+        self.metrics_retention_days = config.get('metrics_retention_days', 30)
+        
+        # Performance timing tracking
+        self.operation_timings: Dict[str, float] = {}
         
         # Setup error recovery strategies
         self._setup_error_recovery()
@@ -266,6 +338,9 @@ class Core:
             raise InvalidOperationError("create_session", "invalid_input", error_context)
         
         try:
+            # Start performance tracking
+            self.start_operation_timer("create_session")
+            
             session_id = f"core-{uuid.uuid4().hex[:8]}"
             
             # Create communal memory for session
@@ -289,18 +364,27 @@ class Core:
                 communal_memory_id=communal_memory_id
             )
             
+            # Add session to registry first
+            self.sessions[session_id] = session
+            
             # Add initial participants
             if initial_participants:
                 for participant_data in initial_participants:
                     self.add_participant(session_id, user_id, participant_data)
-            
-            self.sessions[session_id] = session
             
             # Log session creation
             self._log("create_session", user_id, session_id, "session", {
                 "topic": topic,
                 "participant_count": len(initial_participants or [])
             })
+            
+            # End performance tracking and record metrics
+            duration = self.end_operation_timer("create_session", session_id)
+            self.record_metric(
+                PerformanceMetricType.CONTEXT_SWITCH_LATENCY,
+                session_id, duration, "seconds", None, 
+                {"operation": "create_session", "participant_count": len(initial_participants or [])}
+            )
             
             return session_id
             
@@ -526,8 +610,25 @@ class Core:
             if not turn_manager:
                 raise CoreError("Turn-taking not started in session")
             
-            # Log current turn completion
+            # Log current turn completion and record turn duration
             if session.current_turn:
+                # Calculate turn duration if we have start time
+                turn_duration = 0.0
+                if turn_manager.get("turn_start_time"):
+                    try:
+                        start_time = datetime.fromisoformat(turn_manager["turn_start_time"])
+                        turn_duration = (datetime.now() - start_time).total_seconds()
+                        
+                        # Record turn duration metric
+                        self.record_metric(
+                            PerformanceMetricType.TURN_DURATION,
+                            session_id, turn_duration, "seconds",
+                            session.current_turn,
+                            {"turn_index": turn_manager.get("current_index", 0)}
+                        )
+                    except Exception as e:
+                        self.logger.warning(f"Failed to calculate turn duration: {e}")
+                
                 event = SessionEvent(
                     event_id=f"event-{uuid.uuid4().hex[:8]}",
                     timestamp=datetime.now().isoformat(),
@@ -760,6 +861,8 @@ class Core:
                                data: Dict[str, Any]):
         """Update communal memory for session."""
         try:
+            # Start timing memory operation
+            start_time = time.time()
             session = self.sessions[session_id]
             if not session.communal_memory_id:
                 return
@@ -800,7 +903,21 @@ class Core:
                 session.communal_memory_id, communal_data, session.created_by
             )
             
+            # Record memory operation performance
+            duration = time.time() - start_time
+            self.record_metric(
+                PerformanceMetricType.MEMORY_OPERATIONS,
+                session_id, 1, "operations", None,
+                {"event_type": event_type, "duration": duration}
+            )
+            
         except Exception as e:
+            # Record error metric
+            self.record_metric(
+                PerformanceMetricType.ERROR_RATE,
+                session_id, 1, "errors", None,
+                {"operation": "update_communal_memory", "error_type": type(e).__name__}
+            )
             self.logger.error(f"Failed to update communal memory: {e}")
 
     def share_insight(self, session_id: str, participant_id: str, 
@@ -1017,4 +1134,383 @@ class Core:
             
         except Exception as e:
             self.logger.error(f"Failed to get session summary: {e}")
-            return None 
+            return None
+
+    # ==============================
+    # Performance Metrics Tracking
+    # ==============================
+    
+    def record_metric(self, metric_type: PerformanceMetricType, session_id: str, 
+                     value: float, unit: str, participant_id: Optional[str] = None,
+                     context: Optional[Dict[str, Any]] = None, 
+                     tags: Optional[List[str]] = None) -> str:
+        """
+        Record a performance metric for analysis.
+        
+        Args:
+            metric_type: Type of metric being recorded
+            session_id: Session identifier
+            value: Numeric value of the metric
+            unit: Unit of measurement
+            participant_id: Optional participant identifier
+            context: Optional context information
+            tags: Optional tags for categorization
+            
+        Returns:
+            Metric ID for reference
+        """
+        if not self.performance_enabled:
+            return ""
+            
+        try:
+            metric_id = f"metric_{uuid.uuid4().hex[:8]}"
+            timestamp = datetime.now().isoformat()
+            
+            metric = PerformanceMetric(
+                metric_id=metric_id,
+                metric_type=metric_type,
+                session_id=session_id,
+                participant_id=participant_id,
+                timestamp=timestamp,
+                value=value,
+                unit=unit,
+                context=context or {},
+                tags=tags or []
+            )
+            
+            self.performance_metrics.append(metric)
+            self._update_performance_stats(metric)
+            
+            self.logger.debug(f"Recorded performance metric: {metric_type.value} = {value} {unit}")
+            return metric_id
+            
+        except Exception as e:
+            self.logger.error(f"Failed to record performance metric: {e}")
+            return ""
+    
+    def _update_performance_stats(self, metric: PerformanceMetric):
+        """Update aggregated performance statistics."""
+        try:
+            session_id = metric.session_id
+            
+            # Update session performance stats
+            if session_id not in self.session_performance:
+                session = self.sessions.get(session_id)
+                if session:
+                    self.session_performance[session_id] = SessionPerformanceStats(
+                        session_id=session_id,
+                        start_time=session.created_at,
+                        end_time=None
+                    )
+            
+            if session_id in self.session_performance:
+                stats = self.session_performance[session_id]
+                
+                # Update stats based on metric type
+                if metric.metric_type == PerformanceMetricType.SESSION_DURATION:
+                    stats.total_duration = metric.value
+                elif metric.metric_type == PerformanceMetricType.TURN_DURATION:
+                    stats.total_turns += 1
+                    if stats.total_turns > 0:
+                        stats.average_turn_duration = (
+                            (stats.average_turn_duration * (stats.total_turns - 1) + metric.value) / 
+                            stats.total_turns
+                        )
+                elif metric.metric_type == PerformanceMetricType.PARTICIPANT_RESPONSE_TIME:
+                    current_avg = stats.average_response_time
+                    count = stats.total_messages + 1
+                    stats.average_response_time = ((current_avg * (count - 1)) + metric.value) / count
+                    stats.total_messages += 1
+                elif metric.metric_type == PerformanceMetricType.MEMORY_OPERATIONS:
+                    stats.memory_operations += int(metric.value)
+                elif metric.metric_type == PerformanceMetricType.ERROR_RATE:
+                    stats.error_count += int(metric.value)
+                elif metric.metric_type == PerformanceMetricType.CONTEXT_SWITCH_LATENCY:
+                    stats.context_switches += 1
+                
+                # Calculate overall performance score
+                stats.performance_score = self._calculate_performance_score(stats)
+            
+            # Update participant performance stats
+            if metric.participant_id:
+                self._update_participant_stats(metric)
+                
+        except Exception as e:
+            self.logger.error(f"Failed to update performance stats: {e}")
+    
+    def _update_participant_stats(self, metric: PerformanceMetric):
+        """Update participant-specific performance statistics."""
+        try:
+            participant_key = f"{metric.session_id}:{metric.participant_id}"
+            
+            if participant_key not in self.participant_performance:
+                session = self.sessions.get(metric.session_id)
+                participant = None
+                if session:
+                    participant = next((p for p in session.participants 
+                                     if p.participant_id == metric.participant_id), None)
+                
+                if participant:
+                    self.participant_performance[participant_key] = ParticipantPerformanceStats(
+                        participant_id=metric.participant_id,
+                        participant_type=participant.participant_type,
+                        session_id=metric.session_id,
+                        join_time=participant.joined_at
+                    )
+            
+            if participant_key in self.participant_performance:
+                stats = self.participant_performance[participant_key]
+                
+                if metric.metric_type == PerformanceMetricType.TURN_DURATION:
+                    stats.total_turns += 1
+                    if stats.longest_turn_duration == 0 or metric.value > stats.longest_turn_duration:
+                        stats.longest_turn_duration = metric.value
+                    if stats.shortest_turn_duration == 0 or metric.value < stats.shortest_turn_duration:
+                        stats.shortest_turn_duration = metric.value
+                
+                elif metric.metric_type == PerformanceMetricType.PARTICIPANT_RESPONSE_TIME:
+                    current_avg = stats.average_response_time
+                    count = stats.total_messages + 1
+                    stats.average_response_time = ((current_avg * (count - 1)) + metric.value) / count
+                    stats.total_messages += 1
+                
+                # Calculate derived scores
+                stats.contribution_score = self._calculate_contribution_score(stats)
+                stats.engagement_score = self._calculate_engagement_score(stats)
+                
+        except Exception as e:
+            self.logger.error(f"Failed to update participant stats: {e}")
+    
+    def _calculate_performance_score(self, stats: SessionPerformanceStats) -> float:
+        """Calculate overall performance score for a session."""
+        try:
+            score = 100.0
+            
+            # Deduct points for errors
+            if stats.total_turns > 0:
+                error_rate = stats.error_count / stats.total_turns
+                score -= error_rate * 30  # Max 30 point deduction for errors
+            
+            # Deduct points for slow response times
+            if stats.average_response_time > 10.0:  # 10 seconds threshold
+                score -= min(20, (stats.average_response_time - 10) * 2)
+            
+            # Bonus for high engagement
+            if stats.total_messages > 50:  # High activity threshold
+                score += min(10, stats.total_messages / 10)
+            
+            # Ensure score is between 0 and 100
+            return max(0.0, min(100.0, score))
+            
+        except Exception as e:
+            self.logger.error(f"Failed to calculate performance score: {e}")
+            return 50.0
+    
+    def _calculate_contribution_score(self, stats: ParticipantPerformanceStats) -> float:
+        """Calculate contribution score for a participant."""
+        try:
+            # Base score on turn count and message count
+            base_score = min(100.0, (stats.total_turns * 10) + (stats.total_messages * 2))
+            
+            # Adjust for response time quality
+            if stats.average_response_time > 0:
+                if stats.average_response_time < 5.0:
+                    base_score *= 1.1  # Bonus for quick responses
+                elif stats.average_response_time > 15.0:
+                    base_score *= 0.9  # Penalty for slow responses
+            
+            return min(100.0, base_score)
+            
+        except Exception as e:
+            self.logger.error(f"Failed to calculate contribution score: {e}")
+            return 50.0
+    
+    def _calculate_engagement_score(self, stats: ParticipantPerformanceStats) -> float:
+        """Calculate engagement score for a participant."""
+        try:
+            # Base engagement on activity consistency
+            if stats.total_turns == 0:
+                return 0.0
+            
+            avg_turn_length = (stats.longest_turn_duration + stats.shortest_turn_duration) / 2
+            consistency_score = 100.0 - min(50.0, abs(stats.longest_turn_duration - stats.shortest_turn_duration))
+            
+            # Factor in total participation
+            participation_score = min(100.0, stats.total_turns * 5)
+            
+            # Weighted average
+            return (consistency_score * 0.3) + (participation_score * 0.7)
+            
+        except Exception as e:
+            self.logger.error(f"Failed to calculate engagement score: {e}")
+            return 50.0
+    
+    def start_operation_timer(self, operation_name: str):
+        """Start timing an operation for performance measurement."""
+        if self.performance_enabled:
+            self.operation_timings[operation_name] = time.time()
+    
+    def end_operation_timer(self, operation_name: str, session_id: str, 
+                          participant_id: Optional[str] = None) -> float:
+        """End timing an operation and record the metric."""
+        if not self.performance_enabled or operation_name not in self.operation_timings:
+            return 0.0
+        
+        start_time = self.operation_timings.pop(operation_name, time.time())
+        duration = time.time() - start_time
+        
+        # Record appropriate metric based on operation type
+        if "turn" in operation_name.lower():
+            self.record_metric(
+                PerformanceMetricType.TURN_DURATION,
+                session_id, duration, "seconds", 
+                participant_id, {"operation": operation_name}
+            )
+        elif "response" in operation_name.lower():
+            self.record_metric(
+                PerformanceMetricType.PARTICIPANT_RESPONSE_TIME,
+                session_id, duration, "seconds", 
+                participant_id, {"operation": operation_name}
+            )
+        elif "context" in operation_name.lower():
+            self.record_metric(
+                PerformanceMetricType.CONTEXT_SWITCH_LATENCY,
+                session_id, duration, "seconds", 
+                None, {"operation": operation_name}
+            )
+        
+        return duration
+    
+    def get_performance_summary(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Get performance summary for a session."""
+        try:
+            if session_id not in self.session_performance:
+                return None
+            
+            stats = self.session_performance[session_id]
+            
+            # Get participant summaries
+            participant_summaries = []
+            for key, p_stats in self.participant_performance.items():
+                if p_stats.session_id == session_id:
+                    participant_summaries.append({
+                        "participant_id": p_stats.participant_id,
+                        "participant_type": p_stats.participant_type.value,
+                        "total_turns": p_stats.total_turns,
+                        "total_messages": p_stats.total_messages,
+                        "average_response_time": p_stats.average_response_time,
+                        "contribution_score": p_stats.contribution_score,
+                        "engagement_score": p_stats.engagement_score
+                    })
+            
+            # Get recent metrics
+            recent_metrics = [
+                {
+                    "type": m.metric_type.value,
+                    "value": m.value,
+                    "unit": m.unit,
+                    "timestamp": m.timestamp,
+                    "participant_id": m.participant_id
+                }
+                for m in self.performance_metrics[-50:]  # Last 50 metrics
+                if m.session_id == session_id
+            ]
+            
+            return {
+                "session_stats": asdict(stats),
+                "participant_stats": participant_summaries,
+                "recent_metrics": recent_metrics,
+                "performance_enabled": self.performance_enabled,
+                "metrics_count": len([m for m in self.performance_metrics if m.session_id == session_id])
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get performance summary: {e}")
+            return None
+    
+    def export_performance_data(self, session_id: Optional[str] = None, 
+                              format_type: str = "json") -> Optional[Dict[str, Any]]:
+        """Export performance data for analysis."""
+        try:
+            # Filter metrics by session if specified
+            if session_id:
+                metrics = [m for m in self.performance_metrics if m.session_id == session_id]
+                session_stats = {session_id: self.session_performance.get(session_id)}
+                participant_stats = {k: v for k, v in self.participant_performance.items() 
+                                   if v.session_id == session_id}
+            else:
+                metrics = self.performance_metrics
+                session_stats = self.session_performance
+                participant_stats = self.participant_performance
+            
+            export_data = {
+                "export_timestamp": datetime.now().isoformat(),
+                "metrics_count": len(metrics),
+                "sessions_count": len(session_stats),
+                "participants_count": len(participant_stats),
+                "metrics": [asdict(m) for m in metrics],
+                "session_stats": {k: asdict(v) for k, v in session_stats.items() if v},
+                "participant_stats": {k: asdict(v) for k, v in participant_stats.items()},
+                "format": format_type
+            }
+            
+            self.logger.info(f"Exported performance data: {len(metrics)} metrics, {len(session_stats)} sessions")
+            return export_data
+            
+        except Exception as e:
+            self.logger.error(f"Failed to export performance data: {e}")
+            return None
+    
+    def cleanup_old_metrics(self):
+        """Clean up old performance metrics based on retention policy."""
+        try:
+            if not self.performance_enabled:
+                return
+            
+            cutoff_date = datetime.now().timestamp() - (self.metrics_retention_days * 24 * 3600)
+            
+            initial_count = len(self.performance_metrics)
+            self.performance_metrics = [
+                m for m in self.performance_metrics 
+                if datetime.fromisoformat(m.timestamp).timestamp() > cutoff_date
+            ]
+            
+            cleaned_count = initial_count - len(self.performance_metrics)
+            if cleaned_count > 0:
+                self.logger.info(f"Cleaned up {cleaned_count} old performance metrics")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to cleanup old metrics: {e}")
+    
+    def get_performance_trends(self, session_id: str, 
+                             metric_type: PerformanceMetricType,
+                             time_window_hours: int = 24) -> List[Dict[str, Any]]:
+        """Get performance trends for analysis."""
+        try:
+            cutoff_time = datetime.now().timestamp() - (time_window_hours * 3600)
+            
+            relevant_metrics = [
+                m for m in self.performance_metrics
+                if (m.session_id == session_id and 
+                    m.metric_type == metric_type and
+                    datetime.fromisoformat(m.timestamp).timestamp() > cutoff_time)
+            ]
+            
+            # Sort by timestamp
+            relevant_metrics.sort(key=lambda x: x.timestamp)
+            
+            trends = []
+            for metric in relevant_metrics:
+                trends.append({
+                    "timestamp": metric.timestamp,
+                    "value": metric.value,
+                    "unit": metric.unit,
+                    "participant_id": metric.participant_id,
+                    "context": metric.context
+                })
+            
+            return trends
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get performance trends: {e}")
+            return [] 

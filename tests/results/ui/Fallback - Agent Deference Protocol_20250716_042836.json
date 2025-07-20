@@ -1,0 +1,30 @@
+{
+  "test_name": "Fallback - Agent Deference Protocol",
+  "timestamp": "20250716_042836",
+  "results": {
+    "local_responses_working": true,
+    "suboptimal_handling_working": true
+  },
+  "resource_data": {
+    "test_name": "Fallback - Agent Deference Protocol",
+    "timestamp": "20250716_042836",
+    "initial_state": {
+      "cpu_percent": 13.3,
+      "memory_percent": 61.3,
+      "disk_percent": 66.4
+    },
+    "monitoring_start": 1752654521.3343694,
+    "final_state": {
+      "cpu_percent": 19.0,
+      "memory_percent": 61.3,
+      "disk_percent": 66.4
+    },
+    "monitoring_end": 1752654522.334916,
+    "duration": 1.0005466938018799
+  },
+  "environment": {
+    "python_version": "3.10.12 (main, May 27 2025, 17:12:29) [GCC 11.4.0]",
+    "platform": "linux",
+    "working_directory": "/mnt/g/MythologIQ/Hearthlink"
+  }
+}

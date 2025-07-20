@@ -1,0 +1,52 @@
+{
+  "test_suite": "circuit_breaker_end_to_end",
+  "timestamp": "2025-07-20T02:39:02.726897",
+  "summary": {
+    "total_test_categories": 4,
+    "passed": 2,
+    "failed": 2,
+    "other": 0,
+    "success_rate": 50.0
+  },
+  "test_results": {
+    "python_backend": "FAILED",
+    "javascript_dashboard": "FAILED",
+    "integration_scenarios": "PASSED",
+    "performance_scenarios": "PASSED"
+  },
+  "test_logs": [
+    "[02:38:52] INFO: \ud83d\udd04 Starting Comprehensive Circuit Breaker End-to-End Tests",
+    "[02:38:52] INFO: ======================================================================",
+    "[02:38:52] INFO: Starting test services for circuit breaker testing...",
+    "[02:38:52] INFO: Starting mock services for testing...",
+    "[02:38:53] INFO: Mock service started on port 8001",
+    "[02:38:54] INFO: Mock service started on port 8000",
+    "[02:38:55] INFO: Mock service started on port 8002",
+    "[02:38:57] INFO: Running Python circuit breaker backend tests...",
+    "[02:38:58] ERROR: Python backend tests: FAILED",
+    "[02:38:58] ERROR: Error output: Traceback (most recent call last):\n  File \"/mnt/g/mythologiq/hearthlink/tests/test_circuit_breaker_failover.py\", line 23, in <module>\n    from utils.CircuitBreaker import CircuitBreaker as TSCircuitBreaker, CircuitBreakerState\nModuleNotFoundError: No module named 'utils.CircuitBreaker'\n",
+    "[02:38:58] INFO: Running JavaScript dashboard integration tests...",
+    "[02:39:02] ERROR: JavaScript dashboard tests: FAILED",
+    "[02:39:02] ERROR: Error output: node:internal/modules/cjs/loader:1215\n  throw err;\n  ^\n\nError: Cannot find module '@testing-library/react'\nRequire stack:\n- /mnt/g/mythologiq/hearthlink/tests/test_circuit_breaker_dashboard.js\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)\n    at Module._load (node:internal/modules/cjs/loader:1043:27)\n    at Module.require (node:internal/modules/cjs/loader:1298:19)\n    at require (node:internal/modules/helpers:182:18)\n    at Object.<anonymous> (/mnt/g/mythologiq/hearthlink/tests/test_circuit_breaker_dashboard.js:10:48)\n    at Module._compile (node:internal/modules/cjs/loader:1529:14)\n    at Module._extensions..js (node:internal/modules/cjs/loader:1613:10)\n    at Module.load (node:internal/modules/cjs/loader:1275:32)\n    at Module._load (node:internal/modules/cjs/loader:1096:12)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12) {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [\n    '/mnt/g/mythologiq/hearthlink/tests/test_circuit_breaker_dashboard.js'\n  ]\n}\n\nNode.js v20.19.3\n",
+    "[02:39:02] INFO: Running integration scenario tests...",
+    "[02:39:02] INFO: Testing service failure detection integration...",
+    "[02:39:02] INFO: Testing service recovery integration...",
+    "[02:39:02] INFO: Testing multiple service monitoring...",
+    "[02:39:02] INFO: Successfully monitored 3 services",
+    "[02:39:02] SUCCESS: Integration scenario tests: PASSED",
+    "[02:39:02] INFO:   \u2705 service_failure_trigger: PASSED",
+    "[02:39:02] INFO:   \u2705 dashboard_failure_detection: PASSED",
+    "[02:39:02] INFO:   \u2705 service_recovery_trigger: PASSED",
+    "[02:39:02] INFO:   \u2705 dashboard_recovery_detection: PASSED",
+    "[02:39:02] INFO:   \u2705 multiple_service_monitoring: PASSED",
+    "[02:39:02] INFO: Running performance scenario tests...",
+    "[02:39:02] INFO: Testing concurrent request performance...",
+    "[02:39:02] SUCCESS: Performance scenario tests: PASSED",
+    "[02:39:02] INFO:   Success rate: 100.0%, Time: 0.09s",
+    "[02:39:02] INFO: Generating comprehensive test report..."
+  ],
+  "recommendations": [
+    "Fix Python backend circuit breaker implementation issues",
+    "Address JavaScript dashboard integration problems"
+  ]
+}

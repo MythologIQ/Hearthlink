@@ -1,0 +1,41 @@
+======================================== 
+Hearthlink Minimal Launch Log 
+======================================== 
+Launch Time: Fri 07/11/2025 21:40:15.02 
+App Directory: G:\MythologIQ\Hearthlink\ 
+Log File: G:\MythologIQ\Hearthlink\logs\hearthlink_launch_Fri 07-11-2025_21-40-15.log 
+======================================== 
+[21:40:15.02] Launching Electron with npm start... 
+
+> Hearthlink@1.1.0 start
+> electron .
+
+
+[PERSISTENCE] Loaded metrics from disk
+Static server running on port 3001
+Static server started on port 3001
+Starting Python backend: python G:\MythologIQ\Hearthlink\src\main.py
+Python output: {"timestamp": "2025-07-11T21:40:16.678696", "level": "INFO", "logger": "Hearthlink", "message": "Hearthlink container started", "module": "main", "function": "log_startup", "line": 262, "event_type": "container_startup", "platform": {"system": "Windows", "release": "10", "version": "10.0.19045", "machine": "AMD64", "processor": "Intel64 Family 6 Model 158 Stepping 9, GenuineIntel"}, "python": {"version": "3.13.3", "implementation": "CPython", "compiler": "MSC v.1943 64 bit (AMD64)"}, "log_directory": "C:\\Users\\krkna\\AppData\\Local\\Hearthlink\\logs", "log_config": {"max_size_mb": 10, "backup_count": 5, "format": "structured_json"}}
+{"timestamp": "2025-07-11T21:40:16.678984", "level": "INFO", "logger": "Hearthlink", "message": "Initializing ethical safety rails", "module": "main", "function": "_setup_safety_rails", "line": 436, "event_type": "safety_rails_initialization", "rails": ["dependency_mitigation", "human_origin_clause", "audit_trail", "ethical_boundaries"]}
+
+Python output: {"timestamp": "2025-07-11T21:40:16.679077", "level": "INFO", "logger": "Hearthlink", "message": "Dependency mitigation: Container will not encourage overuse", "module": "main", "function": "_setup_safety_rails", "line": 440, "event_type": "dependency_mitigation_setup"}
+{"timestamp": "2025-07-11T21:40:16.679146", "level": "INFO", "logger": "Hearthlink", "message": "Human origin clause: Container ready for crisis handling if needed", "module": "main", "function": "_setup_safety_rails", "line": 444, "event_type": "human_origin_clause_setup"}
+{"timestamp": "2025-07-11T21:40:16.679208", "level": "INFO", "logger": "Hearthlink", "message": "Audit trail: All container actions will be logged", "module": "main", "function": "_setup_safety_rails", "line": 448, "event_type": "audit_trail_setup"}
+
+Python output: {"timestamp": "2025-07-11T21:40:17.032777", "level": "INFO", "logger": "Hearthlink", "message": "Core action: core_initialized", "module": "core", "function": "_log", "line": 228}
+
+Python output: {"timestamp": "2025-07-11T21:40:17.034435", "level": "INFO", "logger": "Hearthlink", "message": "Sentry Security Orchestrator initialized", "module": "sentry_siem", "function": "__init__", "line": 608}
+{"timestamp": "2025-07-11T21:40:17.034546", "level": "INFO", "logger": "Hearthlink", "message": "Backend modules initialized successfully", "module": "main", "function": "_initialize_modules", "line": 731}
+HEARTHLINK_READY
+
+Python backend ready
+Python backend started successfully
+Loading URL: http://localhost:3000
+Build directory exists: true
+Index.html exists: false
+Main window loaded successfully
+Static server closed
+Stopping Python backend...
+[PERSISTENCE] Metrics saved to disk
+Python backend process exited with code: null
+[21:40:23.01] Launch completed successfully! 

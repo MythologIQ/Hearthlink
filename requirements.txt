@@ -17,5 +17,13 @@ websockets>=12.0      # For real-time communication (Core)
 jinja2>=3.1.0         # For UI templates
 aiofiles>=23.0        # For async file operations
 
-# Future dependencies (to be added as modules are implemented):
-# - sqlite3  # For local database (Vault)
+# System monitoring and database dependencies
+psutil>=5.9.0          # For system health monitoring
+flask>=3.0.0           # For health API endpoints
+flask-cors>=4.0.0      # For CORS support
+
+# Database dependencies
+# sqlite3 is included in Python standard library
+
+# Additional dependencies for enhanced functionality
+requests>=2.31.0       # Already included above, for API calls

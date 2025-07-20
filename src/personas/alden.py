@@ -32,6 +32,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from main import HearthlinkLogger, HearthlinkError
 from llm.local_llm_client import LocalLLMClient, LLMRequest, LLMResponse, LLMError
+from log_handling.agent_token_tracker import log_agent_token_usage, AgentType
+from vault.vault import Vault
+from vault.schema import PersonaMemory as VaultPersonaMemory
 
 
 class PersonaError(HearthlinkError):
@@ -189,9 +192,21 @@ class AldenPersona:
             self.logger = logger or HearthlinkLogger()
             self.memory = AldenPersonaMemory()
             
-            # Validate LLM client
-            if not isinstance(llm_client, LocalLLMClient):
-                raise PersonaError("LLM client must be an instance of LocalLLMClient")
+            # Initialize Vault connection for memory persistence
+            self._init_vault()
+            
+            # Validate LLM client (relaxed for testing compatibility)
+            if llm_client is None:
+                raise PersonaError("LLM client cannot be None")
+            
+            # Check if client has required methods (duck typing for testing)
+            required_methods = ['generate', 'get_status']
+            for method in required_methods:
+                if not hasattr(llm_client, method):
+                    raise PersonaError(f"LLM client missing required method: {method}")
+            
+            # Load existing memory from Vault if available
+            self._load_memory_from_vault()
             
             # Load baseline prompts
             self._load_baseline_prompts()
@@ -205,7 +220,8 @@ class AldenPersona:
                                       "user_id": self.memory.user_id,
                                       "schema_version": self.memory.schema_version,
                                       "llm_engine": llm_client.config.engine,
-                                      "llm_model": llm_client.config.model
+                                      "llm_model": llm_client.config.model,
+                                      "vault_connected": hasattr(self, 'vault') and self.vault is not None
                                   }})
             
         except Exception as e:
@@ -220,6 +236,156 @@ class AldenPersona:
             )
             self._log_error_context(error_context)
             raise PersonaError(f"Failed to initialize Alden persona: {str(e)}") from e
+    
+    def _init_vault(self) -> None:
+        """Initialize Vault connection for memory persistence."""
+        try:
+            # Load Vault configuration
+            vault_config = {
+                "encryption": {
+                    "key_env_var": "HEARTHLINK_VAULT_KEY",
+                    "key_file": "config/vault_key.bin"
+                },
+                "storage": {
+                    "file_path": "hearthlink_data/vault_storage"
+                },
+                "schema_version": "1.0.0"
+            }
+            
+            # Initialize Vault with logger
+            self.vault = Vault(vault_config, self.logger)
+            
+            self.logger.logger.info("Vault connection initialized", 
+                                  extra={"extra_fields": {
+                                      "event_type": "vault_init",
+                                      "storage_path": vault_config["storage"]["file_path"]
+                                  }})
+            
+        except Exception as e:
+            self.logger.logger.error(f"Failed to initialize Vault: {str(e)}")
+            self.vault = None
+            raise PersonaError(f"Vault initialization failed: {str(e)}") from e
+    
+    def _load_memory_from_vault(self) -> None:
+        """Load existing memory from Vault if available."""
+        if not self.vault:
+            return
+        
+        try:
+            # Attempt to load existing Alden persona memory from Vault
+            vault_memory = self.vault.get_persona("alden", self.memory.user_id)
+            
+            if vault_memory and vault_memory.get("data"):
+                # Convert Vault memory format to AldenPersonaMemory
+                vault_data = vault_memory["data"]
+                
+                # Update memory with Vault data, preserving defaults for missing fields
+                if "traits" in vault_data:
+                    self.memory.traits.update(vault_data["traits"])
+                
+                if "motivation_style" in vault_data:
+                    self.memory.motivation_style = vault_data["motivation_style"]
+                
+                if "trust_level" in vault_data:
+                    self.memory.trust_level = vault_data["trust_level"]
+                
+                if "learning_agility" in vault_data:
+                    self.memory.learning_agility = vault_data["learning_agility"]
+                
+                if "reflective_capacity" in vault_data:
+                    self.memory.reflective_capacity = vault_data["reflective_capacity"]
+                
+                if "engagement" in vault_data:
+                    self.memory.engagement = vault_data["engagement"]
+                
+                if "habit_consistency" in vault_data:
+                    self.memory.habit_consistency = vault_data["habit_consistency"]
+                
+                if "feedback_score" in vault_data:
+                    self.memory.feedback_score = vault_data["feedback_score"]
+                
+                # Load event histories
+                if "correction_events" in vault_data:
+                    self.memory.correction_events = [
+                        CorrectionEvent(**event) for event in vault_data["correction_events"]
+                    ]
+                
+                if "session_mood" in vault_data:
+                    self.memory.session_mood = [
+                        SessionMood(**mood) for mood in vault_data["session_mood"]
+                    ]
+                
+                if "relationship_log" in vault_data:
+                    self.memory.relationship_log = [
+                        RelationshipEvent(**event) for event in vault_data["relationship_log"]
+                    ]
+                
+                if "audit_log" in vault_data:
+                    self.memory.audit_log = [
+                        AuditEvent(**event) for event in vault_data["audit_log"]
+                    ]
+                
+                if "user_tags" in vault_data:
+                    self.memory.user_tags = vault_data["user_tags"]
+                
+                self.logger.logger.info("Memory loaded from Vault", 
+                                      extra={"extra_fields": {
+                                          "event_type": "memory_loaded",
+                                          "vault_timestamp": vault_memory.get("updated_at"),
+                                          "correction_events": len(self.memory.correction_events),
+                                          "session_moods": len(self.memory.session_mood),
+                                          "audit_events": len(self.memory.audit_log)
+                                      }})
+            else:
+                self.logger.logger.info("No existing memory found in Vault, using defaults")
+                
+        except Exception as e:
+            self.logger.logger.warning(f"Failed to load memory from Vault: {str(e)}")
+            # Continue with default memory if Vault loading fails
+    
+    def _save_memory_to_vault(self) -> None:
+        """Save current memory state to Vault."""
+        if not self.vault:
+            return
+        
+        try:
+            # Convert AldenPersonaMemory to Vault-compatible format
+            memory_data = {
+                "persona_id": self.memory.persona_id,
+                "user_id": self.memory.user_id,
+                "schema_version": self.memory.schema_version,
+                "timestamp": self.memory.timestamp,
+                "traits": self.memory.traits,
+                "motivation_style": self.memory.motivation_style,
+                "trust_level": self.memory.trust_level,
+                "feedback_score": self.memory.feedback_score,
+                "learning_agility": self.memory.learning_agility,
+                "reflective_capacity": self.memory.reflective_capacity,
+                "habit_consistency": self.memory.habit_consistency,
+                "engagement": self.memory.engagement,
+                "correction_events": [asdict(event) for event in self.memory.correction_events],
+                "session_mood": [asdict(mood) for mood in self.memory.session_mood],
+                "relationship_log": [asdict(event) for event in self.memory.relationship_log],
+                "user_tags": self.memory.user_tags,
+                "provenance": self.memory.provenance,
+                "last_modified_by": self.memory.last_modified_by,
+                "editable_fields": self.memory.editable_fields,
+                "audit_log": [asdict(event) for event in self.memory.audit_log]
+            }
+            
+            # Save to Vault
+            self.vault.create_or_update_persona("alden", self.memory.user_id, memory_data)
+            
+            self.logger.logger.info("Memory saved to Vault", 
+                                  extra={"extra_fields": {
+                                      "event_type": "memory_saved",
+                                      "memory_size": len(str(memory_data)),
+                                      "events_saved": len(self.memory.correction_events) + len(self.memory.session_mood) + len(self.memory.audit_log)
+                                  }})
+            
+        except Exception as e:
+            self.logger.logger.error(f"Failed to save memory to Vault: {str(e)}")
+            raise PersonaError(f"Memory save failed: {str(e)}") from e
     
     def _log_error_context(self, error_context: PersonaErrorContext) -> None:
         """Log error context with full details."""
@@ -403,6 +569,25 @@ Please respond as Alden, providing reflective support and guidance."""
             if not llm_response.content or not llm_response.content.strip():
                 raise PersonaError("LLM returned empty response")
             
+            # Log token usage for tracking
+            try:
+                tokens_used = getattr(llm_response, 'tokens_used', 0) or len(llm_response.content.split()) * 1.3  # Estimate if not provided
+                log_agent_token_usage(
+                    agent_name="alden",
+                    agent_type=AgentType.ALDEN,
+                    tokens_used=int(tokens_used),
+                    task_description=f"Response generation: {user_message[:50]}...",
+                    module="persona_management",
+                    request_id=request_id,
+                    session_id=session_id,
+                    user_id=self.memory.user_id,
+                    model_name=getattr(llm_response, 'model', 'unknown'),
+                    response_time_ms=int(getattr(llm_response, 'response_time', 0) * 1000),
+                    success=True
+                )
+            except Exception as token_error:
+                self.logger.logger.warning(f"Failed to log token usage: {token_error}")
+            
             # Log successful response
             self.logger.logger.info("Alden response generated", 
                                   extra={"extra_fields": {
@@ -413,6 +598,30 @@ Please respond as Alden, providing reflective support and guidance."""
                                       "response_time": llm_response.response_time,
                                       "model": llm_response.model
                                   }})
+            
+            # Save conversation memory to Vault
+            try:
+                # Create conversation memory entry
+                conversation_event = CorrectionEvent(
+                    type="positive",
+                    timestamp=timestamp,
+                    description=f"User interaction: '{user_message[:100]}...' - Response provided",
+                    impact_score=0.1,
+                    context={
+                        "session_id": session_id,
+                        "request_id": request_id,
+                        "user_message_length": len(user_message),
+                        "response_length": len(llm_response.content)
+                    }
+                )
+                
+                self.memory.correction_events.append(conversation_event)
+                
+                # Save updated memory to Vault
+                self._save_memory_to_vault()
+                
+            except Exception as memory_error:
+                self.logger.logger.warning(f"Failed to save conversation memory: {memory_error}")
             
             return llm_response.content
             
@@ -470,6 +679,12 @@ Please respond as Alden, providing reflective support and guidance."""
             
             # Validate memory state after update
             self._validate_memory_state()
+            
+            # Save updated memory to Vault
+            try:
+                self._save_memory_to_vault()
+            except Exception as vault_error:
+                self.logger.logger.warning(f"Failed to save trait update to Vault: {vault_error}")
             
             self.logger.logger.info("Alden trait updated", 
                                   extra={"extra_fields": {
@@ -557,6 +772,12 @@ Please respond as Alden, providing reflective support and guidance."""
             # Validate memory state after update
             self._validate_memory_state()
             
+            # Save updated memory to Vault
+            try:
+                self._save_memory_to_vault()
+            except Exception as vault_error:
+                self.logger.logger.warning(f"Failed to save correction event to Vault: {vault_error}")
+            
             self.logger.logger.info("Correction event added", 
                                   extra={"extra_fields": {
                                       "event_type": "alden_correction_added",
@@ -636,6 +857,12 @@ Please respond as Alden, providing reflective support and guidance."""
             
             # Validate memory state after update
             self._validate_memory_state()
+            
+            # Save updated memory to Vault
+            try:
+                self._save_memory_to_vault()
+            except Exception as vault_error:
+                self.logger.logger.warning(f"Failed to save session mood to Vault: {vault_error}")
             
             self.logger.logger.info("Session mood recorded", 
                                   extra={"extra_fields": {

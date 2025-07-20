@@ -1,0 +1,61 @@
+# Hearthlink Global Container Dependencies
+# Production-ready requirements for full system functionality
+
+# Core Python standard library modules used:
+# - os, sys, time, logging, platform, datetime, pathlib, typing, asyncio, json
+
+# Core API and web framework
+fastapi>=0.104.0          # For API endpoints
+uvicorn[standard]>=0.24.0 # For ASGI server with performance extras
+pydantic>=2.5.0           # For data validation and settings
+python-dotenv>=1.0.0      # For environment variable management
+
+# Database and storage
+psycopg2-binary>=2.9.0    # PostgreSQL adapter
+sqlalchemy>=2.0.0         # ORM for database operations
+alembic>=1.12.0           # Database migrations
+redis>=5.0.0              # Redis client for session management
+qdrant-client>=1.6.0      # Vector database client for embeddings
+
+# Authentication and security
+cryptography>=41.0.0      # For encryption and security
+PyJWT>=2.8.0              # For JWT token handling
+bcrypt>=4.0.0             # For password hashing
+python-multipart>=0.0.6   # For form data handling
+
+# LLM and AI integration
+requests>=2.31.0          # For HTTP requests to local LLM endpoints
+openai>=1.3.0             # OpenAI API client
+anthropic>=0.7.0          # Anthropic Claude API client
+sentence-transformers>=2.2.0  # For text embeddings
+torch>=2.0.0              # PyTorch for ML operations
+transformers>=4.35.0      # Hugging Face transformers
+
+# Memory and knowledge management
+numpy>=1.24.0             # For numerical operations
+scikit-learn>=1.3.0       # For ML algorithms and clustering
+
+# Web and network
+httpx>=0.25.0             # Modern HTTP client
+websockets>=12.0          # For real-time communication (Core)
+aiofiles>=23.0            # For async file operations
+aioredis>=2.0.0           # Async Redis client
+
+# Utilities and helpers
+python-dateutil>=2.8.0   # For date/time parsing
+pytz>=2023.3              # For timezone handling
+click>=8.1.0              # For CLI commands
+rich>=13.0.0              # For beautiful terminal output
+tenacity>=8.2.0           # For retry logic
+
+# Synapse plugin gateway dependencies
+jinja2>=3.1.0             # For UI templates
+watchdog>=3.0.0           # For file system monitoring
+
+# Development and testing
+pytest>=7.4.0            # Testing framework
+pytest-asyncio>=0.21.0   # Async testing support
+
+# Optional dependencies for enhanced features
+neo4j>=5.0.0              # Neo4j graph database client (optional)
+matplotlib>=3.7.0         # For analytics visualization (optional)

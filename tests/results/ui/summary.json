@@ -3,7 +3,7 @@
   "feature_id": "VOICE-001",
   "source": "Owner Directive - UI Test Compliance & Execution",
   "policy_reference": "/docs/VOICE_ACCESS_POLICY.md",
-  "timestamp": 1752086550.4252908,
+  "timestamp": 1752654550.4401278,
   "total_tests": 17,
   "passed": 17,
   "failed": 0,
@@ -12,119 +12,119 @@
       "test": "Voice Routing - Agent Agnostic Mode",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086518.0057967,
+      "timestamp": 1752654518.3190854,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Agent Identity - Confirmation Messages",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086520.0268939,
+      "timestamp": 1752654520.3333542,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Fallback - Agent Deference Protocol",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086522.055405,
+      "timestamp": 1752654522.3469558,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Local Agents - Delegation Protocol Compliance",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086524.0857546,
+      "timestamp": 1752654524.3505938,
       "feature_id": "VOICE-001"
     },
     {
       "test": "External Agents - Default Disabled Compliance",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086526.1479855,
+      "timestamp": 1752654526.355191,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Logging - External Agent Logging",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086528.1760807,
+      "timestamp": 1752654528.37109,
       "feature_id": "VOICE-001"
     },
     {
       "test": "External Agents - Permission Layers Compliance",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086530.1967583,
+      "timestamp": 1752654530.3749218,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Voice Routing - Isolated Mode",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086532.2227871,
+      "timestamp": 1752654532.3789785,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Local Agents - Conversational Mode Compliance",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086534.2390907,
+      "timestamp": 1752654534.3823383,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Offline Mode - Behavior Compliance",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086536.2519877,
+      "timestamp": 1752654536.3972828,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Voice Routing - Safety Reinforcement",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086538.2681,
+      "timestamp": 1752654538.4010253,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Voice Auth - Secure Mode Activation",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086540.2877235,
+      "timestamp": 1752654540.4047449,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Vault Logging - Audit Trail",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086542.3102102,
+      "timestamp": 1752654542.4096143,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Vault Logging - Session Logging",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086544.3273644,
+      "timestamp": 1752654544.4249983,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Voice Access - Disabled State Compliance",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086546.379848,
+      "timestamp": 1752654546.4288309,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Voice Access - Enabled State Compliance",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086548.4066288,
+      "timestamp": 1752654548.4345846,
       "feature_id": "VOICE-001"
     },
     {
       "test": "Fallback - Voice Misrouting Prevention",
       "status": "PASSED",
       "details": "",
-      "timestamp": 1752086550.4234488,
+      "timestamp": 1752654550.4393947,
       "feature_id": "VOICE-001"
     }
   ],

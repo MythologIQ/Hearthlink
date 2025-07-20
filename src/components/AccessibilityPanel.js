@@ -1,4 +1,5 @@
 import React from 'react';
+import './AccessibilityPanel.css';
 
 const AccessibilityPanel = ({ settings, onSettingChange, isVisible, onClose }) => {
   const handleToggle = (feature) => {

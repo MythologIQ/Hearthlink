@@ -1,0 +1,86 @@
+Starting Hearthlink Simple Backend...
+Endpoints available:
+  GET  /api/status - Service status
+  GET  /api/project/services - Available services
+  POST /api/project/delegate - Task delegation
+  GET  /api/project/stats - Task statistics
+
+Starting server on port 8003...
+ * Serving Flask app 'simple_backend'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8003
+ * Running on http://192.168.0.29:8003
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 400-997-232
+127.0.0.1 - - [16/Jul/2025 03:44:46] "GET /api/status HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2025 03:44:52] "GET /api/settings HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2025 03:44:57] "POST /api/settings HTTP/1.1" 200 -
+ * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/settings_api.py', reloading
+Starting Hearthlink Simple Backend...
+Endpoints available:
+  GET  /api/status - Service status
+  GET  /api/project/services - Available services
+  POST /api/project/delegate - Task delegation
+  GET  /api/project/stats - Task statistics
+
+Starting server on port 8003...
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 400-997-232
+ * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/vault_connector.py', reloading
+Starting Hearthlink Simple Backend...
+Endpoints available:
+  GET  /api/status - Service status
+  GET  /api/project/services - Available services
+  POST /api/project/delegate - Task delegation
+  GET  /api/project/stats - Task statistics
+
+Starting server on port 8003...
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 400-997-232
+ * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/vault_api.py', reloading
+Starting Hearthlink Simple Backend...
+Endpoints available:
+  GET  /api/status - Service status
+  GET  /api/project/services - Available services
+  POST /api/project/delegate - Task delegation
+  GET  /api/project/stats - Task statistics
+
+Starting server on port 8003...
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 400-997-232
+ * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/vault_api.py', reloading
+Starting Hearthlink Simple Backend...
+Endpoints available:
+  GET  /api/status - Service status
+  GET  /api/project/services - Available services
+  POST /api/project/delegate - Task delegation
+  GET  /api/project/stats - Task statistics
+
+Starting server on port 8003...
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 400-997-232
+127.0.0.1 - - [16/Jul/2025 21:37:11] "GET /api/health HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2025 21:37:31] "GET /api/settings HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2025 21:37:41] "GET /api/settings HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2025 21:37:46] "GET /api/settings HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2025 21:38:11] "POST /api/settings HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2025 21:38:19] "GET /api/settings HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2025 21:38:27] "POST /api/test/local-llm HTTP/1.1" 400 -
+127.0.0.1 - - [16/Jul/2025 21:38:47] "POST /api/test/local-llm HTTP/1.1" 400 -
+127.0.0.1 - - [16/Jul/2025 21:39:22] "POST /api/test/local-llm HTTP/1.1" 400 -
+Starting Hearthlink Simple Backend...
+Endpoints available:
+  GET  /api/status - Service status
+  GET  /api/project/services - Available services
+  POST /api/project/delegate - Task delegation
+  GET  /api/project/stats - Task statistics
+
+Starting server on port 8003...

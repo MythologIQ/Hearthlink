@@ -1,0 +1,1344 @@
+"use strict";
+globalThis["webpackHotUpdateHearthlink"]("main",{
+
+/***/ "./src/components/SettingsManager.js":
+/*!*******************************************!*\
+  !*** ./src/components/SettingsManager.js ***!
+  \*******************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _SettingsManager_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./SettingsManager.css */ "./src/components/SettingsManager.css");
+/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+/* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
+__webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
+
+var _jsxFileName = "G:\\mythologiq\\hearthlink\\src\\components\\SettingsManager.js",
+  _s = __webpack_require__.$Refresh$.signature();
+
+
+
+const SettingsManager = ({
+  isVisible,
+  onClose,
+  onSettingsChange
+}) => {
+  _s();
+  var _tabs$find;
+  const [activeTab, setActiveTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('general');
+  const [settings, setSettings] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    general: {
+      theme: 'starcraft',
+      language: 'en',
+      autoSave: true,
+      notifications: true,
+      voiceEnabled: true,
+      startupModule: 'alden'
+    },
+    apis: {
+      googleAiKey: '',
+      claudeCodePath: '',
+      ollamaUrl: 'http://localhost:11434',
+      customEndpoints: []
+    },
+    localLLM: {
+      enabled: false,
+      provider: 'ollama',
+      endpoint: 'http://localhost:11434',
+      model: 'llama3.2:latest',
+      temperature: 0.7,
+      maxTokens: 4096,
+      contextLength: 32768,
+      streaming: true,
+      autoStart: false,
+      fallbackEnabled: true,
+      healthCheckInterval: 30000
+    },
+    agents: {
+      alden: {
+        enabled: true,
+        priority: 1
+      },
+      alice: {
+        enabled: true,
+        priority: 2
+      },
+      mimic: {
+        enabled: true,
+        priority: 3
+      },
+      sentry: {
+        enabled: true,
+        priority: 4
+      },
+      core: {
+        enabled: true,
+        priority: 0
+      }
+    },
+    voice: {
+      enabled: true,
+      sensitivity: 0.7,
+      language: 'en-US',
+      wakeWord: 'alden',
+      routingMode: 'smart'
+    },
+    security: {
+      encryptionEnabled: true,
+      auditLogging: true,
+      sessionTimeout: 30,
+      autoLock: false
+    },
+    performance: {
+      maxMemoryUsage: 4096,
+      cachingEnabled: true,
+      preloadModules: true,
+      backgroundSync: true
+    }
+  });
+  const [testResults, setTestResults] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [saving, setSaving] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [error, setError] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    loadSettings();
+  }, [isVisible]);
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('http://localhost:8003/api/settings');
+      if (response.ok) {
+        const loadedSettings = await response.json();
+        setSettings(prev => ({
+          ...prev,
+          ...loadedSettings
+        }));
+      }
+    } catch (err) {
+      console.warn('Failed to load settings:', err);
+      // Use defaults
+    }
+  };
+  const saveSettings = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const response = await fetch('http://localhost:8003/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(settings)
+      });
+      if (response.ok) {
+        onSettingsChange(settings);
+        // Show success feedback
+        setTimeout(() => setSaving(false), 1000);
+      } else {
+        throw new Error('Failed to save settings');
+      }
+    } catch (err) {
+      setError(err.message);
+      setSaving(false);
+    }
+  };
+  const testConnection = async service => {
+    setTestResults(prev => ({
+      ...prev,
+      [service]: 'testing'
+    }));
+    try {
+      const response = await fetch(`http://localhost:8003/api/test/${service}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(settings.apis)
+      });
+      const result = await response.json();
+      setTestResults(prev => ({
+        ...prev,
+        [service]: result.success ? 'success' : 'failed',
+        [`${service}_details`]: result.details || result.error
+      }));
+    } catch (err) {
+      setTestResults(prev => ({
+        ...prev,
+        [service]: 'failed',
+        [`${service}_details`]: err.message
+      }));
+    }
+  };
+  const updateSetting = (category, key, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [key]: value
+      }
+    }));
+  };
+  const renderGeneralSettings = () => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "settings-section",
+    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+      children: "General Settings"
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 144,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Theme"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 147,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("select", {
+        value: settings.general.theme,
+        onChange: e => updateSetting('general', 'theme', e.target.value),
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "starcraft",
+          children: "StarCraft"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 152,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "dark",
+          children: "Dark"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 153,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "light",
+          children: "Light"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 154,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 148,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 146,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Startup Module"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 159,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("select", {
+        value: settings.general.startupModule,
+        onChange: e => updateSetting('general', 'startupModule', e.target.value),
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "alden",
+          children: "Alden"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 164,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "alice",
+          children: "Alice"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 165,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "core",
+          children: "Core"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 166,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "vault",
+          children: "Vault"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 167,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 160,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 158,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.general.autoSave,
+          onChange: e => updateSetting('general', 'autoSave', e.target.checked)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 173,
+          columnNumber: 11
+        }, undefined), "Auto-save sessions"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 172,
+        columnNumber: 9
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 171,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.general.notifications,
+          onChange: e => updateSetting('general', 'notifications', e.target.checked)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 184,
+          columnNumber: 11
+        }, undefined), "Enable notifications"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 183,
+        columnNumber: 9
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 182,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.general.voiceEnabled,
+          onChange: e => updateSetting('general', 'voiceEnabled', e.target.checked)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 195,
+          columnNumber: 11
+        }, undefined), "Voice interface enabled"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 194,
+        columnNumber: 9
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 193,
+      columnNumber: 7
+    }, undefined)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 143,
+    columnNumber: 5
+  }, undefined);
+  const renderApiSettings = () => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "settings-section",
+    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+      children: "API Configuration"
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 208,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Google AI Studio Key"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 211,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "input-with-test",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "password",
+          value: settings.apis.googleAiKey,
+          onChange: e => updateSetting('apis', 'googleAiKey', e.target.value),
+          placeholder: "Enter your Google AI Studio API key"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 213,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          onClick: () => testConnection('google-ai'),
+          className: `test-btn ${testResults['google-ai'] || ''}`,
+          disabled: testResults['google-ai'] === 'testing',
+          children: testResults['google-ai'] === 'testing' ? 'Testing...' : 'Test'
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 219,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 212,
+        columnNumber: 9
+      }, undefined), testResults['google-ai_details'] && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: `test-result ${testResults['google-ai']}`,
+        children: testResults['google-ai_details']
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 228,
+        columnNumber: 11
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 210,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Claude Code CLI Path"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 235,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "input-with-test",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "text",
+          value: settings.apis.claudeCodePath,
+          onChange: e => updateSetting('apis', 'claudeCodePath', e.target.value),
+          placeholder: "/usr/local/bin/claude-code or C:/Program Files/Claude Code/claude-code.exe"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 237,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          onClick: () => testConnection('claude-code'),
+          className: `test-btn ${testResults['claude-code'] || ''}`,
+          disabled: testResults['claude-code'] === 'testing',
+          children: testResults['claude-code'] === 'testing' ? 'Testing...' : 'Test'
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 243,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 236,
+        columnNumber: 9
+      }, undefined), testResults['claude-code_details'] && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: `test-result ${testResults['claude-code']}`,
+        children: testResults['claude-code_details']
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 252,
+        columnNumber: 11
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 234,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Ollama URL"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 259,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "input-with-test",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "text",
+          value: settings.apis.ollamaUrl,
+          onChange: e => updateSetting('apis', 'ollamaUrl', e.target.value),
+          placeholder: "http://localhost:11434"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 261,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          onClick: () => testConnection('ollama'),
+          className: `test-btn ${testResults['ollama'] || ''}`,
+          disabled: testResults['ollama'] === 'testing',
+          children: testResults['ollama'] === 'testing' ? 'Testing...' : 'Test'
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 267,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 260,
+        columnNumber: 9
+      }, undefined), testResults['ollama_details'] && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: `test-result ${testResults['ollama']}`,
+        children: testResults['ollama_details']
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 276,
+        columnNumber: 11
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 258,
+      columnNumber: 7
+    }, undefined)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 207,
+    columnNumber: 5
+  }, undefined);
+  const renderLocalLLMSettings = () => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "settings-section",
+    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+      children: "Local LLM Configuration"
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 286,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.localLLM.enabled,
+          onChange: e => updateSetting('localLLM', 'enabled', e.target.checked)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 290,
+          columnNumber: 11
+        }, undefined), "Enable Local LLM"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 289,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "setting-description",
+        children: "Enable local language model integration for offline AI capabilities"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 297,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 288,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Provider"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 303,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("select", {
+        value: settings.localLLM.provider,
+        onChange: e => updateSetting('localLLM', 'provider', e.target.value),
+        disabled: !settings.localLLM.enabled,
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "ollama",
+          children: "Ollama"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 309,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "lm-studio",
+          children: "LM Studio"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 310,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "text-generation-webui",
+          children: "Text Generation WebUI"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 311,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "custom",
+          children: "Custom Endpoint"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 312,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 304,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 302,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Endpoint URL"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 317,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "input-with-test",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "text",
+          value: settings.localLLM.endpoint,
+          onChange: e => updateSetting('localLLM', 'endpoint', e.target.value),
+          placeholder: "http://localhost:11434",
+          disabled: !settings.localLLM.enabled
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 319,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          onClick: () => testConnection('local-llm'),
+          className: `test-btn ${testResults['local-llm'] || ''}`,
+          disabled: testResults['local-llm'] === 'testing' || !settings.localLLM.enabled,
+          children: testResults['local-llm'] === 'testing' ? 'Testing...' : 'Test'
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 326,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 318,
+        columnNumber: 9
+      }, undefined), testResults['local-llm_details'] && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: `test-result ${testResults['local-llm']}`,
+        children: testResults['local-llm_details']
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 335,
+        columnNumber: 11
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 316,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Model"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 342,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+        type: "text",
+        value: settings.localLLM.model,
+        onChange: e => updateSetting('localLLM', 'model', e.target.value),
+        placeholder: "llama3.2:latest",
+        disabled: !settings.localLLM.enabled
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 343,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "setting-description",
+        children: "Model name to use for local inference"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 350,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 341,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Temperature"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 356,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+        type: "range",
+        min: "0",
+        max: "1",
+        step: "0.1",
+        value: settings.localLLM.temperature,
+        onChange: e => updateSetting('localLLM', 'temperature', parseFloat(e.target.value)),
+        disabled: !settings.localLLM.enabled
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 357,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+        className: "slider-value",
+        children: settings.localLLM.temperature
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 366,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "setting-description",
+        children: "Controls randomness in responses (0.0 = deterministic, 1.0 = creative)"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 367,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 355,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Max Tokens"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 373,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+        type: "number",
+        value: settings.localLLM.maxTokens,
+        onChange: e => updateSetting('localLLM', 'maxTokens', parseInt(e.target.value)),
+        min: "100",
+        max: "8192",
+        disabled: !settings.localLLM.enabled
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 374,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "setting-description",
+        children: "Maximum number of tokens to generate per response"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 382,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 372,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Context Length"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 388,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+        type: "number",
+        value: settings.localLLM.contextLength,
+        onChange: e => updateSetting('localLLM', 'contextLength', parseInt(e.target.value)),
+        min: "1024",
+        max: "131072",
+        disabled: !settings.localLLM.enabled
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 389,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "setting-description",
+        children: "Maximum context window size for conversation history"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 397,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 387,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.localLLM.streaming,
+          onChange: e => updateSetting('localLLM', 'streaming', e.target.checked),
+          disabled: !settings.localLLM.enabled
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 404,
+          columnNumber: 11
+        }, undefined), "Enable Streaming"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 403,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "setting-description",
+        children: "Stream responses in real-time for better user experience"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 412,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 402,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.localLLM.autoStart,
+          onChange: e => updateSetting('localLLM', 'autoStart', e.target.checked),
+          disabled: !settings.localLLM.enabled
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 419,
+          columnNumber: 11
+        }, undefined), "Auto-start Service"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 418,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "setting-description",
+        children: "Automatically start the local LLM service when Hearthlink launches"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 427,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 417,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.localLLM.fallbackEnabled,
+          onChange: e => updateSetting('localLLM', 'fallbackEnabled', e.target.checked),
+          disabled: !settings.localLLM.enabled
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 434,
+          columnNumber: 11
+        }, undefined), "Enable Fallback"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 433,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "setting-description",
+        children: "Fallback to other backends if local LLM fails"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 442,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 432,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Health Check Interval (ms)"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 448,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+        type: "number",
+        value: settings.localLLM.healthCheckInterval,
+        onChange: e => updateSetting('localLLM', 'healthCheckInterval', parseInt(e.target.value)),
+        min: "5000",
+        max: "300000",
+        disabled: !settings.localLLM.enabled
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 449,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "setting-description",
+        children: "How often to check local LLM service health"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 457,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 447,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "action-buttons",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          onClick: () => startLocalLLMService(),
+          className: "action-btn primary",
+          disabled: !settings.localLLM.enabled,
+          children: "Start Service"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 464,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          onClick: () => stopLocalLLMService(),
+          className: "action-btn secondary",
+          disabled: !settings.localLLM.enabled,
+          children: "Stop Service"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 471,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          onClick: () => restartLocalLLMService(),
+          className: "action-btn warning",
+          disabled: !settings.localLLM.enabled,
+          children: "Restart Service"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 478,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 463,
+        columnNumber: 9
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 462,
+      columnNumber: 7
+    }, undefined)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 285,
+    columnNumber: 5
+  }, undefined);
+  const renderVoiceSettings = () => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "settings-section",
+    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+      children: "Voice Configuration"
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 492,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.voice.enabled,
+          onChange: e => updateSetting('voice', 'enabled', e.target.checked)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 496,
+          columnNumber: 11
+        }, undefined), "Voice interface enabled"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 495,
+        columnNumber: 9
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 494,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Voice Sensitivity"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 506,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+        type: "range",
+        min: "0.1",
+        max: "1.0",
+        step: "0.1",
+        value: settings.voice.sensitivity,
+        onChange: e => updateSetting('voice', 'sensitivity', parseFloat(e.target.value))
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 507,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("span", {
+        className: "range-value",
+        children: settings.voice.sensitivity
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 515,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 505,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Wake Word"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 519,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+        type: "text",
+        value: settings.voice.wakeWord,
+        onChange: e => updateSetting('voice', 'wakeWord', e.target.value),
+        placeholder: "alden"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 520,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 518,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Routing Mode"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 529,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("select", {
+        value: settings.voice.routingMode,
+        onChange: e => updateSetting('voice', 'routingMode', e.target.value),
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "smart",
+          children: "Smart Routing"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 534,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "manual",
+          children: "Manual Selection"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 535,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("option", {
+          value: "direct",
+          children: "Direct Command"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 536,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 530,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 528,
+      columnNumber: 7
+    }, undefined)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 491,
+    columnNumber: 5
+  }, undefined);
+  const renderSecuritySettings = () => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "settings-section",
+    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h3", {
+      children: "Security Settings"
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 544,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.security.encryptionEnabled,
+          onChange: e => updateSetting('security', 'encryptionEnabled', e.target.checked)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 548,
+          columnNumber: 11
+        }, undefined), "Enable data encryption"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 547,
+        columnNumber: 9
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 546,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.security.auditLogging,
+          onChange: e => updateSetting('security', 'auditLogging', e.target.checked)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 559,
+          columnNumber: 11
+        }, undefined), "Enable audit logging"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 558,
+        columnNumber: 9
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 557,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        children: "Session Timeout (minutes)"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 569,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+        type: "number",
+        min: "5",
+        max: "480",
+        value: settings.security.sessionTimeout,
+        onChange: e => updateSetting('security', 'sessionTimeout', parseInt(e.target.value))
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 570,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 568,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "setting-group",
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("label", {
+        className: "checkbox-label",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("input", {
+          type: "checkbox",
+          checked: settings.security.autoLock,
+          onChange: e => updateSetting('security', 'autoLock', e.target.checked)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 581,
+          columnNumber: 11
+        }, undefined), "Auto-lock on idle"]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 580,
+        columnNumber: 9
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 579,
+      columnNumber: 7
+    }, undefined)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 543,
+    columnNumber: 5
+  }, undefined);
+  const tabs = [{
+    id: 'general',
+    label: 'General',
+    component: renderGeneralSettings
+  }, {
+    id: 'apis',
+    label: 'API Keys',
+    component: renderApiSettings
+  }, {
+    id: 'localLLM',
+    label: 'Local LLM',
+    component: renderLocalLLMSettings
+  }, {
+    id: 'voice',
+    label: 'Voice',
+    component: renderVoiceSettings
+  }, {
+    id: 'security',
+    label: 'Security',
+    component: renderSecuritySettings
+  }];
+  if (!isVisible) return null;
+  return /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+    className: "settings-overlay",
+    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+      className: "settings-modal",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "settings-header",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("h2", {
+          children: "HEARTHLINK SETTINGS"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 606,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+          className: "close-btn",
+          onClick: onClose,
+          children: "\u2715"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 607,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 605,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "settings-content",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "settings-tabs",
+          children: tabs.map(tab => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+            className: `tab-btn ${activeTab === tab.id ? 'active' : ''}`,
+            onClick: () => setActiveTab(tab.id),
+            children: tab.label
+          }, tab.id, false, {
+            fileName: _jsxFileName,
+            lineNumber: 613,
+            columnNumber: 15
+          }, undefined))
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 611,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "settings-panel",
+          children: (_tabs$find = tabs.find(tab => tab.id === activeTab)) === null || _tabs$find === void 0 ? void 0 : _tabs$find.component()
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 623,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 610,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+        className: "settings-footer",
+        children: [error && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "error-message",
+          children: error
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 629,
+          columnNumber: 21
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("div", {
+          className: "settings-actions",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+            className: "cancel-btn",
+            onClick: onClose,
+            children: "Cancel"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 631,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxDEV)("button", {
+            className: "save-btn",
+            onClick: saveSettings,
+            disabled: saving,
+            children: saving ? 'Saving...' : 'Save Settings'
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 632,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 630,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 628,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 604,
+      columnNumber: 7
+    }, undefined)
+  }, void 0, false, {
+    fileName: _jsxFileName,
+    lineNumber: 603,
+    columnNumber: 5
+  }, undefined);
+};
+_s(SettingsManager, "ryLFx3QaiUOJHqDNn9ae0lN3iJ4=");
+_c = SettingsManager;
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (SettingsManager);
+var _c;
+__webpack_require__.$Refresh$.register(_c, "SettingsManager");
+
+const $ReactRefreshModuleId$ = __webpack_require__.$Refresh$.moduleId;
+const $ReactRefreshCurrentExports$ = __react_refresh_utils__.getModuleExports(
+	$ReactRefreshModuleId$
+);
+
+function $ReactRefreshModuleRuntime$(exports) {
+	if (true) {
+		let errorOverlay;
+		if (true) {
+			errorOverlay = false;
+		}
+		let testMode;
+		if (typeof __react_refresh_test__ !== 'undefined') {
+			testMode = __react_refresh_test__;
+		}
+		return __react_refresh_utils__.executeRuntime(
+			exports,
+			$ReactRefreshModuleId$,
+			module.hot,
+			errorOverlay,
+			testMode
+		);
+	}
+}
+
+if (typeof Promise !== 'undefined' && $ReactRefreshCurrentExports$ instanceof Promise) {
+	$ReactRefreshCurrentExports$.then($ReactRefreshModuleRuntime$);
+} else {
+	$ReactRefreshModuleRuntime$($ReactRefreshCurrentExports$);
+}
+
+/***/ })
+
+},
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ /* webpack/runtime/getFullHash */
+/******/ (() => {
+/******/ 	__webpack_require__.h = () => ("acf2e85da15d5f4cf295")
+/******/ })();
+/******/ 
+/******/ }
+);
+//# sourceMappingURL=main.86f62a86535c0a293f9e.hot-update.js.map

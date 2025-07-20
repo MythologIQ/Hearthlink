@@ -1,0 +1,79 @@
+{
+  "models": [
+    {
+      "name": "llama3.2-1b",
+      "size_gb": 0.7,
+      "priority": 3,
+      "endpoint": "http://localhost:11434",
+      "capabilities": ["chat", "completion", "emergency"],
+      "description": "Lightweight emergency model for offline use"
+    },
+    {
+      "name": "llama3.2-3b", 
+      "size_gb": 2.0,
+      "priority": 2,
+      "endpoint": "http://localhost:11434",
+      "capabilities": ["chat", "completion", "reasoning"],
+      "description": "Balanced model for general use"
+    },
+    {
+      "name": "llama3.1-8b",
+      "size_gb": 4.7,
+      "priority": 1,
+      "endpoint": "http://localhost:11434", 
+      "capabilities": ["chat", "completion", "reasoning", "coding"],
+      "description": "Primary model with advanced capabilities"
+    },
+    {
+      "name": "qwen2.5-coder-7b",
+      "size_gb": 4.1,
+      "priority": 1,
+      "endpoint": "http://localhost:11434",
+      "capabilities": ["coding", "completion", "reasoning"],
+      "description": "Specialized coding model"
+    },
+    {
+      "name": "phi3-mini",
+      "size_gb": 2.2,
+      "priority": 3,
+      "endpoint": "http://localhost:11434",
+      "capabilities": ["chat", "completion", "emergency"],
+      "description": "Microsoft Phi-3 mini for emergency use"
+    }
+  ],
+  "fallback_endpoints": [
+    "http://localhost:11434",
+    "http://127.0.0.1:11434",
+    "http://localhost:11435", 
+    "http://localhost:8080",
+    "http://localhost:1234"
+  ],
+  "cache_settings": {
+    "max_cache_size_gb": 50,
+    "auto_download": true,
+    "cleanup_threshold": 0.9,
+    "preferred_format": "gguf",
+    "compression_enabled": true
+  },
+  "redundancy_settings": {
+    "min_models_available": 2,
+    "health_check_interval": 30,
+    "max_failure_rate": 0.3,
+    "circuit_breaker_threshold": 5,
+    "auto_recovery_enabled": true,
+    "emergency_mode_threshold": 300
+  },
+  "offline_capabilities": {
+    "auto_offline_detection": true,
+    "offline_notification": true,
+    "sync_on_reconnect": true,
+    "intelligent_prefetch": true,
+    "emergency_models": ["llama3.2-1b", "phi3-mini"]
+  },
+  "performance_optimization": {
+    "model_warming": true,
+    "response_caching": true,
+    "load_balancing": true,
+    "adaptive_timeouts": true
+  }
+}

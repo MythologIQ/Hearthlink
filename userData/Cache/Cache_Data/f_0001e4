@@ -1,0 +1,4117 @@
+"use strict";
+globalThis["webpackHotUpdateHearthlink"]("main",{
+
+/***/ "./src/components/CoreInterface.js":
+/*!*****************************************!*\
+  !*** ./src/components/CoreInterface.js ***!
+  \*****************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _CoreInterface_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./CoreInterface.css */ "./src/components/CoreInterface.css");
+/* harmony import */ var _ProjectCommand__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ProjectCommand */ "./src/components/ProjectCommand.js");
+/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-dev-runtime */ "./node_modules/react/jsx-dev-runtime.js");
+/* provided dependency */ var __react_refresh_utils__ = __webpack_require__(/*! ./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js */ "./node_modules/@pmmmwh/react-refresh-webpack-plugin/lib/runtime/RefreshUtils.js");
+__webpack_require__.$Refresh$.runtime = __webpack_require__(/*! ./node_modules/react-refresh/runtime.js */ "./node_modules/react-refresh/runtime.js");
+
+var _jsxFileName = "G:\\mythologiq\\hearthlink\\src\\components\\CoreInterface.js",
+  _s = __webpack_require__.$Refresh$.signature();
+
+
+
+
+const CoreInterface = ({
+  accessibilitySettings,
+  onVoiceCommand,
+  currentAgent
+}) => {
+  _s();
+  const [activeTab, setActiveTab] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('orchestration');
+  const [conferenceRooms, setConferenceRooms] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [activeRoom, setActiveRoom] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const [messages, setMessages] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [newMessage, setNewMessage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  const [participants, setParticipants] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [systemStatus, setSystemStatus] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    overall: 'optimal',
+    cpu: 45,
+    memory: 62,
+    network: 38,
+    storage: 71,
+    uptime: '2d 14h 32m'
+  });
+  const [agents, setAgents] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [projects, setProjects] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [services, setServices] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [orchestrationLogs, setOrchestrationLogs] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [activeProject, setActiveProject] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const [orchestrationStatus, setOrchestrationStatus] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('idle');
+  const [newRoomName, setNewRoomName] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('');
+  const [showCreateRoomForm, setShowCreateRoomForm] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [showAgentSelectionModal, setShowAgentSelectionModal] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+  const [selectedAgents, setSelectedAgents] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [agentPersonas, setAgentPersonas] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [editingAgentPersona, setEditingAgentPersona] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const [coreApiStatus, setCoreApiStatus] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    connected: false,
+    lastCheck: null,
+    endpoints: {
+      agents: false,
+      services: false,
+      projects: false,
+      metrics: false,
+      logs: false
+    }
+  });
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    initializeCoreServices();
+    loadOrchestrationLogs();
+    loadAgentPersonas();
+
+    // Listen for Synapse agent updates
+    const handleSynapseAgentUpdate = event => {
+      const {
+        agentId,
+        config
+      } = event.detail;
+      addOrchestrationLog(`Agent ${config.name} updated from Synapse`, 'info');
+      discoverAgents(); // Refresh agent list
+    };
+    const handleSynapseAgentRemoved = event => {
+      const {
+        agentId
+      } = event.detail;
+      addOrchestrationLog(`Agent ${agentId} removed from Synapse`, 'warning');
+      discoverAgents(); // Refresh agent list
+    };
+    window.addEventListener('synapseAgentUpdated', handleSynapseAgentUpdate);
+    window.addEventListener('synapseAgentRemoved', handleSynapseAgentRemoved);
+    const metricsInterval = setInterval(updateSystemMetrics, 5000);
+    const logsInterval = setInterval(loadOrchestrationLogs, 10000);
+    return () => {
+      clearInterval(metricsInterval);
+      clearInterval(logsInterval);
+      window.removeEventListener('synapseAgentUpdated', handleSynapseAgentUpdate);
+      window.removeEventListener('synapseAgentRemoved', handleSynapseAgentRemoved);
+    };
+  }, []);
+  const updateApiStatus = (endpoint, success) => {
+    setCoreApiStatus(prev => ({
+      ...prev,
+      lastCheck: new Date().toISOString(),
+      connected: Object.values({
+        ...prev.endpoints,
+        [endpoint]: success
+      }).some(status => status),
+      endpoints: {
+        ...prev.endpoints,
+        [endpoint]: success
+      }
+    }));
+  };
+  const loadSynapseAgents = () => {
+    try {
+      const synapseAgents = JSON.parse(localStorage.getItem('coreAvailableAgents') || '{}');
+      const externalAgents = Object.values(synapseAgents).map(agent => ({
+        id: agent.id,
+        name: agent.name,
+        type: 'external',
+        status: agent.status === 'active' ? 'active' : 'inactive',
+        load: agent.status === 'active' ? Math.floor(Math.random() * 30) + 10 : 0,
+        tasks: agent.status === 'active' ? Math.floor(Math.random() * 5) + 1 : 0,
+        capabilities: agent.capabilities || [],
+        performance: {
+          efficiency: agent.status === 'active' ? Math.floor(Math.random() * 20) + 80 : 0,
+          accuracy: agent.status === 'active' ? Math.floor(Math.random() * 20) + 80 : 0,
+          responsiveness: agent.status === 'active' ? Math.floor(Math.random() * 20) + 80 : 0
+        },
+        lastActivity: agent.last_updated || new Date().toISOString(),
+        source: 'synapse',
+        configured: agent.configured || false,
+        description: agent.description || ''
+      }));
+      return externalAgents;
+    } catch (error) {
+      console.warn('Failed to load Synapse agents:', error);
+      return [];
+    }
+  };
+  const discoverAgents = async () => {
+    addOrchestrationLog('Discovering agents from Synapse...', 'info');
+    try {
+      // Load Synapse agents
+      const synapseAgents = loadSynapseAgents();
+
+      // Merge with existing local agents (filter out old external agents)
+      const localAgents = agents.filter(agent => agent.source !== 'synapse');
+      const mergedAgents = [...localAgents, ...synapseAgents];
+      setAgents(mergedAgents);
+      addOrchestrationLog(`Discovered ${synapseAgents.length} external agents from Synapse`, 'success');
+      return mergedAgents;
+    } catch (error) {
+      console.error('Failed to discover agents:', error);
+      addOrchestrationLog('Failed to discover agents from Synapse', 'error');
+      return agents;
+    }
+  };
+  const initializeCoreServices = async () => {
+    try {
+      // Load agents from API
+      const agentsResponse = await fetch('http://localhost:8000/api/agents');
+      if (agentsResponse.ok) {
+        const agentsData = await agentsResponse.json();
+
+        // Also load Synapse agents
+        const synapseAgents = loadSynapseAgents();
+        const allAgents = [...agentsData.agents, ...synapseAgents];
+        setAgents(allAgents);
+        updateApiStatus('agents', true);
+        addOrchestrationLog(`Loaded ${agentsData.agents.length} core agents and ${synapseAgents.length} external agents`, 'success');
+      } else {
+        throw new Error('Failed to load agents from API');
+      }
+    } catch (error) {
+      console.warn('Core API not available, using fallback data:', error);
+      updateApiStatus('agents', false);
+      addOrchestrationLog('Using fallback agent data (Core API unavailable)', 'warning');
+
+      // Load Synapse agents even if Core API is unavailable
+      const synapseAgents = loadSynapseAgents();
+
+      // Fallback to static data (local agents only, not Synapse itself)
+      const fallbackAgents = [{
+        id: 'alden',
+        name: 'Alden',
+        type: 'primary',
+        status: 'active',
+        load: 65,
+        tasks: 12,
+        capabilities: ['conversation', 'reasoning', 'memory'],
+        performance: {
+          efficiency: 94,
+          accuracy: 98,
+          responsiveness: 96
+        },
+        lastActivity: new Date().toISOString()
+      }, {
+        id: 'alice',
+        name: 'Alice',
+        type: 'specialist',
+        status: 'active',
+        load: 32,
+        tasks: 5,
+        capabilities: ['analysis', 'problem-solving', 'optimization'],
+        performance: {
+          efficiency: 91,
+          accuracy: 96,
+          responsiveness: 94
+        },
+        lastActivity: new Date(Date.now() - 300000).toISOString()
+      }, {
+        id: 'mimic',
+        name: 'Mimic',
+        type: 'adaptive',
+        status: 'learning',
+        load: 78,
+        tasks: 8,
+        capabilities: ['adaptation', 'learning', 'pattern-recognition'],
+        performance: {
+          efficiency: 88,
+          accuracy: 93,
+          responsiveness: 91
+        },
+        lastActivity: new Date(Date.now() - 150000).toISOString()
+      }, {
+        id: 'sentry',
+        name: 'Sentry',
+        type: 'monitor',
+        status: 'monitoring',
+        load: 25,
+        tasks: 3,
+        capabilities: ['monitoring', 'security', 'alerting'],
+        performance: {
+          efficiency: 96,
+          accuracy: 99,
+          responsiveness: 98
+        },
+        lastActivity: new Date(Date.now() - 60000).toISOString()
+      }];
+
+      // Merge fallback local agents with Synapse external agents
+      const allAgents = [...fallbackAgents, ...synapseAgents];
+      setAgents(allAgents);
+      addOrchestrationLog(`Loaded ${fallbackAgents.length} local agents and ${synapseAgents.length} external agents (fallback mode)`, 'info');
+    }
+    try {
+      // Load services from API
+      const servicesResponse = await fetch('http://localhost:8000/api/services');
+      if (servicesResponse.ok) {
+        const servicesData = await servicesResponse.json();
+        setServices(servicesData.services.map(service => ({
+          id: service.id,
+          name: service.name,
+          status: service.status === 'running' ? 'operational' : service.status,
+          health: service.health === 'healthy' ? 95 + Math.floor(Math.random() * 5) : 70 + Math.floor(Math.random() * 15),
+          throughput: `${(Math.random() * 2 + 0.5).toFixed(1)}GB/s`,
+          connections: Math.floor(Math.random() * 100) + 10,
+          uptime: `${(99.5 + Math.random() * 0.5).toFixed(1)}%`
+        })));
+        updateApiStatus('services', true);
+        addOrchestrationLog('Services loaded from Core API', 'success');
+      } else {
+        throw new Error('Failed to load services from API');
+      }
+    } catch (error) {
+      console.warn('Core API services not available, using fallback data:', error);
+      updateApiStatus('services', false);
+      addOrchestrationLog('Using fallback service data (Core API unavailable)', 'warning');
+
+      // Fallback to static data
+      setServices([{
+        id: 'vault',
+        name: 'Vault Storage',
+        status: 'operational',
+        health: 98,
+        throughput: '1.2GB/s',
+        connections: 45,
+        uptime: '99.9%'
+      }, {
+        id: 'synapse-gateway',
+        name: 'Synapse Gateway',
+        status: 'operational',
+        health: 96,
+        throughput: '850MB/s',
+        connections: 23,
+        uptime: '99.7%'
+      }, {
+        id: 'memory-system',
+        name: 'Memory System',
+        status: 'operational',
+        health: 94,
+        throughput: '2.1GB/s',
+        connections: 67,
+        uptime: '99.8%'
+      }, {
+        id: 'orchestration',
+        name: 'Core Orchestration',
+        status: 'operational',
+        health: 97,
+        throughput: '512MB/s',
+        connections: 12,
+        uptime: '99.9%'
+      }, {
+        id: 'api-gateway',
+        name: 'API Gateway',
+        status: 'operational',
+        health: 95,
+        throughput: '1.5GB/s',
+        connections: 89,
+        uptime: '99.6%'
+      }]);
+    }
+    try {
+      // Load projects from API
+      const projectsResponse = await fetch('http://localhost:8000/api/projects');
+      if (projectsResponse.ok) {
+        const projectsData = await projectsResponse.json();
+        setProjects(projectsData.projects.map(project => ({
+          id: project.id,
+          name: project.name,
+          description: project.description,
+          status: project.status,
+          priority: project.priority || 'medium',
+          progress: project.progress,
+          assignedAgents: project.assignedAgents,
+          tasks: project.tasks,
+          startDate: project.created,
+          estimatedCompletion: project.updated
+        })));
+        updateApiStatus('projects', true);
+        addOrchestrationLog('Projects loaded from Core API', 'success');
+      } else {
+        throw new Error('Failed to load projects from API');
+      }
+    } catch (error) {
+      console.warn('Core API projects not available, using fallback data:', error);
+      updateApiStatus('projects', false);
+      addOrchestrationLog('Using fallback project data (Core API unavailable)', 'warning');
+
+      // Fallback to static data
+      setProjects([{
+        id: 'core-optimization',
+        name: 'Core System Optimization',
+        description: 'Optimize core system performance and resource utilization',
+        status: 'active',
+        priority: 'high',
+        progress: 78,
+        assignedAgents: ['alden', 'alice', 'sentry'],
+        tasks: [{
+          id: 1,
+          name: 'Memory optimization',
+          status: 'completed',
+          assignee: 'alice'
+        }, {
+          id: 2,
+          name: 'CPU load balancing',
+          status: 'in_progress',
+          assignee: 'alden'
+        }, {
+          id: 3,
+          name: 'Network throughput improvement',
+          status: 'pending',
+          assignee: 'sentry'
+        }, {
+          id: 4,
+          name: 'Storage efficiency enhancement',
+          status: 'pending',
+          assignee: 'alice'
+        }],
+        startDate: new Date(Date.now() - 86400000 * 3).toISOString(),
+        estimatedCompletion: new Date(Date.now() + 86400000 * 2).toISOString()
+      }, {
+        id: 'agent-coordination',
+        name: 'Agent Coordination Enhancement',
+        description: 'Improve inter-agent communication and task delegation',
+        status: 'planning',
+        priority: 'medium',
+        progress: 32,
+        assignedAgents: ['mimic', 'synapse'],
+        tasks: [{
+          id: 1,
+          name: 'Protocol standardization',
+          status: 'completed',
+          assignee: 'synapse'
+        }, {
+          id: 2,
+          name: 'Message queue optimization',
+          status: 'in_progress',
+          assignee: 'mimic'
+        }, {
+          id: 3,
+          name: 'Load balancing algorithm',
+          status: 'pending',
+          assignee: 'mimic'
+        }, {
+          id: 4,
+          name: 'Performance monitoring',
+          status: 'pending',
+          assignee: 'sentry'
+        }],
+        startDate: new Date(Date.now() - 86400000 * 2).toISOString(),
+        estimatedCompletion: new Date(Date.now() + 86400000 * 5).toISOString()
+      }, {
+        id: 'security-hardening',
+        name: 'Security Infrastructure Hardening',
+        description: 'Enhance security protocols and threat detection capabilities',
+        status: 'pending',
+        priority: 'critical',
+        progress: 15,
+        assignedAgents: ['sentry', 'synapse'],
+        tasks: [{
+          id: 1,
+          name: 'Threat model analysis',
+          status: 'pending',
+          assignee: 'sentry'
+        }, {
+          id: 2,
+          name: 'Encryption enhancement',
+          status: 'pending',
+          assignee: 'synapse'
+        }, {
+          id: 3,
+          name: 'Access control implementation',
+          status: 'pending',
+          assignee: 'sentry'
+        }, {
+          id: 4,
+          name: 'Audit logging improvement',
+          status: 'pending',
+          assignee: 'sentry'
+        }],
+        startDate: new Date(Date.now() + 86400000).toISOString(),
+        estimatedCompletion: new Date(Date.now() + 86400000 * 7).toISOString()
+      }, {
+        id: 'external-agent-integration',
+        name: 'External Agent Integration Testing',
+        description: 'Test and validate integration with external AI agents through Synapse Gateway',
+        status: 'active',
+        priority: 'high',
+        progress: 25,
+        assignedAgents: ['google-gemini', 'kimi-k2', 'claude-code-cli'],
+        tasks: [{
+          id: 1,
+          name: 'Code generation task',
+          status: 'pending',
+          assignee: 'google-gemini',
+          description: 'Generate Python code for data processing'
+        }, {
+          id: 2,
+          name: 'Document analysis',
+          status: 'pending',
+          assignee: 'kimi-k2',
+          description: 'Analyze technical documentation and provide insights'
+        }, {
+          id: 3,
+          name: 'File system operations',
+          status: 'pending',
+          assignee: 'claude-code-cli',
+          description: 'Perform direct file system operations and modifications'
+        }, {
+          id: 4,
+          name: 'Cross-agent collaboration',
+          status: 'pending',
+          assignee: 'google-gemini',
+          description: 'Coordinate with other agents for complex tasks'
+        }],
+        startDate: new Date(Date.now() - 86400000).toISOString(),
+        estimatedCompletion: new Date(Date.now() + 86400000 * 3).toISOString()
+      }]);
+    }
+    setActiveProject(projects[0] || null);
+    addOrchestrationLog('Core services initialized successfully', 'info');
+  };
+  const updateSystemMetrics = async () => {
+    try {
+      // Try to get real metrics from Core API
+      const metricsResponse = await fetch('http://localhost:8000/api/system/metrics');
+      if (metricsResponse.ok) {
+        const metricsData = await metricsResponse.json();
+        setSystemStatus(prev => ({
+          ...prev,
+          cpu: Math.round(metricsData.cpu),
+          memory: Math.round(metricsData.memory),
+          network: Math.round(metricsData.network),
+          storage: Math.round(metricsData.storage),
+          uptime: metricsData.uptime
+        }));
+        updateApiStatus('metrics', true);
+      } else {
+        throw new Error('Failed to fetch metrics from API');
+      }
+    } catch (error) {
+      updateApiStatus('metrics', false);
+      // Fallback to simulated metrics
+      setSystemStatus(prev => ({
+        ...prev,
+        cpu: Math.max(20, Math.min(90, prev.cpu + (Math.random() - 0.5) * 10)),
+        memory: Math.max(30, Math.min(95, prev.memory + (Math.random() - 0.5) * 8)),
+        network: Math.max(10, Math.min(80, prev.network + (Math.random() - 0.5) * 15)),
+        storage: Math.max(40, Math.min(85, prev.storage + (Math.random() - 0.5) * 5))
+      }));
+    }
+
+    // Update agent loads (always use simulation for realistic variation)
+    setAgents(prev => prev.map(agent => ({
+      ...agent,
+      load: Math.max(10, Math.min(95, agent.load + (Math.random() - 0.5) * 12))
+    })));
+  };
+  const addOrchestrationLog = (message, type = 'info') => {
+    const logEntry = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      message,
+      type,
+      agent: currentAgent || 'system'
+    };
+    setOrchestrationLogs(prev => [logEntry, ...prev].slice(0, 100));
+  };
+  const loadOrchestrationLogs = async () => {
+    try {
+      const logsResponse = await fetch('http://localhost:8000/api/orchestration/logs?limit=50');
+      if (logsResponse.ok) {
+        const logsData = await logsResponse.json();
+        setOrchestrationLogs(logsData.logs);
+        updateApiStatus('logs', true);
+      } else {
+        throw new Error('Failed to load logs from API');
+      }
+    } catch (error) {
+      updateApiStatus('logs', false);
+      console.warn('Could not load orchestration logs from API:', error);
+    }
+  };
+  const startOrchestration = async projectId => {
+    setOrchestrationStatus('initializing');
+    addOrchestrationLog(`Starting orchestration for project: ${projectId}`, 'info');
+    const project = projects.find(p => p.id === projectId);
+    if (!project) {
+      addOrchestrationLog(`Project ${projectId} not found`, 'error');
+      setOrchestrationStatus('error');
+      return;
+    }
+    try {
+      setOrchestrationStatus('analyzing');
+      addOrchestrationLog(`Analyzing project requirements for ${project.name}`, 'info');
+
+      // Try to use Core API for orchestration
+      try {
+        const orchestrateResponse = await fetch(`http://localhost:8000/api/projects/${projectId}/orchestrate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({})
+        });
+        if (orchestrateResponse.ok) {
+          const orchestrateData = await orchestrateResponse.json();
+          addOrchestrationLog(`Core API orchestration started: ${orchestrateData.message}`, 'success');
+          setOrchestrationStatus('delegating');
+          addOrchestrationLog(`Delegating tasks to agents: ${project.assignedAgents.join(', ')}`, 'info');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          setOrchestrationStatus('monitoring');
+          addOrchestrationLog(`Monitoring task execution and agent performance`, 'info');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Update project with API response
+          if (orchestrateData.project) {
+            setProjects(prev => prev.map(p => p.id === projectId ? {
+              ...p,
+              status: orchestrateData.project.status,
+              progress: orchestrateData.project.progress || p.progress + 15
+            } : p));
+          }
+        } else {
+          throw new Error('Core API orchestration failed');
+        }
+      } catch (apiError) {
+        console.warn('Core API orchestration not available, using local simulation:', apiError);
+        addOrchestrationLog('Using local orchestration simulation (Core API unavailable)', 'warning');
+
+        // Fallback to local simulation
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setOrchestrationStatus('delegating');
+        addOrchestrationLog(`Delegating tasks to agents: ${project.assignedAgents.join(', ')}`, 'info');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setOrchestrationStatus('monitoring');
+        addOrchestrationLog(`Monitoring task execution and agent performance`, 'info');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Update project status
+        setProjects(prev => prev.map(p => p.id === projectId ? {
+          ...p,
+          status: 'active',
+          progress: Math.min(100, p.progress + 15)
+        } : p));
+      }
+      setOrchestrationStatus('active');
+      addOrchestrationLog(`Orchestration active for ${project.name}`, 'success');
+    } catch (error) {
+      addOrchestrationLog(`Orchestration failed: ${error.message}`, 'error');
+      setOrchestrationStatus('error');
+    }
+  };
+  const delegateTask = async (projectId, taskId) => {
+    const project = projects.find(p => p.id === projectId);
+    const task = project === null || project === void 0 ? void 0 : project.tasks.find(t => t.id === taskId);
+    if (!project || !task) return;
+    addOrchestrationLog(`Delegating task "${task.name}" to ${task.assignee}`, 'info');
+
+    // Update task status to in_progress
+    setProjects(prev => prev.map(p => p.id === projectId ? {
+      ...p,
+      tasks: p.tasks.map(t => t.id === taskId ? {
+        ...t,
+        status: 'in_progress',
+        started_at: new Date().toISOString()
+      } : t)
+    } : p));
+    try {
+      // Determine agent type and route accordingly
+      const agentType = getAgentType(task.assignee);
+      let result;
+      switch (agentType) {
+        case 'synapse_external':
+          result = await delegateToSynapseAgent(task);
+          break;
+        case 'local':
+          result = await delegateToLocalAgent(task);
+          break;
+        case 'core_service':
+          result = await delegateToCoreService(task);
+          break;
+        default:
+          throw new Error(`Unknown agent type: ${agentType}`);
+      }
+
+      // Update task with result
+      setProjects(prev => prev.map(p => p.id === projectId ? {
+        ...p,
+        tasks: p.tasks.map(t => t.id === taskId ? {
+          ...t,
+          status: result.success ? 'completed' : 'error',
+          result: result.output,
+          completed_at: new Date().toISOString()
+        } : t)
+      } : p));
+      addOrchestrationLog(`Task "${task.name}" ${result.success ? 'completed' : 'failed'} by ${task.assignee}`, result.success ? 'success' : 'error');
+    } catch (error) {
+      // Update task with error
+      setProjects(prev => prev.map(p => p.id === projectId ? {
+        ...p,
+        tasks: p.tasks.map(t => t.id === taskId ? {
+          ...t,
+          status: 'error',
+          error: error.message,
+          completed_at: new Date().toISOString()
+        } : t)
+      } : p));
+      addOrchestrationLog(`Task "${task.name}" failed: ${error.message}`, 'error');
+    }
+  };
+  const getAgentType = assignee => {
+    // Define agent types based on assignee
+    const externalAgents = ['google-gemini', 'kimi-k2', 'claude-code-cli'];
+    const localAgents = ['alden', 'alice', 'mimic'];
+    const coreServices = ['sentry', 'synapse', 'vault'];
+    if (externalAgents.includes(assignee)) return 'synapse_external';
+    if (localAgents.includes(assignee)) return 'local';
+    if (coreServices.includes(assignee)) return 'core_service';
+    return 'local'; // Default to local
+  };
+  const delegateToSynapseAgent = async task => {
+    addOrchestrationLog(`Routing task to Synapse agent: ${task.assignee}`, 'info');
+    try {
+      // Check if Synapse Gateway is available
+      if (!window.synapseGateway) {
+        throw new Error('Synapse Gateway not available');
+      }
+      let result;
+      const prompt = `Task: ${task.name}\nDescription: ${task.description || 'No description provided'}\nRequirements: Complete this task and provide detailed output.`;
+      switch (task.assignee) {
+        case 'google-gemini':
+          result = await window.synapseGateway.callGoogleGeminiAPI(prompt, {
+            maxTokens: 2000,
+            temperature: 0.7
+          });
+          break;
+        case 'kimi-k2':
+          result = await window.synapseGateway.callKimiK2API(prompt, {
+            maxTokens: 2000,
+            temperature: 0.7
+          });
+          break;
+        case 'claude-code-cli':
+          result = await window.synapseGateway.callClaudeCodeCLI(prompt, {
+            enableDiskWrite: true
+          });
+          break;
+        default:
+          throw new Error(`Unknown Synapse agent: ${task.assignee}`);
+      }
+      return {
+        success: true,
+        output: result.result,
+        usage: result.usage,
+        agent: task.assignee
+      };
+    } catch (error) {
+      addOrchestrationLog(`Synapse agent ${task.assignee} failed: ${error.message}`, 'error');
+      return {
+        success: false,
+        output: null,
+        error: error.message,
+        agent: task.assignee
+      };
+    }
+  };
+  const delegateToLocalAgent = async task => {
+    addOrchestrationLog(`Routing task to local agent: ${task.assignee}`, 'info');
+    try {
+      // Simulate local agent processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const responses = {
+        'alden': `Alden has analyzed and completed the task: ${task.name}`,
+        'alice': `Alice has processed and optimized the task: ${task.name}`,
+        'mimic': `Mimic has adapted and executed the task: ${task.name}`
+      };
+      return {
+        success: true,
+        output: responses[task.assignee] || `Local agent ${task.assignee} completed the task`,
+        agent: task.assignee
+      };
+    } catch (error) {
+      return {
+        success: false,
+        output: null,
+        error: error.message,
+        agent: task.assignee
+      };
+    }
+  };
+  const delegateToCoreService = async task => {
+    addOrchestrationLog(`Routing task to core service: ${task.assignee}`, 'info');
+    try {
+      // Simulate core service processing
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const responses = {
+        'sentry': `Sentry has monitored and secured the task: ${task.name}`,
+        'synapse': `Synapse has processed and routed the task: ${task.name}`,
+        'vault': `Vault has stored and managed the task: ${task.name}`
+      };
+      return {
+        success: true,
+        output: responses[task.assignee] || `Core service ${task.assignee} completed the task`,
+        agent: task.assignee
+      };
+    } catch (error) {
+      return {
+        success: false,
+        output: null,
+        error: error.message,
+        agent: task.assignee
+      };
+    }
+  };
+  const testTaskDelegation = async projectId => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    addOrchestrationLog(`Testing task delegation for project: ${project.name}`, 'info');
+
+    // Find the first pending task
+    const pendingTask = project.tasks.find(t => t.status === 'pending');
+    if (!pendingTask) {
+      addOrchestrationLog('No pending tasks found for testing', 'warning');
+      return;
+    }
+    addOrchestrationLog(`Testing delegation of task: ${pendingTask.name} to ${pendingTask.assignee}`, 'info');
+    try {
+      await delegateTask(projectId, pendingTask.id);
+      addOrchestrationLog(`Task delegation test completed successfully`, 'success');
+    } catch (error) {
+      addOrchestrationLog(`Task delegation test failed: ${error.message}`, 'error');
+    }
+  };
+  const createConferenceRoom = async roomName => {
+    if (!roomName || !roomName.trim()) return;
+    const newRoom = {
+      id: `room-${Date.now()}`,
+      name: roomName.trim(),
+      participants: [],
+      created: new Date().toISOString(),
+      status: 'active'
+    };
+    try {
+      // Try to create room via API
+      const response = await fetch('http://localhost:8000/api/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          topic: roomName.trim(),
+          type: 'conference'
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        newRoom.id = data.session_id;
+      }
+    } catch (error) {
+      console.warn('Failed to create room via API, using local room:', error);
+    }
+    setConferenceRooms(prev => [...prev, newRoom]);
+    setActiveRoom(newRoom);
+    setMessages([]);
+    setParticipants([]);
+    setNewRoomName('');
+    setShowCreateRoomForm(false);
+    addOrchestrationLog(`Conference room "${roomName.trim()}" created successfully`, 'success');
+  };
+  const handleCreateRoomSubmit = e => {
+    e.preventDefault();
+    if (newRoomName.trim()) {
+      createConferenceRoom(newRoomName);
+    }
+  };
+
+  // Agent persona management functions
+  const loadAgentPersonas = () => {
+    try {
+      const saved = localStorage.getItem('coreAgentPersonas');
+      if (saved) {
+        setAgentPersonas(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.warn('Failed to load agent personas:', error);
+    }
+  };
+  const saveAgentPersonas = personas => {
+    try {
+      localStorage.setItem('coreAgentPersonas', JSON.stringify(personas));
+      setAgentPersonas(personas);
+    } catch (error) {
+      console.warn('Failed to save agent personas:', error);
+    }
+  };
+  const updateAgentPersona = (agentId, personaData) => {
+    const updatedPersonas = {
+      ...agentPersonas,
+      [agentId]: {
+        ...agentPersonas[agentId],
+        ...personaData,
+        lastUpdated: new Date().toISOString()
+      }
+    };
+    saveAgentPersonas(updatedPersonas);
+    addOrchestrationLog(`Agent ${agentId} persona updated`, 'info');
+  };
+  const resetAgentPersona = agentId => {
+    const updatedPersonas = {
+      ...agentPersonas
+    };
+    delete updatedPersonas[agentId];
+    saveAgentPersonas(updatedPersonas);
+    addOrchestrationLog(`Agent ${agentId} persona reset to default`, 'info');
+  };
+
+  // Agent selection modal functions
+  const openAgentSelectionModal = () => {
+    setSelectedAgents([]);
+    setShowAgentSelectionModal(true);
+  };
+  const closeAgentSelectionModal = () => {
+    setShowAgentSelectionModal(false);
+    setSelectedAgents([]);
+  };
+  const toggleAgentSelection = agentId => {
+    setSelectedAgents(prev => prev.includes(agentId) ? prev.filter(id => id !== agentId) : [...prev, agentId]);
+  };
+  const createConferenceRoomWithSelectedAgents = () => {
+    if (!newRoomName.trim()) {
+      addOrchestrationLog('Room name is required', 'error');
+      return;
+    }
+    if (selectedAgents.length === 0) {
+      addOrchestrationLog('At least one agent must be selected', 'error');
+      return;
+    }
+    const selectedAgentDetails = agents.filter(agent => selectedAgents.includes(agent.id));
+    const participants = selectedAgentDetails.map(agent => ({
+      id: agent.id,
+      name: getAgentDisplayName(agent),
+      type: agent.type,
+      status: agent.status,
+      persona: agentPersonas[agent.id] || null
+    }));
+    const newRoom = {
+      id: `room-${Date.now()}`,
+      name: newRoomName.trim(),
+      participants,
+      created_at: new Date().toISOString(),
+      status: 'active',
+      creator: 'user'
+    };
+    setConferenceRooms(prev => [...prev, newRoom]);
+    setActiveRoom(newRoom);
+    setMessages([]);
+    setParticipants(participants);
+    setNewRoomName('');
+    setShowCreateRoomForm(false);
+    setShowAgentSelectionModal(false);
+    setSelectedAgents([]);
+    addOrchestrationLog(`Conference room "${newRoom.name}" created with ${participants.length} agents`, 'success');
+  };
+  const getAgentDisplayName = agent => {
+    const persona = agentPersonas[agent.id];
+    return (persona === null || persona === void 0 ? void 0 : persona.customName) || agent.name || agent.id;
+  };
+  const getAgentPersonaDescription = agent => {
+    const persona = agentPersonas[agent.id];
+    return (persona === null || persona === void 0 ? void 0 : persona.description) || agent.description || 'No description available';
+  };
+  const joinRoom = async roomId => {
+    const room = conferenceRooms.find(r => r.id === roomId);
+    if (!room) return;
+    setActiveRoom(room);
+    try {
+      // Try to load room data from API
+      const response = await fetch(`http://localhost:8000/api/sessions/${roomId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data.messages || []);
+        setParticipants(data.participants || []);
+      } else {
+        // Use mock data
+        setMessages([{
+          id: 'msg-1',
+          sender: 'System',
+          content: `Welcome to ${room.name}`,
+          timestamp: new Date().toISOString()
+        }]);
+        setParticipants([{
+          id: 'user-1',
+          name: 'You',
+          status: 'online'
+        }]);
+      }
+    } catch (error) {
+      console.warn('Failed to load room data, using mock:', error);
+      setMessages([]);
+      setParticipants([]);
+    }
+  };
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !activeRoom) return;
+    const message = {
+      id: `msg-${Date.now()}`,
+      sender: 'You',
+      content: newMessage,
+      timestamp: new Date().toISOString()
+    };
+    try {
+      // Try to send via API
+      const response = await fetch(`http://localhost:8000/api/sessions/${activeRoom.id}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(message)
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(prev => [...prev, data]);
+      } else {
+        // Fallback to local message
+        setMessages(prev => [...prev, message]);
+      }
+    } catch (error) {
+      console.warn('Failed to send message via API, using local:', error);
+      setMessages(prev => [...prev, message]);
+    }
+    setNewMessage('');
+
+    // Process multi-agent conversation if message contains agent mentions
+    await processMultiAgentConversation(message);
+  };
+  const processMultiAgentConversation = async userMessage => {
+    // Check if message mentions any agents
+    const agentMentions = extractAgentMentions(userMessage.content);
+    if (agentMentions.length > 0) {
+      addOrchestrationLog(`Multi-agent conversation triggered with: ${agentMentions.join(', ')}`, 'info');
+
+      // Process each mentioned agent
+      for (const agentName of agentMentions) {
+        try {
+          const agentResponse = await getAgentResponse(agentName, userMessage.content);
+          const agentMessage = {
+            id: `msg-${Date.now()}-${agentName}`,
+            sender: agentName,
+            content: agentResponse.content,
+            timestamp: new Date().toISOString(),
+            agentType: agentResponse.type
+          };
+          setMessages(prev => [...prev, agentMessage]);
+
+          // Update participants if agent not already in room
+          setParticipants(prev => {
+            const existingParticipant = prev.find(p => p.name === agentName);
+            if (!existingParticipant) {
+              return [...prev, {
+                id: `participant-${agentName}`,
+                name: agentName,
+                status: 'online',
+                type: agentResponse.type
+              }];
+            }
+            return prev;
+          });
+        } catch (error) {
+          addOrchestrationLog(`Agent ${agentName} failed to respond: ${error.message}`, 'error');
+          const errorMessage = {
+            id: `msg-${Date.now()}-${agentName}-error`,
+            sender: agentName,
+            content: `Sorry, I'm currently unavailable. Error: ${error.message}`,
+            timestamp: new Date().toISOString(),
+            agentType: 'error'
+          };
+          setMessages(prev => [...prev, errorMessage]);
+        }
+      }
+    }
+  };
+  const extractAgentMentions = content => {
+    const availableAgents = ['alden', 'alice', 'mimic', 'sentry', 'google-gemini', 'kimi-k2', 'claude-code-cli'];
+    const mentions = [];
+    const lowerContent = content.toLowerCase();
+    for (const agent of availableAgents) {
+      if (lowerContent.includes(`@${agent}`) || lowerContent.includes(agent)) {
+        mentions.push(agent);
+      }
+    }
+    return mentions;
+  };
+  const getAgentResponse = async (agentName, messageContent) => {
+    const agentType = getAgentType(agentName);
+
+    // Create a context-aware prompt
+    const prompt = `You are ${agentName} participating in a multi-agent conversation. 
+    User message: "${messageContent}"
+    
+    Please respond as ${agentName} would, staying in character and providing helpful assistance.
+    Keep responses conversational and collaborative.`;
+    switch (agentType) {
+      case 'synapse_external':
+        return await getSynapseAgentResponse(agentName, prompt);
+      case 'local':
+        return await getLocalAgentResponse(agentName, prompt);
+      case 'core_service':
+        return await getCoreServiceResponse(agentName, prompt);
+      default:
+        throw new Error(`Unknown agent type for ${agentName}`);
+    }
+  };
+  const getSynapseAgentResponse = async (agentName, prompt) => {
+    if (!window.synapseGateway) {
+      throw new Error('Synapse Gateway not available');
+    }
+    let result;
+    switch (agentName) {
+      case 'google-gemini':
+        result = await window.synapseGateway.callGoogleGeminiAPI(prompt, {
+          maxTokens: 500,
+          temperature: 0.8
+        });
+        break;
+      case 'kimi-k2':
+        result = await window.synapseGateway.callKimiK2API(prompt, {
+          maxTokens: 500,
+          temperature: 0.8
+        });
+        break;
+      case 'claude-code-cli':
+        result = await window.synapseGateway.callClaudeCodeCLI(prompt);
+        break;
+      default:
+        throw new Error(`Unknown Synapse agent: ${agentName}`);
+    }
+    return {
+      content: result.result,
+      type: 'external'
+    };
+  };
+  const getLocalAgentResponse = async (agentName, prompt) => {
+    // Simulate local agent processing
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const responses = {
+      'alden': `Hello! I'm Alden, your primary AI assistant. I can help you with reasoning, conversation, and memory management. ${prompt.includes('help') ? 'How can I assist you today?' : 'I understand your request and I\'m here to help.'}`,
+      'alice': `Hi there! I'm Alice, specialized in analysis and problem-solving. I can help optimize processes and analyze complex situations. ${prompt.includes('analyze') ? 'Let me analyze that for you.' : 'I\'m ready to help with analysis and optimization.'}`,
+      'mimic': `Hey! I'm Mimic, the adaptive learning agent. I can adapt to different patterns and learn from interactions. ${prompt.includes('learn') ? 'I\'m always learning from our conversations.' : 'I can adapt to help you better.'}`
+    };
+    return {
+      content: responses[agentName] || `I'm ${agentName}, ready to assist you.`,
+      type: 'local'
+    };
+  };
+  const getCoreServiceResponse = async (agentName, prompt) => {
+    // Simulate core service processing
+    await new Promise(resolve => setTimeout(resolve, 800));
+    const responses = {
+      'sentry': `🛡️ Sentry here. I'm monitoring system security and health. ${prompt.includes('security') ? 'I\'m tracking security metrics and can provide system alerts.' : 'All systems are secure and operational.'}`,
+      'synapse': `🔗 Synapse Gateway reporting. I manage external connections and plugin integrations. ${prompt.includes('connect') ? 'I can help establish connections to external services.' : 'All gateway connections are stable.'}`,
+      'vault': `🗄️ Vault service active. I handle secure data storage and memory management. ${prompt.includes('store') ? 'I can securely store and retrieve your data.' : 'All data is safely stored and accessible.'}`
+    };
+    return {
+      content: responses[agentName] || `${agentName} service is operational.`,
+      type: 'service'
+    };
+  };
+  const testMultiAgentConversation = async () => {
+    // Create a test room if none exists
+    if (!activeRoom) {
+      const testRoom = {
+        id: 'test-multi-agent-room',
+        name: 'Multi-Agent Test Room',
+        participants: [],
+        created: new Date().toISOString(),
+        status: 'active'
+      };
+      setConferenceRooms(prev => [...prev, testRoom]);
+      setActiveRoom(testRoom);
+      setMessages([]);
+      setParticipants([{
+        id: 'user-1',
+        name: 'You',
+        status: 'online'
+      }]);
+    }
+
+    // Send a test message that mentions multiple agents
+    const testMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'You',
+      content: 'Hello @alden, @google-gemini, and @kimi-k2! Can you all introduce yourselves and tell me what you can help with?',
+      timestamp: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, testMessage]);
+    addOrchestrationLog('Starting multi-agent conversation test', 'info');
+
+    // Process the multi-agent conversation
+    await processMultiAgentConversation(testMessage);
+  };
+  const getStatusColor = status => {
+    switch (status) {
+      case 'operational':
+      case 'active':
+      case 'completed':
+        return '#10b981';
+      case 'monitoring':
+      case 'learning':
+      case 'in_progress':
+        return '#3b82f6';
+      case 'warning':
+      case 'planning':
+        return '#f59e0b';
+      case 'error':
+      case 'critical':
+        return '#ef4444';
+      case 'pending':
+      case 'idle':
+        return '#6b7280';
+      default:
+        return '#6b7280';
+    }
+  };
+  const getHealthColor = health => {
+    if (health >= 95) return '#10b981';
+    if (health >= 85) return '#3b82f6';
+    if (health >= 70) return '#f59e0b';
+    return '#ef4444';
+  };
+  const formatTimestamp = timestamp => {
+    return new Date(timestamp).toLocaleString();
+  };
+  const getProgressBarColor = progress => {
+    if (progress >= 80) return '#10b981';
+    if (progress >= 60) return '#3b82f6';
+    if (progress >= 40) return '#f59e0b';
+    return '#ef4444';
+  };
+  return /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+    className: "core-interface",
+    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+      className: "core-header",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "core-title",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h1", {
+          children: "Core Orchestration Center"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 1250,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "core-subtitle",
+          children: "AI Agent Coordination & System Management"
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 1251,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 1249,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "system-status-indicator",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: `status-light ${systemStatus.overall}`,
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "status-dot"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1255,
+            columnNumber: 13
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+            children: systemStatus.overall.toUpperCase()
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1256,
+            columnNumber: 13
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1254,
+          columnNumber: 11
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "uptime-display",
+          children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+            children: ["Uptime: ", systemStatus.uptime]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1259,
+            columnNumber: 13
+          }, undefined)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 1258,
+          columnNumber: 11
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 1253,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 1248,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+      className: "core-nav",
+      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+        className: `nav-tab ${activeTab === 'orchestration' ? 'active' : ''}`,
+        onClick: () => setActiveTab('orchestration'),
+        children: "\uD83C\uDFAF Orchestration"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 1266,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+        className: `nav-tab ${activeTab === 'conference' ? 'active' : ''}`,
+        onClick: () => setActiveTab('conference'),
+        children: "\uD83D\uDCAC Conference"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 1272,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+        className: `nav-tab ${activeTab === 'agents' ? 'active' : ''}`,
+        onClick: () => setActiveTab('agents'),
+        children: "\uD83E\uDD16 Agents"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 1278,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+        className: `nav-tab ${activeTab === 'services' ? 'active' : ''}`,
+        onClick: () => setActiveTab('services'),
+        children: "\u2699\uFE0F Services"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 1284,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+        className: `nav-tab ${activeTab === 'projects' ? 'active' : ''}`,
+        onClick: () => setActiveTab('projects'),
+        children: "\uD83D\uDCCB Projects"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 1290,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+        className: `nav-tab ${activeTab === 'project-command' ? 'active' : ''}`,
+        onClick: () => setActiveTab('project-command'),
+        children: "\uD83C\uDFAF Project Command"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 1296,
+        columnNumber: 9
+      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+        className: `nav-tab ${activeTab === 'monitoring' ? 'active' : ''}`,
+        onClick: () => setActiveTab('monitoring'),
+        children: "\uD83D\uDCCA Monitoring"
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 1302,
+        columnNumber: 9
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 1265,
+      columnNumber: 7
+    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+      className: "core-content",
+      children: [activeTab === 'orchestration' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "orchestration-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "section-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h2", {
+            children: "\uD83C\uDFAF System Orchestration"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1315,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "orchestration-controls",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+              className: `orchestration-btn ${orchestrationStatus === 'active' ? 'active' : ''}`,
+              onClick: () => startOrchestration(activeProject === null || activeProject === void 0 ? void 0 : activeProject.id),
+              disabled: !activeProject || orchestrationStatus === 'initializing',
+              children: orchestrationStatus === 'active' ? 'Active' : orchestrationStatus === 'initializing' ? 'Starting...' : 'Start Orchestration'
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1317,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "status-indicator",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                children: "Status: "
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1326,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                className: "status-badge",
+                style: {
+                  backgroundColor: getStatusColor(orchestrationStatus)
+                },
+                children: orchestrationStatus.toUpperCase()
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1327,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1325,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1316,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1314,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "orchestration-dashboard",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "system-overview",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+              children: "System Overview"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1339,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "metrics-grid",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "metric-card",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-icon",
+                  children: "\uD83D\uDDA5\uFE0F"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1342,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-content",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "metric-value",
+                    children: [systemStatus.cpu, "%"]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1344,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "metric-label",
+                    children: "CPU Usage"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1345,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1343,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1341,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "metric-card",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-icon",
+                  children: "\uD83D\uDCBE"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1349,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-content",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "metric-value",
+                    children: [systemStatus.memory, "%"]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1351,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "metric-label",
+                    children: "Memory Usage"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1352,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1350,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1348,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "metric-card",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-icon",
+                  children: "\uD83C\uDF10"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1356,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-content",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "metric-value",
+                    children: [systemStatus.network, "%"]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1358,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "metric-label",
+                    children: "Network Load"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1359,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1357,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1355,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "metric-card",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-icon",
+                  children: "\uD83D\uDCBF"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1363,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-content",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "metric-value",
+                    children: [systemStatus.storage, "%"]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1365,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "metric-label",
+                    children: "Storage Used"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1366,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1364,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1362,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1340,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1338,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "active-project-panel",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+              children: "Active Project"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1373,
+              columnNumber: 17
+            }, undefined), activeProject ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "project-details",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "project-header",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h4", {
+                  children: activeProject.name
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1377,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "project-status",
+                  style: {
+                    backgroundColor: getStatusColor(activeProject.status)
+                  },
+                  children: activeProject.status.toUpperCase()
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1378,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1376,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+                className: "project-description",
+                children: activeProject.description
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1385,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "project-progress",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "progress-label",
+                  children: ["Progress: ", activeProject.progress, "%"]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1387,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "progress-bar",
+                  children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "progress-fill",
+                    style: {
+                      width: `${activeProject.progress}%`,
+                      backgroundColor: getProgressBarColor(activeProject.progress)
+                    }
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1389,
+                    columnNumber: 25
+                  }, undefined)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1388,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1386,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "project-agents",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  children: "Assigned Agents: "
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1399,
+                  columnNumber: 23
+                }, undefined), activeProject.assignedAgents.map(agentId => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "agent-badge",
+                  children: agentId
+                }, agentId, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1401,
+                  columnNumber: 25
+                }, undefined))]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1398,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1375,
+              columnNumber: 19
+            }, undefined) : /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "no-project",
+              children: "No project selected"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1406,
+              columnNumber: 19
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1372,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "orchestration-logs",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+              children: "Orchestration Logs"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1411,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "logs-container",
+              children: orchestrationLogs.slice(0, 10).map(log => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: `log-entry log-${log.type}`,
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "log-timestamp",
+                  children: new Date(log.timestamp).toLocaleTimeString()
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1415,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "log-agent",
+                  children: ["[", log.agent, "]"]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1418,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "log-message",
+                  children: log.message
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1419,
+                  columnNumber: 23
+                }, undefined)]
+              }, log.id, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1414,
+                columnNumber: 21
+              }, undefined))
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1412,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1410,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1337,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 1313,
+        columnNumber: 11
+      }, undefined), activeTab === 'conference' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "conference-section modern-conference",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "conference-header-modern",
+          children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "header-content",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "title-section",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h1", {
+                className: "conference-title",
+                children: "\uD83C\uDFDB\uFE0F COUNCIL CHAMBER"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1434,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+                className: "conference-subtitle",
+                children: "Multi-Agent Conference System"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1435,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1433,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "header-controls",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                className: "btn btn-primary",
+                onClick: () => setShowCreateRoomForm(true),
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "btn-icon",
+                  children: "\uD83C\uDFDB\uFE0F"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1442,
+                  columnNumber: 21
+                }, undefined), "New Session"]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1438,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                className: "btn btn-secondary",
+                onClick: () => testMultiAgentConversation(),
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "btn-icon",
+                  children: "\u26A1"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1449,
+                  columnNumber: 21
+                }, undefined), "Test Protocol"]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1445,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1437,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1432,
+            columnNumber: 15
+          }, undefined)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 1431,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "conference-layout",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "conference-sidebar",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "sidebar-section",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "section-header",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+                  children: "\uD83D\uDCCB Active Sessions"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1463,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "session-count",
+                  children: conferenceRooms.length
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1464,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1462,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "sessions-container",
+                children: conferenceRooms.length === 0 ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "no-sessions",
+                  children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "empty-state",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "empty-icon",
+                      children: "\uD83D\uDCCB"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1470,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+                      children: "No active sessions"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1471,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                      className: "btn btn-small btn-primary",
+                      onClick: () => setShowCreateRoomForm(true),
+                      children: "Create Session"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1472,
+                      columnNumber: 27
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1469,
+                    columnNumber: 25
+                  }, undefined)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1468,
+                  columnNumber: 23
+                }, undefined) : conferenceRooms.map(room => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: `session-item ${(activeRoom === null || activeRoom === void 0 ? void 0 : activeRoom.id) === room.id ? 'active' : ''}`,
+                  onClick: () => joinRoom(room.id),
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "session-header",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "session-name",
+                      children: room.name
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1488,
+                      columnNumber: 29
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "session-actions",
+                      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                        className: "btn-icon-small",
+                        onClick: e => {
+                          e.stopPropagation();
+                          leaveRoom(room.id);
+                        },
+                        title: "Leave Session",
+                        children: "\u274C"
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1490,
+                        columnNumber: 31
+                      }, undefined)
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1489,
+                      columnNumber: 29
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1487,
+                    columnNumber: 27
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "session-meta",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      className: "participant-count",
+                      children: ["\uD83D\uDC65 ", room.participants.length, " agents"]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1503,
+                      columnNumber: 29
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      className: `session-status ${room.status}`,
+                      children: room.status === 'active' ? '🟢 Active' : '🔴 Inactive'
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1506,
+                      columnNumber: 29
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1502,
+                    columnNumber: 27
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "session-time",
+                    children: ["Created: ", new Date(room.created_at).toLocaleDateString()]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1510,
+                    columnNumber: 27
+                  }, undefined)]
+                }, room.id, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1482,
+                  columnNumber: 25
+                }, undefined))
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1466,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1461,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "sidebar-section",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "section-header",
+                children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+                  children: "\uD83D\uDCDE Direct Messages"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1522,
+                  columnNumber: 21
+                }, undefined)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1521,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "dm-container",
+                children: agents.filter(a => a.status === 'active').length === 0 ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "no-agents",
+                  children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "empty-state",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "empty-icon",
+                      children: "\uD83E\uDD16"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1528,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+                      children: "No active agents"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1529,
+                      columnNumber: 27
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1527,
+                    columnNumber: 25
+                  }, undefined)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1526,
+                  columnNumber: 23
+                }, undefined) : agents.filter(a => a.status === 'active').map(agent => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "dm-item",
+                  onClick: () => openDirectMessage(agent),
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "dm-avatar",
+                    children: getAgentDisplayName(agent).charAt(0).toUpperCase()
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1539,
+                    columnNumber: 27
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "dm-info",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "dm-name",
+                      children: getAgentDisplayName(agent)
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1543,
+                      columnNumber: 29
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "dm-type",
+                      children: agent.type
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1544,
+                      columnNumber: 29
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1542,
+                    columnNumber: 27
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "dm-status",
+                    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      className: "status-indicator active",
+                      children: "\uD83D\uDCAC"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1547,
+                      columnNumber: 29
+                    }, undefined)
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1546,
+                    columnNumber: 27
+                  }, undefined)]
+                }, agent.id, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1534,
+                  columnNumber: 25
+                }, undefined))
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1524,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1520,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1459,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "conference-main",
+            children: activeRoom ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "session-header-bar",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "session-info",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h2", {
+                    className: "session-title",
+                    children: activeRoom.name
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1563,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "session-details",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      children: ["\uD83D\uDCC5 ", new Date(activeRoom.created_at).toLocaleDateString()]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1565,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      children: ["\uD83D\uDC65 ", activeRoom.participants.length, " participants"]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1566,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      className: `status-badge ${activeRoom.status}`,
+                      children: activeRoom.status === 'active' ? '🟢 Active' : '🔴 Inactive'
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1567,
+                      columnNumber: 27
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1564,
+                    columnNumber: 25
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1562,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "session-controls",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                    className: "btn btn-secondary btn-small",
+                    children: "\u2699\uFE0F Settings"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1573,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                    className: "btn btn-danger btn-small",
+                    onClick: () => leaveRoom(activeRoom.id),
+                    children: "\uD83D\uDEAA Leave"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1574,
+                    columnNumber: 25
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1572,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1561,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "participants-panel",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "participants-header",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+                    children: "\uD83D\uDC65 Session Participants"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1586,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                    className: "participant-count",
+                    children: [activeRoom.participants.length, " agents"]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1587,
+                    columnNumber: 25
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1585,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "participants-grid",
+                  children: activeRoom.participants.map((participant, index) => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: `participant-card ${participant.status}`,
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "participant-avatar",
+                      children: getAgentDisplayName(participant).charAt(0).toUpperCase()
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1595,
+                      columnNumber: 29
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "participant-info",
+                      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                        className: "participant-name",
+                        children: getAgentDisplayName(participant)
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1599,
+                        columnNumber: 31
+                      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                        className: "participant-type",
+                        children: participant.type
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1600,
+                        columnNumber: 31
+                      }, undefined)]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1598,
+                      columnNumber: 29
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "participant-status",
+                      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                        className: `status-dot ${participant.status}`
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1603,
+                        columnNumber: 31
+                      }, undefined), participant.status === 'active' ? 'Online' : 'Offline']
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1602,
+                      columnNumber: 29
+                    }, undefined)]
+                  }, participant.id, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1591,
+                    columnNumber: 27
+                  }, undefined))
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1589,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1584,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "messages-panel",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "messages-header",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+                    children: "\uD83D\uDCAC Session Messages"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1614,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "messages-controls",
+                    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                      className: "btn btn-small btn-secondary",
+                      onClick: () => setMessages([]),
+                      children: "\uD83D\uDDD1\uFE0F Clear"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1616,
+                      columnNumber: 27
+                    }, undefined)
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1615,
+                    columnNumber: 25
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1613,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "messages-container",
+                  children: messages.length === 0 ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "no-messages",
+                    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "empty-state",
+                      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                        className: "empty-icon",
+                        children: "\uD83D\uDCAC"
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1628,
+                        columnNumber: 31
+                      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+                        children: "No messages yet"
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1629,
+                        columnNumber: 31
+                      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+                        className: "empty-subtitle",
+                        children: "Start the conversation!"
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1630,
+                        columnNumber: 31
+                      }, undefined)]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1627,
+                      columnNumber: 29
+                    }, undefined)
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1626,
+                    columnNumber: 27
+                  }, undefined) : messages.map(message => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: `message ${message.type || 'normal'}`,
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "message-avatar",
+                      children: message.sender.charAt(0).toUpperCase()
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1636,
+                      columnNumber: 31
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "message-body",
+                      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                        className: "message-meta",
+                        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                          className: "sender-name",
+                          children: message.sender
+                        }, void 0, false, {
+                          fileName: _jsxFileName,
+                          lineNumber: 1641,
+                          columnNumber: 35
+                        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                          className: "message-timestamp",
+                          children: new Date(message.timestamp).toLocaleTimeString()
+                        }, void 0, false, {
+                          fileName: _jsxFileName,
+                          lineNumber: 1642,
+                          columnNumber: 35
+                        }, undefined)]
+                      }, void 0, true, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1640,
+                        columnNumber: 33
+                      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                        className: "message-content",
+                        children: message.content
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1646,
+                        columnNumber: 33
+                      }, undefined)]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1639,
+                      columnNumber: 31
+                    }, undefined)]
+                  }, message.id, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1635,
+                    columnNumber: 29
+                  }, undefined))
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1624,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1612,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "message-input-panel",
+                children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "input-container",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("input", {
+                    type: "text",
+                    value: newMessage,
+                    onChange: e => setNewMessage(e.target.value),
+                    onKeyPress: e => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    },
+                    placeholder: "Type your message...",
+                    className: "message-input"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1657,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                    onClick: sendMessage,
+                    className: "btn btn-primary send-btn",
+                    disabled: !newMessage.trim(),
+                    children: "\uD83D\uDCE2 Send"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1670,
+                    columnNumber: 25
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1656,
+                  columnNumber: 23
+                }, undefined)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1655,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true) : /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "no-session-state",
+              children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "empty-chamber",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "empty-icon",
+                  children: "\uD83C\uDFDB\uFE0F"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1683,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+                  children: "Welcome to the Council Chamber"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1684,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+                  children: "Select an active session from the sidebar or create a new one to begin collaborating with your AI agents."
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1685,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                  className: "btn btn-primary btn-large",
+                  onClick: () => setShowCreateRoomForm(true),
+                  children: "\uD83C\uDFDB\uFE0F Create New Session"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1686,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1682,
+                columnNumber: 21
+              }, undefined)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1681,
+              columnNumber: 19
+            }, undefined)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1557,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1457,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 1429,
+        columnNumber: 11
+      }, undefined), activeTab === 'agents' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "agents-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "section-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h2", {
+            children: "\uD83E\uDD16 Agent Management"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1703,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "agent-controls",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+              onClick: discoverAgents,
+              className: "discover-agents-btn",
+              title: "Discover agents from Synapse Gateway",
+              children: "\uD83D\uDD0D Discover Agents"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1705,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "agent-stats",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                children: ["Active: ", agents.filter(a => a.status === 'active').length]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1713,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                children: ["Total Tasks: ", agents.reduce((sum, a) => sum + a.tasks, 0)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1714,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                children: ["Avg Load: ", Math.round(agents.reduce((sum, a) => sum + a.load, 0) / agents.length) || 0, "%"]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1715,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1712,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1704,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1702,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "agents-grid",
+          children: agents.map(agent => {
+            var _agentPersonas$agent$, _agentPersonas$agent$2, _agentPersonas$agent$3, _agentPersonas$agent$4;
+            return /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "agent-card",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "agent-header",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+                  children: getAgentDisplayName(agent)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1724,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "agent-status",
+                  style: {
+                    backgroundColor: getStatusColor(agent.status)
+                  },
+                  children: agent.status.toUpperCase()
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1725,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1723,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "agent-type",
+                children: [agent.type.toUpperCase(), agent.source === 'synapse' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "agent-source-badge",
+                  children: "SYNAPSE"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1735,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1732,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "agent-persona",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "persona-header",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h4", {
+                    children: "\uD83D\uDC64 Persona"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1742,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                    className: "persona-edit-btn",
+                    onClick: () => setEditingAgentPersona(agent.id),
+                    children: editingAgentPersona === agent.id ? '💾 Save' : '✏️ Edit'
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1743,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1741,
+                  columnNumber: 21
+                }, undefined), editingAgentPersona === agent.id ? /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "persona-edit-form",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "form-group",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("label", {
+                      children: "Display Name:"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1754,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("input", {
+                      type: "text",
+                      value: ((_agentPersonas$agent$ = agentPersonas[agent.id]) === null || _agentPersonas$agent$ === void 0 ? void 0 : _agentPersonas$agent$.customName) || agent.name || '',
+                      onChange: e => updateAgentPersona(agent.id, {
+                        customName: e.target.value
+                      }),
+                      placeholder: "Enter custom name"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1755,
+                      columnNumber: 27
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1753,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "form-group",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("label", {
+                      children: "Description:"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1763,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("textarea", {
+                      value: ((_agentPersonas$agent$2 = agentPersonas[agent.id]) === null || _agentPersonas$agent$2 === void 0 ? void 0 : _agentPersonas$agent$2.description) || agent.description || '',
+                      onChange: e => updateAgentPersona(agent.id, {
+                        description: e.target.value
+                      }),
+                      placeholder: "Enter persona description"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1764,
+                      columnNumber: 27
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1762,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "form-group",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("label", {
+                      children: "Persona Mode:"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1771,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("select", {
+                      value: ((_agentPersonas$agent$3 = agentPersonas[agent.id]) === null || _agentPersonas$agent$3 === void 0 ? void 0 : _agentPersonas$agent$3.mode) || 'static',
+                      onChange: e => updateAgentPersona(agent.id, {
+                        mode: e.target.value
+                      }),
+                      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("option", {
+                        value: "static",
+                        children: "Static (Manual)"
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1776,
+                        columnNumber: 29
+                      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("option", {
+                        value: "dynamic",
+                        children: "Dynamic (Mimic Logic)"
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1777,
+                        columnNumber: 29
+                      }, undefined)]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1772,
+                      columnNumber: 27
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1770,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "persona-actions",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                      className: "persona-save-btn",
+                      onClick: () => setEditingAgentPersona(null),
+                      children: "\u2705 Save"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1781,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                      className: "persona-reset-btn",
+                      onClick: () => resetAgentPersona(agent.id),
+                      children: "\uD83D\uDD04 Reset"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1787,
+                      columnNumber: 27
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1780,
+                    columnNumber: 25
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1752,
+                  columnNumber: 23
+                }, undefined) : /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "persona-display",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "persona-info",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      className: "persona-label",
+                      children: "Name:"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1798,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      className: "persona-value",
+                      children: getAgentDisplayName(agent)
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1799,
+                      columnNumber: 27
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1797,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "persona-info",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      className: "persona-label",
+                      children: "Mode:"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1802,
+                      columnNumber: 27
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      className: "persona-value",
+                      children: ((_agentPersonas$agent$4 = agentPersonas[agent.id]) === null || _agentPersonas$agent$4 === void 0 ? void 0 : _agentPersonas$agent$4.mode) === 'dynamic' ? '🔄 Dynamic' : '📌 Static'
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1803,
+                      columnNumber: 27
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1801,
+                    columnNumber: 25
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "persona-description",
+                    children: getAgentPersonaDescription(agent)
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1807,
+                    columnNumber: 25
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1796,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1740,
+                columnNumber: 19
+              }, undefined), agent.configured === false && agent.source === 'synapse' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "agent-warning",
+                children: "\u26A0\uFE0F Configuration incomplete"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1815,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "agent-metrics",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-row",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                    className: "metric-label",
+                    children: "Load:"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1819,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                    className: "metric-value",
+                    children: [agent.load.toFixed(2), "%"]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1820,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1818,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-row",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                    className: "metric-label",
+                    children: "Tasks:"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1823,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                    className: "metric-value",
+                    children: agent.tasks
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1824,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1822,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "metric-row",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                    className: "metric-label",
+                    children: "Last Activity:"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1827,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                    className: "metric-value",
+                    children: [Math.round((Date.now() - new Date(agent.lastActivity)) / 60000), "m ago"]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1828,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1826,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1817,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "agent-capabilities",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h4", {
+                  children: "Capabilities:"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1834,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "capability-tags",
+                  children: agent.capabilities.map(cap => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                    className: "capability-tag",
+                    children: cap
+                  }, cap, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1837,
+                    columnNumber: 25
+                  }, undefined))
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1835,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1833,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "agent-performance",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h4", {
+                  children: "Performance:"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1842,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "performance-bars",
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "performance-metric",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      children: "Efficiency:"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1845,
+                      columnNumber: 25
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "performance-bar",
+                      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                        className: "performance-fill",
+                        style: {
+                          width: `${agent.performance.efficiency}%`
+                        }
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1847,
+                        columnNumber: 27
+                      }, undefined)
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1846,
+                      columnNumber: 25
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      children: [agent.performance.efficiency, "%"]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1852,
+                      columnNumber: 25
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1844,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "performance-metric",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      children: "Accuracy:"
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1855,
+                      columnNumber: 25
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "performance-bar",
+                      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                        className: "performance-fill",
+                        style: {
+                          width: `${agent.performance.accuracy}%`
+                        }
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 1857,
+                        columnNumber: 27
+                      }, undefined)
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1856,
+                      columnNumber: 25
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                      children: [agent.performance.accuracy, "%"]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 1862,
+                      columnNumber: 25
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 1854,
+                    columnNumber: 23
+                  }, undefined)]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1843,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1841,
+                columnNumber: 19
+              }, undefined)]
+            }, agent.id, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1722,
+              columnNumber: 17
+            }, undefined);
+          })
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 1720,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 1701,
+        columnNumber: 11
+      }, undefined), activeTab === 'services' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "services-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "section-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h2", {
+            children: "\u2699\uFE0F Core Services"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1875,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "services-stats",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+              children: ["Online: ", services.filter(s => s.status === 'operational').length, "/", services.length]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1877,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+              children: ["Avg Health: ", Math.round(services.reduce((sum, s) => sum + s.health, 0) / services.length), "%"]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1878,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1876,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1874,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "services-grid",
+          children: services.map(service => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "service-card",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "service-header",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+                children: service.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1886,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                className: "service-status",
+                style: {
+                  backgroundColor: getStatusColor(service.status)
+                },
+                children: service.status.toUpperCase()
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1887,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1885,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "service-health",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "health-label",
+                children: ["Health: ", service.health, "%"]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1895,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "health-bar",
+                children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "health-fill",
+                  style: {
+                    width: `${service.health}%`,
+                    backgroundColor: getHealthColor(service.health)
+                  }
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1897,
+                  columnNumber: 23
+                }, undefined)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1896,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1894,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "service-metrics",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "metric-row",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "metric-label",
+                  children: "Throughput:"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1908,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "metric-value",
+                  children: service.throughput
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1909,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1907,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "metric-row",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "metric-label",
+                  children: "Connections:"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1912,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "metric-value",
+                  children: service.connections
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1913,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1911,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "metric-row",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "metric-label",
+                  children: "Uptime:"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1916,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "metric-value",
+                  children: service.uptime
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1917,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1915,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1906,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "service-actions",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                className: "service-action",
+                children: "\uD83D\uDD04 Restart"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1921,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                className: "service-action",
+                children: "\uD83D\uDCCA Metrics"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1922,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                className: "service-action",
+                children: "\u2699\uFE0F Configure"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1923,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1920,
+              columnNumber: 19
+            }, undefined)]
+          }, service.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1884,
+            columnNumber: 17
+          }, undefined))
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 1882,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 1873,
+        columnNumber: 11
+      }, undefined), activeTab === 'projects' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "projects-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "section-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h2", {
+            children: "\uD83D\uDCCB Project Management"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 1934,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "project-controls",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+              className: "create-project-btn",
+              children: "\u2795 New Project"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1936,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("select", {
+              className: "project-filter",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("option", {
+                value: "all",
+                children: "All Projects"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1938,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("option", {
+                value: "active",
+                children: "Active"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1939,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("option", {
+                value: "planning",
+                children: "Planning"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1940,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("option", {
+                value: "pending",
+                children: "Pending"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1941,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1937,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1935,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 1933,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "projects-grid",
+          children: projects.map(project => /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: `project-card ${(activeProject === null || activeProject === void 0 ? void 0 : activeProject.id) === project.id ? 'selected' : ''}`,
+            onClick: () => setActiveProject(project),
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "project-header",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+                children: project.name
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1954,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                className: "project-priority",
+                style: {
+                  backgroundColor: getStatusColor(project.priority)
+                },
+                children: project.priority.toUpperCase()
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1955,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1953,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+              className: "project-description",
+              children: project.description
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1962,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "project-progress",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "progress-label",
+                children: ["Progress: ", project.progress, "%"]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1964,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "progress-bar",
+                children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "progress-fill",
+                  style: {
+                    width: `${project.progress}%`,
+                    backgroundColor: getProgressBarColor(project.progress)
+                  }
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1966,
+                  columnNumber: 23
+                }, undefined)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1965,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1963,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "project-tasks",
+              children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "task-summary",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  children: ["Tasks: ", project.tasks.length]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1977,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  children: ["Completed: ", project.tasks.filter(t => t.status === 'completed').length]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1978,
+                  columnNumber: 23
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  children: ["In Progress: ", project.tasks.filter(t => t.status === 'in_progress').length]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1979,
+                  columnNumber: 23
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 1976,
+                columnNumber: 21
+              }, undefined)
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 1975,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "project-timeline",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "timeline-item",
+                children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  children: ["Started: ", new Date(project.startDate).toLocaleDateString()]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1984,
+                  columnNumber: 23
+                }, undefined)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1983,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "timeline-item",
+                children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  children: ["Est. Completion: ", new Date(project.estimatedCompletion).toLocaleDateString()]
+                }, void 0, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 1987,
+                  columnNumber: 23
+                }, undefined)
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1986,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1982,
+              columnNumber: 19
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "project-actions",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                onClick: e => {
+                  e.stopPropagation();
+                  startOrchestration(project.id);
+                },
+                className: "project-action primary",
+                children: "\uD83C\uDFAF Orchestrate"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 1991,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                onClick: e => {
+                  e.stopPropagation();
+                  testTaskDelegation(project.id);
+                },
+                className: "project-action",
+                children: "\uD83E\uDDEA Test Tasks"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2000,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                className: "project-action",
+                children: "\uD83D\uDCCA Analytics"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2009,
+                columnNumber: 21
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+                className: "project-action",
+                children: "\u2699\uFE0F Configure"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2010,
+                columnNumber: 21
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 1990,
+              columnNumber: 19
+            }, undefined)]
+          }, project.id, true, {
+            fileName: _jsxFileName,
+            lineNumber: 1948,
+            columnNumber: 17
+          }, undefined))
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 1946,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 1932,
+        columnNumber: 11
+      }, undefined), activeTab === 'project-command' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "project-command-section",
+        children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)(_ProjectCommand__WEBPACK_IMPORTED_MODULE_2__["default"], {
+          accessibilitySettings: accessibilitySettings,
+          onVoiceCommand: onVoiceCommand,
+          currentAgent: currentAgent
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 2020,
+          columnNumber: 13
+        }, undefined)
+      }, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 2019,
+        columnNumber: 11
+      }, undefined), activeTab === 'monitoring' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "monitoring-section",
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "section-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h2", {
+            children: "\uD83D\uDCCA System Monitoring"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2032,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "monitoring-controls",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+              className: "refresh-btn",
+              children: "\uD83D\uDD04 Refresh"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2034,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+              className: "export-btn",
+              children: "\uD83D\uDCE4 Export Data"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2035,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2033,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2031,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "monitoring-dashboard",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "performance-charts",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+              children: "Performance Metrics"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2041,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "charts-grid",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "chart-placeholder",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "chart-title",
+                  children: "CPU Usage Trend"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2044,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "chart-content",
+                  children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "placeholder-text",
+                    children: "Real-time CPU monitoring chart"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 2046,
+                    columnNumber: 23
+                  }, undefined)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2045,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2043,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "chart-placeholder",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "chart-title",
+                  children: "Memory Utilization"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2050,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "chart-content",
+                  children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "placeholder-text",
+                    children: "Memory usage over time"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 2052,
+                    columnNumber: 23
+                  }, undefined)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2051,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2049,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "chart-placeholder",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "chart-title",
+                  children: "Network Activity"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2056,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "chart-content",
+                  children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "placeholder-text",
+                    children: "Network throughput monitoring"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 2058,
+                    columnNumber: 23
+                  }, undefined)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2057,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2055,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "chart-placeholder",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "chart-title",
+                  children: "Agent Performance"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2062,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: "chart-content",
+                  children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "placeholder-text",
+                    children: "Agent efficiency metrics"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 2064,
+                    columnNumber: 23
+                  }, undefined)
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2063,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2061,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2042,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2040,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "alerts-panel",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+              children: "System Alerts"
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2071,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "alerts-list",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "alert-item info",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "alert-icon",
+                  children: "\u2139\uFE0F"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2074,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "alert-message",
+                  children: "System performance is optimal"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2075,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "alert-time",
+                  children: "2 min ago"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2076,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2073,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "alert-item warning",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "alert-icon",
+                  children: "\u26A0\uFE0F"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2079,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "alert-message",
+                  children: "Memory usage above 80% threshold"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2080,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "alert-time",
+                  children: "15 min ago"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2081,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2078,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "alert-item success",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "alert-icon",
+                  children: "\u2705"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2084,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "alert-message",
+                  children: "All agents responding normally"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2085,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                  className: "alert-time",
+                  children: "30 min ago"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2086,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2083,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2072,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2070,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2039,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 2030,
+        columnNumber: 11
+      }, undefined)]
+    }, void 0, true, {
+      fileName: _jsxFileName,
+      lineNumber: 1311,
+      columnNumber: 7
+    }, undefined), showAgentSelectionModal && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+      className: "modal-overlay",
+      onClick: closeAgentSelectionModal,
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "modal-content large-modal",
+        onClick: e => e.stopPropagation(),
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "modal-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+            children: "\uD83C\uDFDB\uFE0F Select Council Members"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2101,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+            onClick: closeAgentSelectionModal,
+            className: "modal-close",
+            children: "\xD7"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2102,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2100,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "modal-body",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "room-info",
+            children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "form-group",
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("label", {
+                children: "Session Name:"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2108,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("input", {
+                type: "text",
+                value: newRoomName,
+                onChange: e => setNewRoomName(e.target.value),
+                placeholder: "Enter session name",
+                className: "room-name-input"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2109,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2107,
+              columnNumber: 17
+            }, undefined)
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2106,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "agents-selection",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h4", {
+              children: ["\uD83D\uDC65 Available Agents (", agents.length, ")"]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2120,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "selection-stats",
+              children: ["Selected: ", selectedAgents.length, " / ", agents.length]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2121,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "agents-grid-modal",
+              children: agents.map(agent => {
+                var _agentPersonas$agent$5;
+                return /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                  className: `agent-selection-card ${selectedAgents.includes(agent.id) ? 'selected' : ''}`,
+                  onClick: () => toggleAgentSelection(agent.id),
+                  children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "selection-checkbox",
+                    children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("input", {
+                      type: "checkbox",
+                      checked: selectedAgents.includes(agent.id),
+                      onChange: () => toggleAgentSelection(agent.id)
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 2133,
+                      columnNumber: 25
+                    }, undefined)
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 2132,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "agent-info",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "agent-name",
+                      children: getAgentDisplayName(agent)
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 2141,
+                      columnNumber: 25
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "agent-type",
+                      children: agent.type
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 2142,
+                      columnNumber: 25
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "agent-status",
+                      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                        className: "status-indicator",
+                        style: {
+                          backgroundColor: getStatusColor(agent.status)
+                        }
+                      }, void 0, false, {
+                        fileName: _jsxFileName,
+                        lineNumber: 2144,
+                        columnNumber: 27
+                      }, undefined), agent.status]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 2143,
+                      columnNumber: 25
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 2140,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "agent-description",
+                    children: getAgentPersonaDescription(agent)
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 2152,
+                    columnNumber: 23
+                  }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "agent-details",
+                    children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "detail-row",
+                      children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                        children: ["Load: ", agent.load.toFixed(2), "%"]
+                      }, void 0, true, {
+                        fileName: _jsxFileName,
+                        lineNumber: 2158,
+                        columnNumber: 27
+                      }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                        children: ["Tasks: ", agent.tasks]
+                      }, void 0, true, {
+                        fileName: _jsxFileName,
+                        lineNumber: 2159,
+                        columnNumber: 27
+                      }, undefined)]
+                    }, void 0, true, {
+                      fileName: _jsxFileName,
+                      lineNumber: 2157,
+                      columnNumber: 25
+                    }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                      className: "detail-row",
+                      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("span", {
+                        children: ["Persona: ", ((_agentPersonas$agent$5 = agentPersonas[agent.id]) === null || _agentPersonas$agent$5 === void 0 ? void 0 : _agentPersonas$agent$5.mode) === 'dynamic' ? '🔄 Dynamic' : '📌 Static']
+                      }, void 0, true, {
+                        fileName: _jsxFileName,
+                        lineNumber: 2162,
+                        columnNumber: 27
+                      }, undefined)
+                    }, void 0, false, {
+                      fileName: _jsxFileName,
+                      lineNumber: 2161,
+                      columnNumber: 25
+                    }, undefined)]
+                  }, void 0, true, {
+                    fileName: _jsxFileName,
+                    lineNumber: 2156,
+                    columnNumber: 23
+                  }, undefined), agent.configured === false && agent.source === 'synapse' && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                    className: "agent-warning",
+                    children: "\u26A0\uFE0F Configuration incomplete"
+                  }, void 0, false, {
+                    fileName: _jsxFileName,
+                    lineNumber: 2167,
+                    columnNumber: 25
+                  }, undefined)]
+                }, agent.id, true, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2127,
+                  columnNumber: 21
+                }, undefined);
+              })
+            }, void 0, false, {
+              fileName: _jsxFileName,
+              lineNumber: 2125,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2119,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2105,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "modal-footer",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+            onClick: closeAgentSelectionModal,
+            className: "modal-btn secondary",
+            children: "Cancel"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2176,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+            onClick: createConferenceRoomWithSelectedAgents,
+            disabled: !newRoomName.trim() || selectedAgents.length === 0,
+            className: "modal-btn primary",
+            children: ["\uD83C\uDFDB\uFE0F Convene Session (", selectedAgents.length, " agents)"]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2182,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2175,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 2099,
+        columnNumber: 11
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 2098,
+      columnNumber: 9
+    }, undefined), showCreateRoomForm && /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+      className: "modal-overlay",
+      onClick: () => setShowCreateRoomForm(false),
+      children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+        className: "modal-content",
+        onClick: e => e.stopPropagation(),
+        children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "modal-header",
+          children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h3", {
+            children: "\uD83C\uDFDB\uFE0F Create New Session"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2199,
+            columnNumber: 15
+          }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+            onClick: () => setShowCreateRoomForm(false),
+            className: "modal-close",
+            children: "\xD7"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2200,
+            columnNumber: 15
+          }, undefined)]
+        }, void 0, true, {
+          fileName: _jsxFileName,
+          lineNumber: 2198,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "modal-body",
+          children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+            className: "create-room-options",
+            children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "option-card",
+              onClick: openAgentSelectionModal,
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "option-icon",
+                children: "\uD83D\uDC65"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2206,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "option-info",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h4", {
+                  children: "Select Specific Agents"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2208,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+                  children: "Choose which agents to invite to your session"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2209,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2207,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2205,
+              columnNumber: 17
+            }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+              className: "option-card",
+              onClick: () => {
+                setNewRoomName('Quick Session');
+                createConferenceRoom('Quick Session');
+              },
+              children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "option-icon",
+                children: "\u26A1"
+              }, void 0, false, {
+                fileName: _jsxFileName,
+                lineNumber: 2217,
+                columnNumber: 19
+              }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+                className: "option-info",
+                children: [/*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("h4", {
+                  children: "Quick Session"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2219,
+                  columnNumber: 21
+                }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("p", {
+                  children: "Create a session with all available agents"
+                }, void 0, false, {
+                  fileName: _jsxFileName,
+                  lineNumber: 2220,
+                  columnNumber: 21
+                }, undefined)]
+              }, void 0, true, {
+                fileName: _jsxFileName,
+                lineNumber: 2218,
+                columnNumber: 19
+              }, undefined)]
+            }, void 0, true, {
+              fileName: _jsxFileName,
+              lineNumber: 2213,
+              columnNumber: 17
+            }, undefined)]
+          }, void 0, true, {
+            fileName: _jsxFileName,
+            lineNumber: 2204,
+            columnNumber: 15
+          }, undefined)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 2203,
+          columnNumber: 13
+        }, undefined), /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("div", {
+          className: "modal-footer",
+          children: /*#__PURE__*/(0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxDEV)("button", {
+            onClick: () => setShowCreateRoomForm(false),
+            className: "modal-btn secondary",
+            children: "Cancel"
+          }, void 0, false, {
+            fileName: _jsxFileName,
+            lineNumber: 2227,
+            columnNumber: 15
+          }, undefined)
+        }, void 0, false, {
+          fileName: _jsxFileName,
+          lineNumber: 2226,
+          columnNumber: 13
+        }, undefined)]
+      }, void 0, true, {
+        fileName: _jsxFileName,
+        lineNumber: 2197,
+        columnNumber: 11
+      }, undefined)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 2196,
+      columnNumber: 9
+    }, undefined)]
+  }, void 0, true, {
+    fileName: _jsxFileName,
+    lineNumber: 1246,
+    columnNumber: 5
+  }, undefined);
+};
+_s(CoreInterface, "uX4gcZLxVzO/kEZgB0k41XQJo18=");
+_c = CoreInterface;
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (CoreInterface);
+var _c;
+__webpack_require__.$Refresh$.register(_c, "CoreInterface");
+
+const $ReactRefreshModuleId$ = __webpack_require__.$Refresh$.moduleId;
+const $ReactRefreshCurrentExports$ = __react_refresh_utils__.getModuleExports(
+	$ReactRefreshModuleId$
+);
+
+function $ReactRefreshModuleRuntime$(exports) {
+	if (true) {
+		let errorOverlay;
+		if (true) {
+			errorOverlay = false;
+		}
+		let testMode;
+		if (typeof __react_refresh_test__ !== 'undefined') {
+			testMode = __react_refresh_test__;
+		}
+		return __react_refresh_utils__.executeRuntime(
+			exports,
+			$ReactRefreshModuleId$,
+			module.hot,
+			errorOverlay,
+			testMode
+		);
+	}
+}
+
+if (typeof Promise !== 'undefined' && $ReactRefreshCurrentExports$ instanceof Promise) {
+	$ReactRefreshCurrentExports$.then($ReactRefreshModuleRuntime$);
+} else {
+	$ReactRefreshModuleRuntime$($ReactRefreshCurrentExports$);
+}
+
+/***/ })
+
+},
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ /* webpack/runtime/getFullHash */
+/******/ (() => {
+/******/ 	__webpack_require__.h = () => ("ba19e69c8685edf06b55")
+/******/ })();
+/******/ 
+/******/ }
+);
+//# sourceMappingURL=main.1d22b9421387925d1d32.hot-update.js.map

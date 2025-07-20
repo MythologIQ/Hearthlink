@@ -1,0 +1,1 @@
+"""Vault module for secure memory storage."""

@@ -1,0 +1,24 @@
+{"timestamp":"2025-07-14T15:21:44.601Z","level":"info","message":"Starting Hearthlink Native Wrapper","pid":8677,"version":"1.3.0","platform":"linux","arch":"x64","nodeVersion":"v20.19.3"}
+{"timestamp":"2025-07-14T15:21:44.607Z","level":"info","message":"Starting Electron application...","pid":8677}
+{"timestamp":"2025-07-14T15:21:44.622Z","level":"info","message":"Electron application started successfully","pid":8684}
+{"timestamp":"2025-07-14T15:21:44.624Z","level":"info","message":"Native wrapper is running and monitoring Electron app...","pid":8677}
+{"timestamp":"2025-07-14T15:21:44.625Z","level":"info","message":"Press Ctrl+C to shutdown gracefully","pid":8677}
+{"timestamp":"2025-07-14T15:21:44.864Z","level":"info","message":"Electron stdout","pid":8677,"data":"> Hearthlink@1.3.0 launch\n> electron launcher.js"}
+{"timestamp":"2025-07-14T15:21:45.007Z","level":"info","message":"Electron stdout","pid":8677,"data":""}
+{"timestamp":"2025-07-14T15:21:45.413Z","level":"error","message":"Electron stderr","pid":8677,"data":"[16352:0714/112145.403:ERROR:cache_util_win.cc(20)] Unable to move the cache: Access is denied. (0x5)\r\n[16352:0714/112145.403:ERROR:disk_cache.cc(208)] Unable to create cache\r\n[16352:0714/112145.403:ERROR:gpu_disk_cache.cc(676)] Gpu Cache Creation failed: -2\r\n[16352:0714/112145.404:ERROR:cache_util_win.cc(20)] Unable to move the cache: Access is denied. (0x5)"}
+{"timestamp":"2025-07-14T15:21:47.489Z","level":"info","message":"Electron process exited","pid":8677,"code":0,"signal":null}
+{"timestamp":"2025-07-14T15:24:35.182Z","level":"info","message":"Starting Hearthlink Native Wrapper","pid":16232,"version":"1.3.0","platform":"win32","arch":"x64","nodeVersion":"v20.18.1"}
+{"timestamp":"2025-07-14T15:24:35.196Z","level":"info","message":"Starting Electron application...","pid":16232}
+{"timestamp":"2025-07-14T15:24:35.202Z","level":"error","message":"Failed to start Electron application","pid":16232,"error":"spawn EINVAL"}
+{"timestamp":"2025-07-14T15:24:35.203Z","level":"info","message":"Native wrapper is running and monitoring Electron app...","pid":16232}
+{"timestamp":"2025-07-14T15:24:35.203Z","level":"info","message":"Press Ctrl+C to shutdown gracefully","pid":16232}
+{"timestamp":"2025-07-14T15:26:51.671Z","level":"info","message":"Received SIGINT, shutting down gracefully...","pid":16232}
+{"timestamp":"2025-07-14T15:26:51.672Z","level":"info","message":"Shutting down native wrapper...","pid":16232}
+{"timestamp":"2025-07-14T15:26:51.674Z","level":"info","message":"Native wrapper shutdown completed","pid":16232}
+{"timestamp":"2025-07-14T15:27:13.661Z","level":"info","message":"Starting Hearthlink Native Wrapper","pid":8739,"version":"1.3.0","platform":"linux","arch":"x64","nodeVersion":"v20.19.3"}
+{"timestamp":"2025-07-14T15:27:13.664Z","level":"info","message":"Starting Electron application...","pid":8739}
+{"timestamp":"2025-07-14T15:27:13.675Z","level":"info","message":"Electron application started successfully","pid":8746}
+{"timestamp":"2025-07-14T15:27:13.676Z","level":"info","message":"Native wrapper is running and monitoring Electron app...","pid":8739}
+{"timestamp":"2025-07-14T15:27:13.677Z","level":"info","message":"Press Ctrl+C to shutdown gracefully","pid":8739}
+{"timestamp":"2025-07-14T15:27:13.861Z","level":"info","message":"Electron stdout","pid":8739,"data":"> Hearthlink@1.3.0 launch\n> electron launcher.js"}
+{"timestamp":"2025-07-14T15:27:13.972Z","level":"info","message":"Electron stdout","pid":8739,"data":""}

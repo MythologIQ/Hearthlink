@@ -1,0 +1,817 @@
+"use strict";
+globalThis["webpackHotUpdateHearthlink"]("main",{
+
+/***/ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[0].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[0].oneOf[5].use[2]!./src/components/LaunchPage.css":
+/*!*************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[0].oneOf[5].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[0].oneOf[5].use[2]!./src/components/LaunchPage.css ***!
+  \*************************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/sourceMaps.js */ "./node_modules/css-loader/dist/runtime/sourceMaps.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
+// Imports
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, `/* Hearthlink Launch Page - Cosmic Theme */
+.launch-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #22d3ee rgba(34, 211, 238, 0.1);
+  font-family: 'Orbitron', 'Segoe UI', monospace;
+  z-index: 9999;
+}
+
+/* Background Layers - Proper stacking order */
+.background-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.background-layer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bg-base { z-index: 1; }
+.bg-starburst { z-index: 2; }
+.bg-blue-flame { z-index: 3; }
+.bg-stars { z-index: 4; }
+.bg-flame-frame { z-index: 5; }
+.bg-hearthlink-flame { z-index: 6; }
+
+/* Header Logo - Top Center - Prominent sizing */
+.header-logo {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 7;
+}
+
+.header-logo img {
+  height: 80px;
+  width: auto;
+  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.3));
+}
+
+/* DEV Controls - Top Left */
+.dev-controls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 20;
+  display: flex;
+  gap: 15px;
+}
+
+.dev-control {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 211, 238, 0.5);
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.dev-control:hover {
+  border-color: rgba(251, 191, 36, 0.8);
+  background: rgba(251, 191, 36, 0.1);
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+  transform: scale(1.1);
+}
+
+.dev-icon {
+  font-size: 20px;
+}
+
+/* System Controls - Top Right */
+.system-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 20;
+  display: flex;
+  gap: 15px;
+}
+
+.system-control {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 211, 238, 0.5);
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.system-control:hover {
+  border-color: rgba(251, 191, 36, 0.8);
+  background: rgba(251, 191, 36, 0.1);
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+  transform: scale(1.1);
+}
+
+.system-control-icon {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.6));
+}
+
+/* Starfield Background */
+.starfield {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.stars,
+.stars2,
+.stars3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.stars {
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(255, 255, 255, 0.7), transparent);
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: sparkle 20s linear infinite;
+}
+
+.stars2 {
+  background-image: 
+    radial-gradient(1px 1px at 50px 50px, rgba(34, 211, 238, 0.5), transparent),
+    radial-gradient(1px 1px at 100px 100px, rgba(34, 211, 238, 0.3), transparent),
+    radial-gradient(1px 1px at 150px 150px, rgba(34, 211, 238, 0.4), transparent);
+  background-repeat: repeat;
+  background-size: 250px 250px;
+  animation: sparkle 15s linear infinite reverse;
+}
+
+.stars3 {
+  background-image: 
+    radial-gradient(1px 1px at 75px 125px, rgba(59, 130, 246, 0.3), transparent),
+    radial-gradient(1px 1px at 175px 75px, rgba(59, 130, 246, 0.2), transparent);
+  background-repeat: repeat;
+  background-size: 300px 300px;
+  animation: sparkle 10s linear infinite;
+}
+
+@keyframes sparkle {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100vh); }
+}
+
+/* Animated Background Gradient */
+.gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(34, 211, 238, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(147, 51, 234, 0.05) 0%, transparent 50%);
+  animation: gradientShift 8s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+/* Wave Backlight Effect - Behind HEARTHLINK text */
+.wave-backlight {
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 100px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(34, 211, 238, 0.05) 30%,
+    rgba(34, 211, 238, 0.1) 50%,
+    rgba(34, 211, 238, 0.05) 70%,
+    transparent 100%
+  );
+  animation: waveBacklight 6s ease-in-out infinite;
+  z-index: 15;
+  border-radius: 50px;
+  filter: blur(2px);
+}
+
+@keyframes waveBacklight {
+  0%, 100% {
+    transform: translateX(-50%) scaleX(0.5);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateX(-50%) scaleX(1.2);
+    opacity: 0.8;
+  }
+}
+
+/* MythologIQ Header Logo - CENTERED */
+/* Header logo removed - it's part of the background */
+
+/* Central Loading Icon - Positioned at 75% from top */
+.loading-container {
+  position: absolute;
+  top: 75%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-icon-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.electric-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle,
+    rgba(34, 211, 238, 0.3) 0%,
+    rgba(34, 211, 238, 0.1) 40%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: electricPulse 2s ease-in-out infinite;
+}
+
+@keyframes electricPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.pulse-rings {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.pulse-ring {
+  position: absolute;
+  border: 2px solid rgba(34, 211, 238, 0.3);
+  border-radius: 50%;
+  animation: ringPulse 3s ease-in-out infinite;
+}
+
+.ring-1 {
+  width: 120%;
+  height: 120%;
+  top: -10%;
+  left: -10%;
+  animation-delay: 0s;
+}
+
+.ring-2 {
+  width: 140%;
+  height: 140%;
+  top: -20%;
+  left: -20%;
+  animation-delay: 1s;
+}
+
+.ring-3 {
+  width: 160%;
+  height: 160%;
+  top: -30%;
+  left: -30%;
+  animation-delay: 2s;
+}
+
+@keyframes ringPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+.loading-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  filter: 
+    drop-shadow(0 0 20px rgba(34, 211, 238, 0.8))
+    drop-shadow(0 0 40px rgba(34, 211, 238, 0.6))
+    drop-shadow(0 0 60px rgba(34, 211, 238, 0.4));
+  animation: iconPulse 2s ease-in-out infinite;
+  z-index: 10;
+  position: relative;
+  transition: opacity 0.5s ease;
+}
+
+.loading-icon.loaded {
+  opacity: 0.3;
+}
+
+@keyframes iconPulse {
+  0%, 100% { 
+    transform: scale(1);
+    filter: 
+      drop-shadow(0 0 20px rgba(34, 211, 238, 0.8))
+      drop-shadow(0 0 40px rgba(34, 211, 238, 0.6))
+      drop-shadow(0 0 60px rgba(34, 211, 238, 0.4));
+  }
+  50% { 
+    transform: scale(1.1);
+    filter: 
+      drop-shadow(0 0 30px rgba(34, 211, 238, 1))
+      drop-shadow(0 0 50px rgba(34, 211, 238, 0.8))
+      drop-shadow(0 0 70px rgba(34, 211, 238, 0.6));
+  }
+}
+
+/* Circular Module Icons - Top layer */
+.module-icons {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  z-index: 25;
+}
+
+.module-icon {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: moduleIn 1s ease-out forwards, moduleFloat 6s ease-in-out infinite;
+  opacity: 0;
+  transform: scale(0);
+  transform-origin: center;
+  z-index: 100;
+}
+
+.module-icon.clickable {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.module-icon.clickable:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8));
+}
+
+.module-icon.clickable:hover .icon-glow {
+  transform: scale(1.4);
+  opacity: 1;
+  background: radial-gradient(
+    circle,
+    rgba(251, 191, 36, 0.4) 0%,
+    rgba(251, 191, 36, 0.2) 50%,
+    transparent 70%
+  );
+  box-shadow: 0 0 25px rgba(251, 191, 36, 0.6);
+}
+
+.module-icon.clickable:hover .module-description {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes moduleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes moduleFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
+.icon-glow {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(
+    circle,
+    rgba(251, 191, 36, 0.2) 0%,
+    rgba(251, 191, 36, 0.1) 50%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: iconGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes iconGlow {
+  from { transform: scale(1); opacity: 0.5; }
+  to { transform: scale(1.3); opacity: 0.8; }
+}
+
+.persona-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(251, 191, 36, 0.5);
+  filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));
+  position: relative;
+  z-index: 2;
+}
+
+.icon-label {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #fbbf24;
+  text-shadow: 0 0 5px rgba(251, 191, 36, 0.8);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.module-description {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #cbd5e1;
+  text-shadow: 0 0 3px rgba(203, 213, 225, 0.5);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  max-width: 120px;
+  line-height: 1.2;
+}
+
+.module-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Loading Progress */
+.loading-progress {
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 10;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  width: 300px;
+  height: 4px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22d3ee, #06b6d4, #0891b2);
+  border-radius: 2px;
+  transition: width 0.8s ease;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+  animation: progressGlow 2s ease-in-out infinite;
+}
+
+@keyframes progressGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.8);
+  }
+}
+
+.progress-text {
+  font-size: 18px;
+  color: #22d3ee;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(34, 211, 238, 0.8);
+  min-width: 50px;
+}
+
+.loading-status {
+  font-size: 16px;
+  color: #cbd5e1;
+  text-shadow: 0 0 5px rgba(203, 213, 225, 0.5);
+  letter-spacing: 0.5px;
+  animation: statusPulse 2s ease-in-out infinite;
+  transition: opacity 0.5s ease;
+}
+
+.loading-status.loaded {
+  opacity: 0.3;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Selection Prompt - Above wave backlight, below loading icon */
+.selection-prompt {
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 18;
+  animation: selectionFade 2s ease-in-out forwards;
+}
+
+@keyframes selectionFade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.selection-prompt .welcome-text h2 {
+  font-size: 1.4rem;
+  color: #22d3ee;
+  text-shadow: 
+    0 0 10px #22d3ee,
+    0 0 20px #06b6d4,
+    0 0 30px #0891b2;
+  margin: 0 0 5px 0;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  animation: titlePulse 3s ease-in-out infinite;
+}
+
+.selection-prompt .welcome-text p {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  text-shadow: 0 0 5px rgba(203, 213, 225, 0.5);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+@keyframes titlePulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px #22d3ee,
+      0 0 20px #06b6d4,
+      0 0 30px #0891b2;
+  }
+  50% {
+    text-shadow: 
+      0 0 15px #22d3ee,
+      0 0 25px #06b6d4,
+      0 0 35px #0891b2;
+  }
+}
+
+/* Hearthlink Logo */
+.hearthlink-logo {
+  position: absolute;
+  bottom: 5%;
+  right: 5%;
+  z-index: 10;
+}
+
+.hearthlink-logo img {
+  width: 120px;
+  height: auto;
+  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.3));
+  opacity: 0.8;
+  animation: logoFloat 4s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Webkit Scrollbar Styles */
+.launch-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.launch-page::-webkit-scrollbar-track {
+  background: rgba(34, 211, 238, 0.1);
+  border-radius: 4px;
+}
+
+.launch-page::-webkit-scrollbar-thumb {
+  background: #22d3ee;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+}
+
+.launch-page::-webkit-scrollbar-thumb:hover {
+  background: #18b5d8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .launch-page {
+    padding: 20px;
+    min-height: 100vh;
+    height: auto;
+  }
+  
+  .mythologic-title h1 {
+    font-size: 2.5rem;
+  }
+  
+  .loading-icon-wrapper {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .loading-icon {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .progress-bar {
+    width: 250px;
+  }
+  
+  .persona-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .icon-label {
+    font-size: 10px;
+  }
+  
+  .floating-icon {
+    transform: scale(0.8);
+  }
+  
+  .welcome-text h2 {
+    font-size: 2rem;
+  }
+  
+  .welcome-text p {
+    font-size: 1rem;
+  }
+  
+  /* Header logo removed - no mobile adjustments needed */
+  
+  .hearthlink-logo {
+    bottom: 3%;
+    right: 3%;
+  }
+  
+  .hearthlink-logo img {
+    width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .launch-page {
+    padding: 10px;
+    min-height: 100vh;
+    height: auto;
+  }
+  
+  .mythologic-title h1 {
+    font-size: 2rem;
+  }
+  
+  .loading-icon-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .loading-icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .progress-bar {
+    width: 200px;
+  }
+  
+  .floating-icon {
+    transform: scale(0.6);
+  }
+  
+  .hearthlink-logo img {
+    width: 60px;
+  }
+  
+  /* Header logo removed - no mobile adjustments needed */
+  
+  .selection-prompt .welcome-text h2 {
+    font-size: 1.5rem;
+  }
+  
+  .selection-prompt .welcome-text p {
+    font-size: 0.9rem;
+  }
+}`, "",{"version":3,"sources":["webpack://./src/components/LaunchPage.css"],"names":[],"mappings":"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","sourcesContent":["/* Hearthlink Launch Page - Cosmic Theme */\n.launch-page {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100vw;\n  height: 100vh;\n  overflow: auto;\n  scrollbar-width: thin;\n  scrollbar-color: #22d3ee rgba(34, 211, 238, 0.1);\n  font-family: 'Orbitron', 'Segoe UI', monospace;\n  z-index: 9999;\n}\n\n/* Background Layers - Proper stacking order */\n.background-layer {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.background-layer img {\n  width: 100%;\n  height: 100%;\n  object-fit: cover;\n}\n\n.bg-base { z-index: 1; }\n.bg-starburst { z-index: 2; }\n.bg-blue-flame { z-index: 3; }\n.bg-stars { z-index: 4; }\n.bg-flame-frame { z-index: 5; }\n.bg-hearthlink-flame { z-index: 6; }\n\n/* Header Logo - Top Center - Prominent sizing */\n.header-logo {\n  position: absolute;\n  top: 30px;\n  left: 50%;\n  transform: translateX(-50%);\n  z-index: 7;\n}\n\n.header-logo img {\n  height: 80px;\n  width: auto;\n  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.3));\n}\n\n/* DEV Controls - Top Left */\n.dev-controls {\n  position: absolute;\n  top: 20px;\n  left: 20px;\n  z-index: 20;\n  display: flex;\n  gap: 15px;\n}\n\n.dev-control {\n  width: 50px;\n  height: 50px;\n  border-radius: 50%;\n  border: 2px solid rgba(34, 211, 238, 0.5);\n  background: rgba(15, 23, 42, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  transition: all 0.3s ease;\n  backdrop-filter: blur(10px);\n}\n\n.dev-control:hover {\n  border-color: rgba(251, 191, 36, 0.8);\n  background: rgba(251, 191, 36, 0.1);\n  box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);\n  transform: scale(1.1);\n}\n\n.dev-icon {\n  font-size: 20px;\n}\n\n/* System Controls - Top Right */\n.system-controls {\n  position: absolute;\n  top: 20px;\n  right: 20px;\n  z-index: 20;\n  display: flex;\n  gap: 15px;\n}\n\n.system-control {\n  width: 60px;\n  height: 60px;\n  border-radius: 50%;\n  border: 2px solid rgba(34, 211, 238, 0.5);\n  background: rgba(15, 23, 42, 0.8);\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  transition: all 0.3s ease;\n  backdrop-filter: blur(10px);\n  position: relative;\n}\n\n.system-control:hover {\n  border-color: rgba(251, 191, 36, 0.8);\n  background: rgba(251, 191, 36, 0.1);\n  box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);\n  transform: scale(1.1);\n}\n\n.system-control-icon {\n  width: 36px;\n  height: 36px;\n  filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.6));\n}\n\n/* Starfield Background */\n.starfield {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n}\n\n.stars,\n.stars2,\n.stars3 {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  background: transparent;\n}\n\n.stars {\n  background-image: \n    radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),\n    radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.6), transparent),\n    radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.5), transparent),\n    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.4), transparent),\n    radial-gradient(2px 2px at 160px 30px, rgba(255, 255, 255, 0.7), transparent);\n  background-repeat: repeat;\n  background-size: 200px 100px;\n  animation: sparkle 20s linear infinite;\n}\n\n.stars2 {\n  background-image: \n    radial-gradient(1px 1px at 50px 50px, rgba(34, 211, 238, 0.5), transparent),\n    radial-gradient(1px 1px at 100px 100px, rgba(34, 211, 238, 0.3), transparent),\n    radial-gradient(1px 1px at 150px 150px, rgba(34, 211, 238, 0.4), transparent);\n  background-repeat: repeat;\n  background-size: 250px 250px;\n  animation: sparkle 15s linear infinite reverse;\n}\n\n.stars3 {\n  background-image: \n    radial-gradient(1px 1px at 75px 125px, rgba(59, 130, 246, 0.3), transparent),\n    radial-gradient(1px 1px at 175px 75px, rgba(59, 130, 246, 0.2), transparent);\n  background-repeat: repeat;\n  background-size: 300px 300px;\n  animation: sparkle 10s linear infinite;\n}\n\n@keyframes sparkle {\n  0% { transform: translateY(0); }\n  100% { transform: translateY(-100vh); }\n}\n\n/* Animated Background Gradient */\n.gradient-overlay {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  background: \n    radial-gradient(circle at 20% 80%, rgba(34, 211, 238, 0.1) 0%, transparent 50%),\n    radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),\n    radial-gradient(circle at 40% 40%, rgba(147, 51, 234, 0.05) 0%, transparent 50%);\n  animation: gradientShift 8s ease-in-out infinite;\n}\n\n@keyframes gradientShift {\n  0%, 100% { opacity: 0.3; }\n  50% { opacity: 0.6; }\n}\n\n/* Wave Backlight Effect - Behind HEARTHLINK text */\n.wave-backlight {\n  position: absolute;\n  bottom: 8%;\n  left: 50%;\n  transform: translateX(-50%);\n  width: 600px;\n  height: 100px;\n  background: linear-gradient(\n    90deg,\n    transparent 0%,\n    rgba(34, 211, 238, 0.05) 30%,\n    rgba(34, 211, 238, 0.1) 50%,\n    rgba(34, 211, 238, 0.05) 70%,\n    transparent 100%\n  );\n  animation: waveBacklight 6s ease-in-out infinite;\n  z-index: 15;\n  border-radius: 50px;\n  filter: blur(2px);\n}\n\n@keyframes waveBacklight {\n  0%, 100% {\n    transform: translateX(-50%) scaleX(0.5);\n    opacity: 0.3;\n  }\n  50% {\n    transform: translateX(-50%) scaleX(1.2);\n    opacity: 0.8;\n  }\n}\n\n/* MythologIQ Header Logo - CENTERED */\n/* Header logo removed - it's part of the background */\n\n/* Central Loading Icon - Positioned at 75% from top */\n.loading-container {\n  position: absolute;\n  top: 75%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  z-index: 20;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.loading-icon-wrapper {\n  position: relative;\n  width: 150px;\n  height: 150px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n.electric-glow {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  background: radial-gradient(\n    circle,\n    rgba(34, 211, 238, 0.3) 0%,\n    rgba(34, 211, 238, 0.1) 40%,\n    transparent 70%\n  );\n  border-radius: 50%;\n  animation: electricPulse 2s ease-in-out infinite;\n}\n\n@keyframes electricPulse {\n  0%, 100% {\n    transform: scale(1);\n    opacity: 0.8;\n  }\n  50% {\n    transform: scale(1.2);\n    opacity: 1;\n  }\n}\n\n.pulse-rings {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n}\n\n.pulse-ring {\n  position: absolute;\n  border: 2px solid rgba(34, 211, 238, 0.3);\n  border-radius: 50%;\n  animation: ringPulse 3s ease-in-out infinite;\n}\n\n.ring-1 {\n  width: 120%;\n  height: 120%;\n  top: -10%;\n  left: -10%;\n  animation-delay: 0s;\n}\n\n.ring-2 {\n  width: 140%;\n  height: 140%;\n  top: -20%;\n  left: -20%;\n  animation-delay: 1s;\n}\n\n.ring-3 {\n  width: 160%;\n  height: 160%;\n  top: -30%;\n  left: -30%;\n  animation-delay: 2s;\n}\n\n@keyframes ringPulse {\n  0% {\n    transform: scale(0.8);\n    opacity: 0;\n  }\n  50% {\n    transform: scale(1);\n    opacity: 0.6;\n  }\n  100% {\n    transform: scale(1.2);\n    opacity: 0;\n  }\n}\n\n.loading-icon {\n  width: 80px;\n  height: 80px;\n  border-radius: 50%;\n  filter: \n    drop-shadow(0 0 20px rgba(34, 211, 238, 0.8))\n    drop-shadow(0 0 40px rgba(34, 211, 238, 0.6))\n    drop-shadow(0 0 60px rgba(34, 211, 238, 0.4));\n  animation: iconPulse 2s ease-in-out infinite;\n  z-index: 10;\n  position: relative;\n  transition: opacity 0.5s ease;\n}\n\n.loading-icon.loaded {\n  opacity: 0.3;\n}\n\n@keyframes iconPulse {\n  0%, 100% { \n    transform: scale(1);\n    filter: \n      drop-shadow(0 0 20px rgba(34, 211, 238, 0.8))\n      drop-shadow(0 0 40px rgba(34, 211, 238, 0.6))\n      drop-shadow(0 0 60px rgba(34, 211, 238, 0.4));\n  }\n  50% { \n    transform: scale(1.1);\n    filter: \n      drop-shadow(0 0 30px rgba(34, 211, 238, 1))\n      drop-shadow(0 0 50px rgba(34, 211, 238, 0.8))\n      drop-shadow(0 0 70px rgba(34, 211, 238, 0.6));\n  }\n}\n\n/* Circular Module Icons - Top layer */\n.module-icons {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 0;\n  left: 0;\n  pointer-events: auto;\n  z-index: 25;\n}\n\n.module-icon {\n  position: absolute;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  animation: moduleIn 1s ease-out forwards, moduleFloat 6s ease-in-out infinite;\n  opacity: 0;\n  transform: scale(0);\n  transform-origin: center;\n  z-index: 100;\n}\n\n.module-icon.clickable {\n  pointer-events: auto;\n  cursor: pointer;\n  transition: all 0.3s ease;\n}\n\n.module-icon.clickable:hover {\n  transform: scale(1.1);\n  filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8));\n}\n\n.module-icon.clickable:hover .icon-glow {\n  transform: scale(1.4);\n  opacity: 1;\n  background: radial-gradient(\n    circle,\n    rgba(251, 191, 36, 0.4) 0%,\n    rgba(251, 191, 36, 0.2) 50%,\n    transparent 70%\n  );\n  box-shadow: 0 0 25px rgba(251, 191, 36, 0.6);\n}\n\n.module-icon.clickable:hover .module-description {\n  opacity: 1;\n  transform: translateY(0);\n}\n\n@keyframes moduleIn {\n  0% {\n    opacity: 0;\n    transform: scale(0) translateY(30px);\n  }\n  100% {\n    opacity: 1;\n    transform: scale(1) translateY(0);\n  }\n}\n\n@keyframes moduleFloat {\n  0%, 100% {\n    transform: translateY(0) scale(1);\n  }\n  50% {\n    transform: translateY(-8px) scale(1.02);\n  }\n}\n\n.icon-glow {\n  position: absolute;\n  width: 100px;\n  height: 100px;\n  background: radial-gradient(\n    circle,\n    rgba(251, 191, 36, 0.2) 0%,\n    rgba(251, 191, 36, 0.1) 50%,\n    transparent 70%\n  );\n  border-radius: 50%;\n  animation: iconGlow 3s ease-in-out infinite alternate;\n}\n\n@keyframes iconGlow {\n  from { transform: scale(1); opacity: 0.5; }\n  to { transform: scale(1.3); opacity: 0.8; }\n}\n\n.persona-icon {\n  width: 80px;\n  height: 80px;\n  border-radius: 50%;\n  border: 2px solid rgba(251, 191, 36, 0.5);\n  filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));\n  position: relative;\n  z-index: 2;\n}\n\n.icon-label {\n  margin-top: 8px;\n  font-size: 11px;\n  color: #fbbf24;\n  text-shadow: 0 0 5px rgba(251, 191, 36, 0.8);\n  font-weight: bold;\n  text-transform: uppercase;\n  letter-spacing: 1px;\n}\n\n.module-description {\n  margin-top: 4px;\n  font-size: 10px;\n  color: #cbd5e1;\n  text-shadow: 0 0 3px rgba(203, 213, 225, 0.5);\n  text-align: center;\n  opacity: 0;\n  transform: translateY(10px);\n  transition: all 0.3s ease;\n  max-width: 120px;\n  line-height: 1.2;\n}\n\n.module-icon-wrapper {\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n\n/* Loading Progress */\n.loading-progress {\n  position: absolute;\n  bottom: 20%;\n  left: 50%;\n  transform: translateX(-50%);\n  text-align: center;\n  z-index: 10;\n}\n\n.progress-container {\n  display: flex;\n  align-items: center;\n  gap: 15px;\n  margin-bottom: 20px;\n}\n\n.progress-bar {\n  width: 300px;\n  height: 4px;\n  background: rgba(30, 41, 59, 0.8);\n  border-radius: 2px;\n  overflow: hidden;\n  border: 1px solid rgba(34, 211, 238, 0.3);\n}\n\n.progress-fill {\n  height: 100%;\n  background: linear-gradient(90deg, #22d3ee, #06b6d4, #0891b2);\n  border-radius: 2px;\n  transition: width 0.8s ease;\n  box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);\n  animation: progressGlow 2s ease-in-out infinite;\n}\n\n@keyframes progressGlow {\n  0%, 100% {\n    box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);\n  }\n  50% {\n    box-shadow: 0 0 20px rgba(34, 211, 238, 0.8);\n  }\n}\n\n.progress-text {\n  font-size: 18px;\n  color: #22d3ee;\n  font-weight: bold;\n  text-shadow: 0 0 5px rgba(34, 211, 238, 0.8);\n  min-width: 50px;\n}\n\n.loading-status {\n  font-size: 16px;\n  color: #cbd5e1;\n  text-shadow: 0 0 5px rgba(203, 213, 225, 0.5);\n  letter-spacing: 0.5px;\n  animation: statusPulse 2s ease-in-out infinite;\n  transition: opacity 0.5s ease;\n}\n\n.loading-status.loaded {\n  opacity: 0.3;\n}\n\n@keyframes statusPulse {\n  0%, 100% { opacity: 0.8; }\n  50% { opacity: 1; }\n}\n\n/* Selection Prompt - Above wave backlight, below loading icon */\n.selection-prompt {\n  position: absolute;\n  bottom: 8%;\n  left: 50%;\n  transform: translateX(-50%);\n  text-align: center;\n  z-index: 18;\n  animation: selectionFade 2s ease-in-out forwards;\n}\n\n@keyframes selectionFade {\n  0% {\n    opacity: 0;\n    transform: translateX(-50%) translateY(20px);\n  }\n  100% {\n    opacity: 1;\n    transform: translateX(-50%) translateY(0);\n  }\n}\n\n.selection-prompt .welcome-text h2 {\n  font-size: 1.4rem;\n  color: #22d3ee;\n  text-shadow: \n    0 0 10px #22d3ee,\n    0 0 20px #06b6d4,\n    0 0 30px #0891b2;\n  margin: 0 0 5px 0;\n  font-weight: 300;\n  letter-spacing: 0.1em;\n  animation: titlePulse 3s ease-in-out infinite;\n}\n\n.selection-prompt .welcome-text p {\n  font-size: 0.9rem;\n  color: #cbd5e1;\n  text-shadow: 0 0 5px rgba(203, 213, 225, 0.5);\n  margin: 0;\n  letter-spacing: 0.05em;\n}\n\n@keyframes titlePulse {\n  0%, 100% {\n    text-shadow: \n      0 0 10px #22d3ee,\n      0 0 20px #06b6d4,\n      0 0 30px #0891b2;\n  }\n  50% {\n    text-shadow: \n      0 0 15px #22d3ee,\n      0 0 25px #06b6d4,\n      0 0 35px #0891b2;\n  }\n}\n\n/* Hearthlink Logo */\n.hearthlink-logo {\n  position: absolute;\n  bottom: 5%;\n  right: 5%;\n  z-index: 10;\n}\n\n.hearthlink-logo img {\n  width: 120px;\n  height: auto;\n  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.3));\n  opacity: 0.8;\n  animation: logoFloat 4s ease-in-out infinite;\n}\n\n@keyframes logoFloat {\n  0%, 100% {\n    transform: translateY(0);\n  }\n  50% {\n    transform: translateY(-5px);\n  }\n}\n\n/* Webkit Scrollbar Styles */\n.launch-page::-webkit-scrollbar {\n  width: 8px;\n}\n\n.launch-page::-webkit-scrollbar-track {\n  background: rgba(34, 211, 238, 0.1);\n  border-radius: 4px;\n}\n\n.launch-page::-webkit-scrollbar-thumb {\n  background: #22d3ee;\n  border-radius: 4px;\n  box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);\n}\n\n.launch-page::-webkit-scrollbar-thumb:hover {\n  background: #18b5d8;\n}\n\n/* Responsive Design */\n@media (max-width: 768px) {\n  .launch-page {\n    padding: 20px;\n    min-height: 100vh;\n    height: auto;\n  }\n  \n  .mythologic-title h1 {\n    font-size: 2.5rem;\n  }\n  \n  .loading-icon-wrapper {\n    width: 150px;\n    height: 150px;\n  }\n  \n  .loading-icon {\n    width: 100px;\n    height: 100px;\n  }\n  \n  .progress-bar {\n    width: 250px;\n  }\n  \n  .persona-icon {\n    width: 40px;\n    height: 40px;\n  }\n  \n  .icon-label {\n    font-size: 10px;\n  }\n  \n  .floating-icon {\n    transform: scale(0.8);\n  }\n  \n  .welcome-text h2 {\n    font-size: 2rem;\n  }\n  \n  .welcome-text p {\n    font-size: 1rem;\n  }\n  \n  /* Header logo removed - no mobile adjustments needed */\n  \n  .hearthlink-logo {\n    bottom: 3%;\n    right: 3%;\n  }\n  \n  .hearthlink-logo img {\n    width: 80px;\n  }\n}\n\n@media (max-width: 480px) {\n  .launch-page {\n    padding: 10px;\n    min-height: 100vh;\n    height: auto;\n  }\n  \n  .mythologic-title h1 {\n    font-size: 2rem;\n  }\n  \n  .loading-icon-wrapper {\n    width: 120px;\n    height: 120px;\n  }\n  \n  .loading-icon {\n    width: 80px;\n    height: 80px;\n  }\n  \n  .progress-bar {\n    width: 200px;\n  }\n  \n  .floating-icon {\n    transform: scale(0.6);\n  }\n  \n  .hearthlink-logo img {\n    width: 60px;\n  }\n  \n  /* Header logo removed - no mobile adjustments needed */\n  \n  .selection-prompt .welcome-text h2 {\n    font-size: 1.5rem;\n  }\n  \n  .selection-prompt .welcome-text p {\n    font-size: 0.9rem;\n  }\n}"],"sourceRoot":""}]);
+// Exports
+___CSS_LOADER_EXPORT___.locals = {};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ })
+
+},
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ /* webpack/runtime/getFullHash */
+/******/ (() => {
+/******/ 	__webpack_require__.h = () => ("33aab9a2c71662d83587")
+/******/ })();
+/******/ 
+/******/ }
+);
+//# sourceMappingURL=main.eacc8a8ac87385dd8331.hot-update.js.map

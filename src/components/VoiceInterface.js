@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './VoiceInterface.css';
 
 const VoiceInterface = ({ onCommand, isActive, onClose, currentAgent, availableAgents, onAgentChange }) => {
   const [isListening, setIsListening] = useState(false);
@@ -16,41 +17,63 @@ const VoiceInterface = ({ onCommand, isActive, onClose, currentAgent, availableA
   const externalAgents = ['gemini-cli', 'google-api', 'trae-cli'];
 
   useEffect(() => {
-    if (isActive && window.voiceCommands && voiceEnabled) {
-      recognitionRef.current = window.voiceCommands.initSpeechRecognition();
+    if (isActive && voiceEnabled) {
+      // Check for browser support
+      if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+        console.warn('Speech recognition not supported in this browser');
+        setVoiceEnabled(false);
+        return;
+      }
+
+      // Initialize speech recognition
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       
-      if (recognitionRef.current) {
-        recognitionRef.current.onstart = () => {
-          setIsListening(true);
-          setTranscript('');
-          setAgentConfirmation('');
-        };
-
-        recognitionRef.current.onresult = (event) => {
-          const result = event.results[event.results.length - 1];
-          const text = result[0].transcript;
-          setTranscript(text);
+      if (SpeechRecognition) {
+        try {
+          recognitionRef.current = new SpeechRecognition();
+          recognitionRef.current.continuous = false;
+          recognitionRef.current.interimResults = true;
+          recognitionRef.current.lang = 'en-US';
           
-          if (result.isFinal) {
-            handleVoiceInput(text);
-          }
-        };
+          recognitionRef.current.onstart = () => {
+            setIsListening(true);
+            setTranscript('');
+            setAgentConfirmation('');
+          };
 
-        recognitionRef.current.onerror = (event) => {
-          console.error('Speech recognition error:', event.error);
-          setIsListening(false);
-          logVoiceEvent('error', { error: event.error });
-        };
+          recognitionRef.current.onresult = (event) => {
+            const result = event.results[event.results.length - 1];
+            const text = result[0].transcript;
+            setTranscript(text);
+            
+            if (result.isFinal) {
+              handleVoiceInput(text);
+            }
+          };
 
-        recognitionRef.current.onend = () => {
-          setIsListening(false);
-        };
+          recognitionRef.current.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            setIsListening(false);
+            logVoiceEvent('error', { error: event.error });
+          };
+
+          recognitionRef.current.onend = () => {
+            setIsListening(false);
+          };
+        } catch (error) {
+          console.error('Failed to initialize speech recognition:', error);
+          setVoiceEnabled(false);
+        }
       }
     }
 
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        try {
+          recognitionRef.current.stop();
+        } catch (error) {
+          console.warn('Error stopping speech recognition:', error);
+        }
       }
     };
   }, [isActive, voiceEnabled]);
@@ -228,8 +251,16 @@ const VoiceInterface = ({ onCommand, isActive, onClose, currentAgent, availableA
 
   const startListening = () => {
     if (recognitionRef.current && voiceEnabled) {
-      recognitionRef.current.start();
-      logVoiceEvent('listening_started', { mode: routingMode, pinned_agent: pinnedAgent });
+      try {
+        recognitionRef.current.start();
+        logVoiceEvent('listening_started', { mode: routingMode, pinned_agent: pinnedAgent });
+      } catch (error) {
+        console.error('Failed to start speech recognition:', error);
+        setVoiceEnabled(false);
+        setAgentConfirmation('Voice recognition failed to start. Please check browser permissions.');
+      }
+    } else if (!voiceEnabled) {
+      setAgentConfirmation('Voice recognition is not available in this browser.');
     }
   };
 

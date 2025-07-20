@@ -1,0 +1,163 @@
+INFO:__main__:Starting SuperClaude API Service...
+INFO:__main__:Endpoints available:
+INFO:__main__:  GET  /api/superclaude/status - Service status
+INFO:__main__:  POST /api/superclaude/session - Create session
+INFO:__main__:  POST /api/superclaude/chat - Chat with SuperClaude
+INFO:__main__:  GET  /api/superclaude/sessions - List sessions
+INFO:__main__:  DELETE /api/superclaude/session/<id> - Delete session
+INFO:__main__:Available backends: {'claude_code_cli': True, 'claude_api': False}
+ * Serving Flask app 'superclaude_api'
+ * Debug mode: on
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8005
+ * Running on http://192.168.0.29:8005
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting SuperClaude API Service...
+INFO:__main__:Endpoints available:
+INFO:__main__:  GET  /api/superclaude/status - Service status
+INFO:__main__:  POST /api/superclaude/session - Create session
+INFO:__main__:  POST /api/superclaude/chat - Chat with SuperClaude
+INFO:__main__:  GET  /api/superclaude/sessions - List sessions
+INFO:__main__:  DELETE /api/superclaude/session/<id> - Delete session
+INFO:__main__:Available backends: {'claude_code_cli': True, 'claude_api': False}
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 20:18:03] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session b36609b3-60fd-41b9-88c0-d51b7e4362a4 with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 20:18:15] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 20:25:14] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:49] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:49] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:51] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session 4821a278-4bd7-40f1-b398-b83f7bbcdccf with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:51] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session 681751c8-4516-4e27-ac6e-ce2740624f07 with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:51] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:52] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:56] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:56] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:57] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session 15506406-dbcf-4e63-840d-f7d0d06b3269 with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:57] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session bc6a1e94-fe0e-465b-8601-7a5044ee025b with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:57] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:16:58] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:24] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:24] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:26] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session a626f529-ae70-4f1f-9b3f-0d377212430a with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:26] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session c658899e-b4bb-4c44-aedd-c41ad73e8cf8 with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:26] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:27] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:30] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:30] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:31] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session 043b764d-08f1-4fed-b49d-4b21d1ac97e3 with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:32] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session 5c2e2c14-ab1b-425c-af5e-534fad0cdc0c with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:32] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:17:33] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:__main__:Cleaned up expired session b36609b3-60fd-41b9-88c0-d51b7e4362a4
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:18:22] "OPTIONS /api/superclaude/chat HTTP/1.1" 200 -
+ERROR:__main__:Claude Code CLI error: error: unknown option '--no-prompt'
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:18:23] "[35m[1mPOST /api/superclaude/chat HTTP/1.1[0m" 500 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:28:26] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:28:26] "OPTIONS /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:28:28] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session 961fddef-f073-4e45-b6c1-30a941c96ce6 with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:28:28] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session bee73a4b-e462-4658-ab20-1058425cef52 with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:28:28] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Jul/2025 21:28:29] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/local_llm_api.py', reloading
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting SuperClaude API Service...
+INFO:__main__:Endpoints available:
+INFO:__main__:  GET  /api/superclaude/status - Service status
+INFO:__main__:  POST /api/superclaude/session - Create session
+INFO:__main__:  POST /api/superclaude/chat - Chat with SuperClaude
+INFO:__main__:  GET  /api/superclaude/sessions - List sessions
+INFO:__main__:  DELETE /api/superclaude/session/<id> - Delete session
+INFO:__main__:Available backends: {'claude_code_cli': True, 'claude_api': False}
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/local_llm_api.py', reloading
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting SuperClaude API Service...
+INFO:__main__:Endpoints available:
+INFO:__main__:  GET  /api/superclaude/status - Service status
+INFO:__main__:  POST /api/superclaude/session - Create session
+INFO:__main__:  POST /api/superclaude/chat - Chat with SuperClaude
+INFO:__main__:  GET  /api/superclaude/sessions - List sessions
+INFO:__main__:  DELETE /api/superclaude/session/<id> - Delete session
+INFO:__main__:Available backends: {'claude_code_cli': True, 'claude_api': False}
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/local_llm_api.py', reloading
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting SuperClaude API Service...
+INFO:__main__:Endpoints available:
+INFO:__main__:  GET  /api/superclaude/status - Service status
+INFO:__main__:  POST /api/superclaude/session - Create session
+INFO:__main__:  POST /api/superclaude/chat - Chat with SuperClaude
+INFO:__main__:  GET  /api/superclaude/sessions - List sessions
+INFO:__main__:  DELETE /api/superclaude/session/<id> - Delete session
+INFO:__main__:Available backends: {'claude_code_cli': True, 'claude_api': False}
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/local_llm_api.py', reloading
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting SuperClaude API Service...
+INFO:__main__:Endpoints available:
+INFO:__main__:  GET  /api/superclaude/status - Service status
+INFO:__main__:  POST /api/superclaude/session - Create session
+INFO:__main__:  POST /api/superclaude/chat - Chat with SuperClaude
+INFO:__main__:  GET  /api/superclaude/sessions - List sessions
+INFO:__main__:  DELETE /api/superclaude/session/<id> - Delete session
+INFO:__main__:Available backends: {'claude_code_cli': True, 'claude_api': False}
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/offline_llm_manager.py', reloading
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting SuperClaude API Service...
+INFO:__main__:Endpoints available:
+INFO:__main__:  GET  /api/superclaude/status - Service status
+INFO:__main__:  POST /api/superclaude/session - Create session
+INFO:__main__:  POST /api/superclaude/chat - Chat with SuperClaude
+INFO:__main__:  GET  /api/superclaude/sessions - List sessions
+INFO:__main__:  DELETE /api/superclaude/session/<id> - Delete session
+INFO:__main__:Available backends: {'claude_code_cli': True, 'claude_api': False}
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/offline_llm_manager.py', reloading
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting SuperClaude API Service...
+INFO:__main__:Endpoints available:
+INFO:__main__:  GET  /api/superclaude/status - Service status
+INFO:__main__:  POST /api/superclaude/session - Create session
+INFO:__main__:  POST /api/superclaude/chat - Chat with SuperClaude
+INFO:__main__:  GET  /api/superclaude/sessions - List sessions
+INFO:__main__:  DELETE /api/superclaude/session/<id> - Delete session
+INFO:__main__:Available backends: {'claude_code_cli': True, 'claude_api': False}
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/superclaude_api.py', reloading
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting SuperClaude API Service...
+INFO:__main__:Endpoints available:
+INFO:__main__:  GET  /api/superclaude/status - Service status
+INFO:__main__:  POST /api/superclaude/session - Create session
+INFO:__main__:  POST /api/superclaude/chat - Chat with SuperClaude
+INFO:__main__:  GET  /api/superclaude/sessions - List sessions
+INFO:__main__:  DELETE /api/superclaude/session/<id> - Delete session
+INFO:__main__:Available backends: {'claude_code_cli': True, 'claude_api': False}
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug:127.0.0.1 - - [19/Jul/2025 00:14:18] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [19/Jul/2025 00:14:27] "GET /api/superclaude/status HTTP/1.1" 200 -
+INFO:__main__:Created SuperClaude session eea03b1b-5222-4a6f-becc-484435918329 with claude_code_cli
+INFO:werkzeug:127.0.0.1 - - [19/Jul/2025 00:14:44] "POST /api/superclaude/session HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [19/Jul/2025 00:15:26] "POST /api/superclaude/chat HTTP/1.1" 200 -

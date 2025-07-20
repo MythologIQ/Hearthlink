@@ -1,0 +1,109 @@
+2025-07-16 04:28:36,301 - UI_TEST_ENV - INFO - UI Test Environment initialized at 20250716_042836
+2025-07-16 04:28:36,301 - UI_TEST_ENV - INFO - Initializing fresh session state
+2025-07-16 04:28:36,302 - UI_TEST_ENV - INFO - Resetting UI context
+2025-07-16 04:28:36,302 - UI_TEST_ENV - INFO - Fresh session state initialized
+2025-07-16 04:28:36,302 - UI_TEST_ENV - INFO - Voice Routing Compliance Test Suite initialized
+2025-07-16 04:28:36,302 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Voice Routing - Agent Agnostic Mode
+2025-07-16 04:28:38,306 - UI_TEST_ENV - INFO - Resource monitoring completed for Voice Routing - Agent Agnostic Mode
+2025-07-16 04:28:38,306 - UI_TEST_ENV - INFO - CPU: 19.0% -> 20.4%
+2025-07-16 04:28:38,317 - UI_TEST_ENV - INFO - Memory: 61.3% -> 61.3%
+2025-07-16 04:28:38,318 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:38,319 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Voice Routing - Agent Agnostic Mode_20250716_042836.json
+2025-07-16 04:28:38,319 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Agent Identity - Confirmation Messages
+2025-07-16 04:28:40,321 - UI_TEST_ENV - INFO - Resource monitoring completed for Agent Identity - Confirmation Messages
+2025-07-16 04:28:40,321 - UI_TEST_ENV - INFO - CPU: 13.2% -> 26.4%
+2025-07-16 04:28:40,321 - UI_TEST_ENV - INFO - Memory: 61.3% -> 61.3%
+2025-07-16 04:28:40,321 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:40,333 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Agent Identity - Confirmation Messages_20250716_042836.json
+2025-07-16 04:28:40,333 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Fallback - Agent Deference Protocol
+2025-07-16 04:28:42,334 - UI_TEST_ENV - INFO - Resource monitoring completed for Fallback - Agent Deference Protocol
+2025-07-16 04:28:42,335 - UI_TEST_ENV - INFO - CPU: 13.3% -> 19.0%
+2025-07-16 04:28:42,335 - UI_TEST_ENV - INFO - Memory: 61.3% -> 61.3%
+2025-07-16 04:28:42,335 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:42,346 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Fallback - Agent Deference Protocol_20250716_042836.json
+2025-07-16 04:28:42,347 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Local Agents - Delegation Protocol Compliance
+2025-07-16 04:28:44,349 - UI_TEST_ENV - INFO - Resource monitoring completed for Local Agents - Delegation Protocol Compliance
+2025-07-16 04:28:44,349 - UI_TEST_ENV - INFO - CPU: 11.5% -> 13.8%
+2025-07-16 04:28:44,349 - UI_TEST_ENV - INFO - Memory: 61.2% -> 61.2%
+2025-07-16 04:28:44,349 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:44,350 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Local Agents - Delegation Protocol Compliance_20250716_042836.json
+2025-07-16 04:28:44,351 - UI_TEST_ENV - INFO - Starting resource monitoring for test: External Agents - Default Disabled Compliance
+2025-07-16 04:28:46,354 - UI_TEST_ENV - INFO - Resource monitoring completed for External Agents - Default Disabled Compliance
+2025-07-16 04:28:46,354 - UI_TEST_ENV - INFO - CPU: 17.3% -> 16.2%
+2025-07-16 04:28:46,354 - UI_TEST_ENV - INFO - Memory: 61.3% -> 61.3%
+2025-07-16 04:28:46,354 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:46,355 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/External Agents - Default Disabled Compliance_20250716_042836.json
+2025-07-16 04:28:46,355 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Logging - External Agent Logging
+2025-07-16 04:28:48,357 - UI_TEST_ENV - INFO - Resource monitoring completed for Logging - External Agent Logging
+2025-07-16 04:28:48,357 - UI_TEST_ENV - INFO - CPU: 12.3% -> 15.0%
+2025-07-16 04:28:48,357 - UI_TEST_ENV - INFO - Memory: 61.2% -> 61.3%
+2025-07-16 04:28:48,358 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:48,370 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Logging - External Agent Logging_20250716_042836.json
+2025-07-16 04:28:48,371 - UI_TEST_ENV - INFO - Starting resource monitoring for test: External Agents - Permission Layers Compliance
+2025-07-16 04:28:50,373 - UI_TEST_ENV - INFO - Resource monitoring completed for External Agents - Permission Layers Compliance
+2025-07-16 04:28:50,373 - UI_TEST_ENV - INFO - CPU: 11.0% -> 19.8%
+2025-07-16 04:28:50,373 - UI_TEST_ENV - INFO - Memory: 61.3% -> 61.3%
+2025-07-16 04:28:50,374 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:50,374 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/External Agents - Permission Layers Compliance_20250716_042836.json
+2025-07-16 04:28:50,375 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Voice Routing - Isolated Mode
+2025-07-16 04:28:52,377 - UI_TEST_ENV - INFO - Resource monitoring completed for Voice Routing - Isolated Mode
+2025-07-16 04:28:52,377 - UI_TEST_ENV - INFO - CPU: 22.9% -> 14.8%
+2025-07-16 04:28:52,377 - UI_TEST_ENV - INFO - Memory: 61.3% -> 61.3%
+2025-07-16 04:28:52,377 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:52,378 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Voice Routing - Isolated Mode_20250716_042836.json
+2025-07-16 04:28:52,379 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Local Agents - Conversational Mode Compliance
+2025-07-16 04:28:54,381 - UI_TEST_ENV - INFO - Resource monitoring completed for Local Agents - Conversational Mode Compliance
+2025-07-16 04:28:54,381 - UI_TEST_ENV - INFO - CPU: 16.3% -> 23.9%
+2025-07-16 04:28:54,381 - UI_TEST_ENV - INFO - Memory: 61.3% -> 61.4%
+2025-07-16 04:28:54,381 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:54,382 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Local Agents - Conversational Mode Compliance_20250716_042836.json
+2025-07-16 04:28:54,382 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Offline Mode - Behavior Compliance
+2025-07-16 04:28:56,385 - UI_TEST_ENV - INFO - Resource monitoring completed for Offline Mode - Behavior Compliance
+2025-07-16 04:28:56,385 - UI_TEST_ENV - INFO - CPU: 20.6% -> 22.7%
+2025-07-16 04:28:56,385 - UI_TEST_ENV - INFO - Memory: 61.4% -> 61.4%
+2025-07-16 04:28:56,385 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:56,397 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Offline Mode - Behavior Compliance_20250716_042836.json
+2025-07-16 04:28:56,397 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Voice Routing - Safety Reinforcement
+2025-07-16 04:28:58,399 - UI_TEST_ENV - INFO - Resource monitoring completed for Voice Routing - Safety Reinforcement
+2025-07-16 04:28:58,400 - UI_TEST_ENV - INFO - CPU: 16.0% -> 20.7%
+2025-07-16 04:28:58,400 - UI_TEST_ENV - INFO - Memory: 61.4% -> 61.4%
+2025-07-16 04:28:58,400 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:28:58,400 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Voice Routing - Safety Reinforcement_20250716_042836.json
+2025-07-16 04:28:58,401 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Voice Auth - Secure Mode Activation
+2025-07-16 04:29:00,403 - UI_TEST_ENV - INFO - Resource monitoring completed for Voice Auth - Secure Mode Activation
+2025-07-16 04:29:00,403 - UI_TEST_ENV - INFO - CPU: 12.1% -> 17.2%
+2025-07-16 04:29:00,403 - UI_TEST_ENV - INFO - Memory: 61.4% -> 61.4%
+2025-07-16 04:29:00,403 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:29:00,404 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Voice Auth - Secure Mode Activation_20250716_042836.json
+2025-07-16 04:29:00,405 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Vault Logging - Audit Trail
+2025-07-16 04:29:02,407 - UI_TEST_ENV - INFO - Resource monitoring completed for Vault Logging - Audit Trail
+2025-07-16 04:29:02,407 - UI_TEST_ENV - INFO - CPU: 23.3% -> 14.4%
+2025-07-16 04:29:02,407 - UI_TEST_ENV - INFO - Memory: 61.4% -> 61.5%
+2025-07-16 04:29:02,408 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:29:02,409 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Vault Logging - Audit Trail_20250716_042836.json
+2025-07-16 04:29:02,409 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Vault Logging - Session Logging
+2025-07-16 04:29:04,412 - UI_TEST_ENV - INFO - Resource monitoring completed for Vault Logging - Session Logging
+2025-07-16 04:29:04,412 - UI_TEST_ENV - INFO - CPU: 16.9% -> 17.6%
+2025-07-16 04:29:04,412 - UI_TEST_ENV - INFO - Memory: 61.4% -> 61.4%
+2025-07-16 04:29:04,412 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:29:04,424 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Vault Logging - Session Logging_20250716_042836.json
+2025-07-16 04:29:04,425 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Voice Access - Disabled State Compliance
+2025-07-16 04:29:06,427 - UI_TEST_ENV - INFO - Resource monitoring completed for Voice Access - Disabled State Compliance
+2025-07-16 04:29:06,427 - UI_TEST_ENV - INFO - CPU: 15.7% -> 16.6%
+2025-07-16 04:29:06,427 - UI_TEST_ENV - INFO - Memory: 61.5% -> 61.5%
+2025-07-16 04:29:06,427 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:29:06,428 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Voice Access - Disabled State Compliance_20250716_042836.json
+2025-07-16 04:29:06,428 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Voice Access - Enabled State Compliance
+2025-07-16 04:29:08,431 - UI_TEST_ENV - INFO - Resource monitoring completed for Voice Access - Enabled State Compliance
+2025-07-16 04:29:08,431 - UI_TEST_ENV - INFO - CPU: 15.5% -> 17.9%
+2025-07-16 04:29:08,431 - UI_TEST_ENV - INFO - Memory: 61.5% -> 61.5%
+2025-07-16 04:29:08,432 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:29:08,434 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Voice Access - Enabled State Compliance_20250716_042836.json
+2025-07-16 04:29:08,434 - UI_TEST_ENV - INFO - Starting resource monitoring for test: Fallback - Voice Misrouting Prevention
+2025-07-16 04:29:10,437 - UI_TEST_ENV - INFO - Resource monitoring completed for Fallback - Voice Misrouting Prevention
+2025-07-16 04:29:10,438 - UI_TEST_ENV - INFO - CPU: 18.7% -> 20.1%
+2025-07-16 04:29:10,438 - UI_TEST_ENV - INFO - Memory: 61.5% -> 61.5%
+2025-07-16 04:29:10,438 - UI_TEST_ENV - INFO - Disk: 66.4% -> 66.4%
+2025-07-16 04:29:10,439 - UI_TEST_ENV - INFO - Test results saved to: /mnt/g/MythologIQ/Hearthlink/tests/results/ui/Fallback - Voice Misrouting Prevention_20250716_042836.json
+2025-07-16 04:29:10,439 - UI_TEST_ENV - INFO - Cleaning up UI test environment
+2025-07-16 04:29:10,440 - UI_TEST_ENV - INFO - UI test environment cleanup completed

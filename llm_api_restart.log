@@ -1,0 +1,45 @@
+INFO:__main__:Ollama connected - 3 models available
+Starting Hearthlink Local LLM API...
+Endpoints available:
+  GET  /api/health - Health check
+  GET  /api/status - Detailed service status
+  GET  /api/models - Available models and profiles
+  POST /api/models/pull - Pull/download new model
+  POST /api/chat - Chat with Local LLM
+  GET  /api/profiles - Get dual LLM profiles
+  PUT  /api/profiles - Update dual LLM profiles
+  POST /api/test - Test connection and functionality
+  GET  /api/metrics - Service metrics
+  GET  /api/connection-pool - Connection pool status and stability metrics
+
+Starting Local LLM API server on port 8004...
+ * Serving Flask app 'local_llm_api'
+ * Debug mode: on
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8004
+ * Running on http://192.168.0.29:8004
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Ollama connected - 3 models available
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/local_llm_api.py', reloading
+Starting Hearthlink Local LLM API...
+Endpoints available:
+  GET  /api/health - Health check
+  GET  /api/status - Detailed service status
+  GET  /api/models - Available models and profiles
+  POST /api/models/pull - Pull/download new model
+  POST /api/chat - Chat with Local LLM
+  GET  /api/profiles - Get dual LLM profiles
+  PUT  /api/profiles - Update dual LLM profiles
+  POST /api/test - Test connection and functionality
+  GET  /api/metrics - Service metrics
+  GET  /api/connection-pool - Connection pool status and stability metrics
+
+Starting Local LLM API server on port 8004...
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Ollama connected - 3 models available
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232

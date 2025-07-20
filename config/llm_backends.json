@@ -1,0 +1,120 @@
+{
+  "default_backend": "claude-code",
+  "backends": {
+    "claude_api": {
+      "enabled": false,
+      "description": "Claude API for users with Anthropic API keys",
+      "config": {
+        "apiKey": "${CLAUDE_API_KEY}",
+        "baseUrl": "https://api.anthropic.com",
+        "model": "claude-3-sonnet-20240229"
+      },
+      "requirements": [
+        "CLAUDE_API_KEY environment variable",
+        "Active Anthropic subscription"
+      ]
+    },
+    "claude_code": {
+      "enabled": true,
+      "description": "Claude Code CLI integration (current user setup)",
+      "config": {
+        "cliPath": "claude",
+        "workingDir": "${PWD}"
+      },
+      "requirements": [
+        "Claude Code CLI installed",
+        "User authenticated through claude login"
+      ]
+    },
+    "chatgpt_api": {
+      "enabled": false,
+      "description": "OpenAI ChatGPT API for users with OpenAI API keys",
+      "config": {
+        "apiKey": "${OPENAI_API_KEY}",
+        "baseUrl": "https://api.openai.com",
+        "model": "gpt-4",
+        "organization": "${OPENAI_ORG_ID}"
+      },
+      "requirements": [
+        "OPENAI_API_KEY environment variable",
+        "Active OpenAI subscription"
+      ]
+    },
+    "local_llm": {
+      "enabled": true,
+      "description": "Local LLM via Ollama or LMStudio",
+      "config": {
+        "type": "ollama",
+        "baseUrl": "http://localhost:11434",
+        "model": "llama3:latest",
+        "models": {
+          "low_profile": "mistral:7b-instruct",
+          "mid_profile": "llama3:latest",
+          "code_profile": "codellama:7b-instruct"
+        }
+      },
+      "requirements": [
+        "Ollama or LMStudio running locally",
+        "Model downloaded and available"
+      ]
+    },
+    "hearthlink_api": {
+      "enabled": false,
+      "description": "Hearthlink API reverse connection mode",
+      "config": {
+        "endpoint": "${HEARTHLINK_API_ENDPOINT}",
+        "apiKey": "${HEARTHLINK_API_KEY}",
+        "reverseConnection": true
+      },
+      "requirements": [
+        "External Hearthlink instance",
+        "Valid API credentials"
+      ]
+    },
+    "kimi_k2": {
+      "enabled": true,
+      "description": "Kimi K2 - State-of-the-art mixture-of-experts model with agentic capabilities",
+      "config": {
+        "apiKey": "${KIMI_K2_API_KEY}",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "model": "moonshotai/kimi-k2",
+        "maxTokens": 8192,
+        "temperature": 0.7,
+        "timeout": 30000,
+        "retryAttempts": 3,
+        "enableCaching": true,
+        "enableMetrics": true
+      },
+      "pricing": {
+        "input": 0.00057,
+        "output": 0.0023,
+        "unit": "per 1K tokens"
+      },
+      "features": [
+        "128K context window",
+        "Native tool calling",
+        "Agentic workflows",
+        "Superior coding capabilities",
+        "Long context processing",
+        "Cost-effective (80% cheaper than Claude)"
+      ],
+      "requirements": [
+        "KIMI_K2_API_KEY environment variable (OpenRouter key)",
+        "OpenRouter account"
+      ]
+    }
+  },
+  "fallback_order": [
+    "claude-code",
+    "kimi-k2",
+    "local_llm", 
+    "claude_api",
+    "chatgpt_api",
+    "hearthlink_api"
+  ],
+  "notes": {
+    "current_user": "Using Claude Code CLI - no API key needed",
+    "future_users": "Can enable any backend by setting environment variables",
+    "versatility": "System supports all major LLM backends for maximum flexibility"
+  }
+}

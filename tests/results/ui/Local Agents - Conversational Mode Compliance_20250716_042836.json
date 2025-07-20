@@ -1,0 +1,31 @@
+{
+  "test_name": "Local Agents - Conversational Mode Compliance",
+  "timestamp": "20250716_042836",
+  "results": {
+    "conversational_agents": 4,
+    "name_addressing_working": true,
+    "voice_hud_selection_working": true
+  },
+  "resource_data": {
+    "test_name": "Local Agents - Conversational Mode Compliance",
+    "timestamp": "20250716_042836",
+    "initial_state": {
+      "cpu_percent": 16.3,
+      "memory_percent": 61.3,
+      "disk_percent": 66.4
+    },
+    "monitoring_start": 1752654533.3797977,
+    "final_state": {
+      "cpu_percent": 23.9,
+      "memory_percent": 61.4,
+      "disk_percent": 66.4
+    },
+    "monitoring_end": 1752654534.381213,
+    "duration": 1.0014152526855469
+  },
+  "environment": {
+    "python_version": "3.10.12 (main, May 27 2025, 17:12:29) [GCC 11.4.0]",
+    "platform": "linux",
+    "working_directory": "/mnt/g/MythologIQ/Hearthlink"
+  }
+}
