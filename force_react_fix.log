@@ -1,0 +1,10 @@
+[2025-07-20T08:06:53.859Z] 🔄 Force React Fix - Starting aggressive repair...
+[2025-07-20T08:06:53.873Z] NaN
+[2025-07-20T08:06:53.874Z] Finding a working port for React...
+[2025-07-20T08:06:53.877Z] Port 3015 is available
+[2025-07-20T08:06:53.878Z] Found working port: 3015
+[2025-07-20T08:06:53.880Z] Updated .env.development with port 3015
+[2025-07-20T08:06:53.881Z] Updated .env.local
+[2025-07-20T08:06:53.882Z] Updated .env
+[2025-07-20T08:06:53.886Z] Updated package.json with fixed scripts for port 3015
+[2025-07-20T08:06:53.890Z] ❌ Force fix failed: EPERM: operation not permitted, chmod 'start-react-simple.js'

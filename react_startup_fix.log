@@ -1,0 +1,67 @@
+[2025-07-20T08:01:32.356Z] INFO: 🔄 Starting React Startup Fix Process
+[2025-07-20T08:01:32.360Z] INFO: NaN
+[2025-07-20T08:01:32.360Z] INFO: Cleaning up conflicting processes...
+[2025-07-20T08:01:32.478Z] DEBUG: Command failed (expected): fuser -k 3005/tcp
+[2025-07-20T08:01:32.481Z] DEBUG: Command failed (expected): pkill -f "PORT=3005"
+[2025-07-20T08:01:32.489Z] DEBUG: Command failed (expected): pkill -f ":3005"
+[2025-07-20T08:01:32.498Z] DEBUG: Command failed (expected): lsof -ti:3005 | xargs kill -9
+[2025-07-20T08:01:32.531Z] DEBUG: Command failed (expected): fuser -k 3008/tcp
+[2025-07-20T08:01:32.536Z] DEBUG: Command failed (expected): pkill -f "PORT=3008"
+[2025-07-20T08:01:32.543Z] DEBUG: Command failed (expected): pkill -f ":3008"
+[2025-07-20T08:01:32.552Z] DEBUG: Command failed (expected): lsof -ti:3008 | xargs kill -9
+[2025-07-20T08:01:32.593Z] DEBUG: Command failed (expected): fuser -k 3000/tcp
+[2025-07-20T08:01:32.596Z] DEBUG: Command failed (expected): pkill -f "PORT=3000"
+[2025-07-20T08:01:32.605Z] DEBUG: Command failed (expected): pkill -f ":3000"
+[2025-07-20T08:01:32.617Z] DEBUG: Command failed (expected): lsof -ti:3000 | xargs kill -9
+[2025-07-20T08:01:32.658Z] DEBUG: Command failed (expected): fuser -k 3006/tcp
+[2025-07-20T08:01:32.663Z] DEBUG: Command failed (expected): pkill -f "PORT=3006"
+[2025-07-20T08:01:32.674Z] DEBUG: Command failed (expected): pkill -f ":3006"
+[2025-07-20T08:01:32.684Z] DEBUG: Command failed (expected): lsof -ti:3006 | xargs kill -9
+[2025-07-20T08:01:32.725Z] DEBUG: Command failed (expected): fuser -k 3007/tcp
+[2025-07-20T08:01:32.731Z] DEBUG: Command failed (expected): pkill -f "PORT=3007"
+[2025-07-20T08:01:32.741Z] DEBUG: Command failed (expected): pkill -f ":3007"
+[2025-07-20T08:01:32.752Z] DEBUG: Command failed (expected): lsof -ti:3007 | xargs kill -9
+[2025-07-20T08:01:32.789Z] DEBUG: Command failed (expected): fuser -k 3009/tcp
+[2025-07-20T08:01:32.796Z] DEBUG: Command failed (expected): pkill -f "PORT=3009"
+[2025-07-20T08:01:32.804Z] DEBUG: Command failed (expected): pkill -f ":3009"
+[2025-07-20T08:01:32.814Z] DEBUG: Command failed (expected): lsof -ti:3009 | xargs kill -9
+[2025-07-20T08:01:32.853Z] DEBUG: Command failed (expected): fuser -k 3010/tcp
+[2025-07-20T08:01:32.858Z] DEBUG: Command failed (expected): pkill -f "PORT=3010"
+[2025-07-20T08:01:32.867Z] DEBUG: Command failed (expected): pkill -f ":3010"
+[2025-07-20T08:01:32.878Z] DEBUG: Command failed (expected): lsof -ti:3010 | xargs kill -9
+[2025-07-20T08:01:32.918Z] DEBUG: Command failed (expected): fuser -k 3011/tcp
+[2025-07-20T08:01:32.920Z] DEBUG: Command failed (expected): pkill -f "PORT=3011"
+[2025-07-20T08:01:32.929Z] DEBUG: Command failed (expected): pkill -f ":3011"
+[2025-07-20T08:01:32.939Z] DEBUG: Command failed (expected): lsof -ti:3011 | xargs kill -9
+[2025-07-20T08:01:32.974Z] DEBUG: Command failed (expected): fuser -k 3012/tcp
+[2025-07-20T08:01:32.978Z] DEBUG: Command failed (expected): pkill -f "PORT=3012"
+[2025-07-20T08:01:32.985Z] DEBUG: Command failed (expected): pkill -f ":3012"
+[2025-07-20T08:01:32.994Z] DEBUG: Command failed (expected): lsof -ti:3012 | xargs kill -9
+[2025-07-20T08:01:33.029Z] DEBUG: Command failed (expected): fuser -k 3013/tcp
+[2025-07-20T08:01:33.030Z] DEBUG: Command failed (expected): pkill -f "PORT=3013"
+[2025-07-20T08:01:33.042Z] DEBUG: Command failed (expected): pkill -f ":3013"
+[2025-07-20T08:01:33.050Z] DEBUG: Command failed (expected): lsof -ti:3013 | xargs kill -9
+[2025-07-20T08:01:33.085Z] DEBUG: Command failed (expected): fuser -k 3014/tcp
+[2025-07-20T08:01:33.088Z] DEBUG: Command failed (expected): pkill -f "PORT=3014"
+[2025-07-20T08:01:33.096Z] DEBUG: Command failed (expected): pkill -f ":3014"
+[2025-07-20T08:01:33.105Z] DEBUG: Command failed (expected): lsof -ti:3014 | xargs kill -9
+[2025-07-20T08:01:35.106Z] INFO: Finding available ports...
+[2025-07-20T08:01:35.109Z] INFO: Found available port: 3005
+[2025-07-20T08:01:35.110Z] INFO: Found available port: 3008
+[2025-07-20T08:01:35.112Z] INFO: Updated package.json with React port 3005 and static port 3008
+[2025-07-20T08:01:35.116Z] INFO: Updated main.js with static port 3008
+[2025-07-20T08:01:35.117Z] INFO: Created .env.development with ports React:3005, Static:3008
+[2025-07-20T08:01:35.117Z] INFO: Testing React startup with new configuration...
+[2025-07-20T08:01:35.118Z] INFO: Testing React startup...
+[2025-07-20T08:01:41.200Z] WARNING: React process exited with code 0
+[2025-07-20T08:01:41.201Z] DEBUG: Startup output: 
+> Hearthlink@1.3.0 start:react
+> cross-env PORT=3005 react-scripts start
+
+Something is already running on port 3005.
+
+[2025-07-20T08:01:41.201Z] ERROR: ❌ React Startup Fix Failed: React startup test failed
+[2025-07-20T08:01:41.202Z] INFO: 🔧 Fallback solutions:
+[2025-07-20T08:01:41.202Z] INFO: 1. Run: npm run build && npm start
+[2025-07-20T08:01:41.203Z] INFO: 2. Try: npx kill-port 3005 && npm run dev
+[2025-07-20T08:01:41.203Z] INFO: 3. Manual: Change PORT in .env to a different value

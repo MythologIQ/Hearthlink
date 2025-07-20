@@ -21,7 +21,8 @@
       "env": {}
     },
     "magic-ui": {
-      "command": "mcp",
+      "command": "npx",
+      "args": ["-y", "@magicuidotdev/mcp-server"],
       "env": {}
     },
     "puppeteer": {
@@ -36,14 +37,6 @@
       "command": "npx",
       "args": ["-y", "@playwright/mcp"],
       "env": {}
-    },
-    "discord": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-discord"],
-      "env": {
-        "DISCORD_BOT_TOKEN": "",
-        "DISCORD_APPLICATION_ID": ""
-      }
     }
   }
 }

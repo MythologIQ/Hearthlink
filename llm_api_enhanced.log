@@ -16270,3 +16270,1235 @@ ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such
 INFO:offline_llm_manager:Downloading emergency model: phi3-mini
 INFO:offline_llm_manager:Starting download of model: phi3-mini
 ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
+WARNING:offline_llm_manager:Only 0 models available (minimum: 2)
+INFO:offline_llm_manager:Ensuring offline model availability...
+INFO:offline_llm_manager:Downloading emergency model: llama3.2-1b
+INFO:offline_llm_manager:Starting download of model: llama3.2-1b
+ERROR:offline_llm_manager:Error downloading model llama3.2-1b: [Errno 2] No such file or directory: 'ollama'
+INFO:offline_llm_manager:Downloading emergency model: phi3-mini
+INFO:offline_llm_manager:Starting download of model: phi3-mini
+ERROR:offline_llm_manager:Error downloading model phi3-mini: [Errno 2] No such file or directory: 'ollama'
