@@ -1,5 +1,5 @@
 {
-  "servers": {
+  "mcpServers": {
     "filesystem": {
       "command": "mcp-server-filesystem",
       "args": ["/mnt/g/MythologIQ/Hearthlink"],
