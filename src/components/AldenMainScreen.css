@@ -27,7 +27,7 @@
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
   gap: 1rem;
   padding: 1rem;
   overflow: hidden;
@@ -35,13 +35,10 @@
   height: 100%;
 }
 
-/* Special layout for 5 panels */
-.panel-frame-left .panel-item:nth-child(4) {
-  grid-column: 1 / 3;
-}
-
-.panel-frame-left .panel-item:nth-child(5) {
-  grid-column: 3 / 4;
+/* Special layout for 7 panels */
+.panel-frame-left .panel-item:nth-child(7) {
+  grid-column: 2 / 4;
+  grid-row: 3 / 4;
 }
 
 /* Chat Column - right side */

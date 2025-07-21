@@ -250,9 +250,9 @@ class MimicPersona:
             self.logger = logger or HearthlinkLogger()
             self.memory = MimicPersonaMemory()
             
-            # Validate LLM client
-            if not isinstance(llm_client, LocalLLMClient):
-                raise MimicError("LLM client must be an instance of LocalLLMClient")
+            # Validate LLM client (allow mock clients for testing)
+            if llm_client and not (isinstance(llm_client, LocalLLMClient) or hasattr(llm_client, 'generate')):
+                raise MimicError("LLM client must be an instance of LocalLLMClient or have a 'generate' method")
             
             # Initialize knowledge index
             self._init_knowledge_index()
@@ -408,6 +408,9 @@ class MimicPersona:
             # Generate initial knowledge index
             self._generate_initial_knowledge(persona_memory, context)
             
+            # Store the persona memory
+            self.memory = persona_memory
+            
             # Log persona creation
             self._log_audit_event("persona_created", "user", persona_id=persona_id, 
                                 reason=f"Generated for role: {role}")
@@ -421,7 +424,7 @@ class MimicPersona:
     
     def _generate_traits_from_context(self, role: str, context: Dict[str, Any], 
                                     base_traits: Optional[Dict[str, int]] = None) -> Dict[str, int]:
-        """Generate core traits based on role and context."""
+        """Generate core traits based on role and context using LLM."""
         try:
             # Start with base traits or defaults
             traits = base_traits or {
@@ -429,27 +432,85 @@ class MimicPersona:
                 "empathy": 50, "assertiveness": 50, "adaptability": 50, "collaboration": 50
             }
             
-            # Adjust traits based on role
+            # Try LLM-powered trait generation first
+            if hasattr(self, 'llm_client') and self.llm_client:
+                try:
+                    prompt = f"""Analyze the following role and context to suggest optimal personality traits for an AI persona:
+
+Role: {role}
+Context: {json.dumps(context, indent=2)}
+
+For each trait below, provide a score from 0-100 based on what would make this persona most effective:
+- focus: Ability to concentrate on tasks without distraction
+- creativity: Innovation and out-of-the-box thinking
+- precision: Attention to detail and accuracy
+- humor: Use of appropriate humor in interactions
+- empathy: Understanding and relating to user emotions
+- assertiveness: Confidence in recommendations and decisions  
+- adaptability: Flexibility to handle changing requirements
+- collaboration: Teamwork and cooperative problem-solving
+
+Respond in JSON format:
+{{"focus": 75, "creativity": 80, "precision": 90, "humor": 30, "empathy": 70, "assertiveness": 65, "adaptability": 85, "collaboration": 75}}"""
+
+                    request = LLMRequest(prompt=prompt, temperature=0.3, max_tokens=200)
+                    response = self.llm_client.generate(request)
+                    
+                    if response.success and response.content.strip():
+                        try:
+                            # Parse JSON response
+                            llm_traits = json.loads(response.content.strip())
+                            
+                            # Validate trait values
+                            for trait_name, value in llm_traits.items():
+                                if trait_name in traits and isinstance(value, (int, float)):
+                                    if 0 <= value <= 100:
+                                        traits[trait_name] = int(value)
+                            
+                            self.logger.logger.info(f"Successfully generated LLM-based traits for {role}")
+                            
+                        except (json.JSONDecodeError, ValueError) as e:
+                            self.logger.logger.warning(f"Failed to parse LLM trait response: {e}")
+                            
+                except Exception as e:
+                    self.logger.logger.warning(f"LLM trait generation failed: {e}")
+            
+            # Fallback: enhanced rule-based adjustments
             role_adjustments = {
-                "researcher": {"focus": 80, "precision": 85, "creativity": 70},
-                "creative_writer": {"creativity": 90, "empathy": 75, "humor": 60},
-                "analyst": {"precision": 90, "focus": 85, "assertiveness": 60},
-                "coach": {"empathy": 85, "collaboration": 80, "adaptability": 75},
-                "teacher": {"empathy": 80, "precision": 75, "collaboration": 85},
-                "consultant": {"assertiveness": 75, "adaptability": 80, "focus": 70}
+                "researcher": {"focus": 80, "precision": 85, "creativity": 70, "collaboration": 65},
+                "creative_writer": {"creativity": 90, "empathy": 75, "humor": 60, "adaptability": 80},
+                "analyst": {"precision": 90, "focus": 85, "assertiveness": 60, "creativity": 45},
+                "coach": {"empathy": 85, "collaboration": 80, "adaptability": 75, "assertiveness": 70},
+                "teacher": {"empathy": 80, "precision": 75, "collaboration": 85, "humor": 55},
+                "consultant": {"assertiveness": 75, "adaptability": 80, "focus": 70, "collaboration": 75},
+                "developer": {"focus": 85, "precision": 80, "creativity": 70, "collaboration": 65},
+                "designer": {"creativity": 85, "empathy": 70, "precision": 75, "adaptability": 80},
+                "manager": {"collaboration": 85, "assertiveness": 80, "empathy": 75, "adaptability": 85},
+                "strategist": {"focus": 80, "assertiveness": 75, "creativity": 80, "precision": 70}
             }
             
-            # Apply role-specific adjustments
+            # Apply role-specific adjustments if not overridden by LLM
             if role.lower() in role_adjustments:
-                traits.update(role_adjustments[role.lower()])
+                for trait_name, value in role_adjustments[role.lower()].items():
+                    if traits[trait_name] == 50:  # Only update if still default
+                        traits[trait_name] = value
             
             # Apply context-based adjustments
-            if context.get("requires_creativity"):
-                traits["creativity"] = min(100, traits["creativity"] + 20)
-            if context.get("requires_precision"):
-                traits["precision"] = min(100, traits["precision"] + 20)
-            if context.get("requires_empathy"):
-                traits["empathy"] = min(100, traits["empathy"] + 20)
+            context_adjustments = {
+                "requires_creativity": {"creativity": 20},
+                "requires_precision": {"precision": 20}, 
+                "requires_empathy": {"empathy": 20},
+                "high_stakes": {"precision": 15, "focus": 15},
+                "collaborative": {"collaboration": 20, "empathy": 15},
+                "fast_paced": {"adaptability": 20, "assertiveness": 15},
+                "technical": {"focus": 15, "precision": 15},
+                "customer_facing": {"empathy": 20, "humor": 10}
+            }
+            
+            for context_key, adjustments in context_adjustments.items():
+                if context.get(context_key):
+                    for trait_name, boost in adjustments.items():
+                        traits[trait_name] = min(100, traits[trait_name] + boost)
             
             return traits
             
@@ -457,16 +518,35 @@ class MimicPersona:
             raise PersonaGenerationError(f"Failed to generate traits: {str(e)}") from e
     
     def _generate_persona_name(self, role: str) -> str:
-        """Generate a persona name based on role."""
+        """Generate a persona name based on role using LLM."""
         try:
-            # Simple name generation based on role
+            # Try LLM generation first
+            if hasattr(self, 'llm_client') and self.llm_client:
+                prompt = f"Generate a creative, professional name for a {role} AI persona. The name should be memorable, reflect expertise, and sound human-like. Respond with just the name, no explanation."
+                
+                try:
+                    request = LLMRequest(prompt=prompt, temperature=0.7, max_tokens=20)
+                    response = self.llm_client.generate(request)
+                    if response.success and response.content.strip():
+                        name = response.content.strip().strip('"').strip("'")
+                        # Validate name length and content
+                        if len(name) < 50 and not any(char in name for char in ['<', '>', '&', '@']):
+                            return name
+                except Exception as e:
+                    self.logger.logger.warning(f"LLM name generation failed: {e}")
+            
+            # Fallback to rule-based generation
             role_names = {
                 "researcher": "Dr. Insight",
-                "creative_writer": "Story Weaver",
+                "creative_writer": "Story Weaver", 
                 "analyst": "Data Sage",
                 "coach": "Growth Guide",
                 "teacher": "Knowledge Keeper",
-                "consultant": "Strategy Master"
+                "consultant": "Strategy Master",
+                "developer": "Code Architect",
+                "designer": "Visual Craftsman",
+                "manager": "Project Navigator",
+                "strategist": "Vision Planner"
             }
             
             return role_names.get(role.lower(), f"{role.title()} Expert")
@@ -475,12 +555,50 @@ class MimicPersona:
             return f"Persona-{uuid.uuid4().hex[:6]}"
     
     def _generate_description(self, role: str, context: Dict[str, Any]) -> str:
-        """Generate persona description."""
+        """Generate persona description using LLM."""
         try:
-            description = f"A specialized {role} persona designed for "
-            description += context.get("description", "task-specific assistance")
-            description += ". This persona adapts and grows based on usage patterns."
-            return description
+            # Try LLM generation first
+            if hasattr(self, 'llm_client') and self.llm_client:
+                task_desc = context.get("description", "general task assistance")
+                requirements = context.get("requirements", [])
+                domain = context.get("domain", "")
+                
+                prompt = f"""Generate a concise, professional description for a {role} AI persona.
+
+Context:
+- Role: {role}
+- Task focus: {task_desc}
+- Domain: {domain if domain else "general"}
+- Requirements: {', '.join(requirements) if requirements else "flexible assistance"}
+
+Generate a 1-2 sentence description that captures their expertise, personality, and adaptive nature. Be specific and engaging."""
+
+                try:
+                    request = LLMRequest(prompt=prompt, temperature=0.6, max_tokens=100)
+                    response = self.llm_client.generate(request)
+                    if response.success and response.content.strip():
+                        desc = response.content.strip()
+                        # Validate description length
+                        if 20 <= len(desc) <= 300:
+                            return desc
+                except Exception as e:
+                    self.logger.logger.warning(f"LLM description generation failed: {e}")
+            
+            # Fallback to enhanced rule-based generation
+            base_desc = f"A specialized {role} persona"
+            
+            if context.get("domain"):
+                base_desc += f" with expertise in {context['domain']}"
+            
+            base_desc += " designed for "
+            base_desc += context.get("description", "task-specific assistance")
+            
+            if context.get("requirements"):
+                base_desc += f", focusing on {', '.join(context['requirements'][:2])}"
+            
+            base_desc += ". This persona adapts and grows based on usage patterns and performance feedback."
+            
+            return base_desc
             
         except Exception as e:
             return f"Dynamic {role} persona for specialized tasks."

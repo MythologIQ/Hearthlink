@@ -153,6 +153,7 @@ service_status = {
             "parameterRange": "7B",
             "roles": ["routing", "simple_tasks", "quick_responses"],
             "temperature": 0.7,
+            "max_tokens": 512,
             "contextLength": 16384,
             "priority": 1
         },
@@ -162,6 +163,7 @@ service_status = {
             "parameterRange": "8B",
             "roles": ["reasoning", "coding", "complex_tasks", "analysis"],
             "temperature": 0.7,
+            "max_tokens": 1024,
             "contextLength": 32768,
             "priority": 2
         }

@@ -20,7 +20,6 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from utils.circuit_breaker import CircuitBreaker, CircuitBreakerConfig, CircuitState, CircuitBreakerManager
-from utils.CircuitBreaker import CircuitBreaker as TSCircuitBreaker, CircuitBreakerState
 
 class TestCircuitBreakerFailover:
     """Comprehensive circuit breaker failover testing"""
@@ -589,6 +588,7 @@ class TestCircuitBreakerFailover:
 if __name__ == "__main__":
     # Run comprehensive test suite
     tester = TestCircuitBreakerFailover()
+    tester.setup_method()  # Initialize the test environment
     success = tester.run_comprehensive_test_suite()
     
     if success:

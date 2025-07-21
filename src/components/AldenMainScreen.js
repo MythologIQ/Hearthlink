@@ -7,6 +7,8 @@ import PersonalityMoodPanel from './panels/PersonalityMoodPanel';
 import CognitionMemoryPanel from './panels/CognitionMemoryPanel';
 import InteractionInterfacePanel from './panels/InteractionInterfacePanel';
 import DiagnosticsRepairPanel from './panels/DiagnosticsRepairPanel';
+import TaskDashboard from './panels/TaskDashboard';
+import ProjectBoard from './panels/ProjectBoard';
 import AliceInterface from './AliceInterface';
 import MimicInterface from './MimicInterface';
 import LocalLLMInterface from './LocalLLMInterface';
@@ -43,6 +45,88 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
       { id: 'core', name: 'Core', status: 'active', connections: ['alden', 'vault'], health: 'green' },
       { id: 'synapse', name: 'Synapse', status: 'active', connections: ['sentry'], health: 'green' },
       { id: 'vault', name: 'Vault', status: 'active', connections: ['core'], health: 'green' }
+    ]
+  });
+
+  // Task management data state
+  const [taskData, setTaskData] = useState({
+    tasks: [
+      {
+        id: 'task_1',
+        title: 'Complete Phase 3A UI implementation',
+        description: 'Implement advanced UI panels for Alden interface with task management capabilities',
+        priority: 'high',
+        status: 'in_progress',
+        createdAt: '2025-01-21T10:00:00Z',
+        dueDate: '2025-01-22T18:00:00Z',
+        progress: 65,
+        estimatedTime: 8,
+        assignedAgent: 'alden',
+        tags: ['ui', 'development', 'priority']
+      },
+      {
+        id: 'task_2',
+        title: 'Optimize memory usage in vector embeddings',
+        description: 'Improve performance of vector embedding storage and retrieval',
+        priority: 'medium',
+        status: 'todo',
+        createdAt: '2025-01-21T09:30:00Z',
+        dueDate: '2025-01-23T12:00:00Z',
+        progress: 0,
+        estimatedTime: 4,
+        assignedAgent: 'alice',
+        tags: ['performance', 'memory']
+      },
+      {
+        id: 'task_3',
+        title: 'Update security protocols',
+        description: 'Review and update security protocols for multi-agent communication',
+        priority: 'high',
+        status: 'todo',
+        createdAt: '2025-01-21T08:15:00Z',
+        dueDate: '2025-01-21T16:00:00Z',
+        progress: 0,
+        estimatedTime: 6,
+        assignedAgent: 'sentry',
+        tags: ['security', 'protocols']
+      },
+      {
+        id: 'task_4',
+        title: 'Test voice command accuracy',
+        description: 'Run comprehensive tests on voice command recognition system',
+        priority: 'medium',
+        status: 'completed',
+        createdAt: '2025-01-20T14:00:00Z',
+        completedAt: '2025-01-21T11:30:00Z',
+        progress: 100,
+        estimatedTime: 3,
+        assignedAgent: 'mimic',
+        tags: ['testing', 'voice']
+      },
+      {
+        id: 'task_5',
+        title: 'Backup system configurations',
+        description: 'Create automated backup system for all agent configurations',
+        priority: 'low',
+        status: 'todo',
+        createdAt: '2025-01-21T07:45:00Z',
+        dueDate: '2025-01-25T10:00:00Z',
+        progress: 0,
+        estimatedTime: 2,
+        assignedAgent: 'vault',
+        tags: ['backup', 'maintenance']
+      }
+    ],
+    projects: [
+      {
+        id: 'project_1',
+        name: 'Hearthlink Phase 3A',
+        description: 'Advanced UI Panels implementation',
+        status: 'active',
+        progress: 65,
+        dueDate: '2025-01-30T00:00:00Z',
+        taskIds: ['task_1', 'task_2']
+      }
     ]
   });
 
@@ -228,7 +312,7 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
 
   const getMemoryStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/system/memory');
+      const response = await fetch('http://localhost:8001/api/system/memory');
       if (response.ok) {
         return await response.json();
       }
@@ -254,7 +338,7 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
 
   const getSystemHealthMetrics = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/system/health');
+      const response = await fetch('http://localhost:8001/api/system/health');
       if (response.ok) {
         return await response.json();
       }
@@ -366,6 +450,80 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
         listening: !voiceInputActive
       }
     }));
+  };
+
+  // Task management handlers
+  const handleTaskCreate = (newTask) => {
+    setTaskData(prev => ({
+      ...prev,
+      tasks: [newTask, ...prev.tasks]
+    }));
+    
+    // Add chat message for task creation
+    const taskMessage = {
+      id: Date.now(),
+      content: `✅ New task created: "${newTask.title}" (Priority: ${newTask.priority})`,
+      type: 'system',
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, taskMessage]);
+  };
+
+  const handleTaskUpdate = (updatedTask) => {
+    setTaskData(prev => ({
+      ...prev,
+      tasks: prev.tasks.map(task => 
+        task.id === updatedTask.id ? updatedTask : task
+      )
+    }));
+    
+    // Add chat message for task status changes
+    if (updatedTask.status === 'completed') {
+      const completionMessage = {
+        id: Date.now(),
+        content: `🎉 Task completed: "${updatedTask.title}"`,
+        type: 'system',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, completionMessage]);
+    }
+  };
+
+  // Project management handlers
+  const handleProjectCreate = (newProject) => {
+    setTaskData(prev => ({
+      ...prev,
+      projects: [newProject, ...prev.projects]
+    }));
+    
+    // Add chat message for project creation
+    const projectMessage = {
+      id: Date.now(),
+      content: `🚀 New project created: "${newProject.name}"`,
+      type: 'system',
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, projectMessage]);
+  };
+
+  const handleProjectUpdate = (updatedProject) => {
+    setTaskData(prev => ({
+      ...prev,
+      projects: prev.projects.map(project => 
+        project.id === updatedProject.id ? updatedProject : project
+      )
+    }));
+    
+    // Add chat message for project status changes
+    if (updatedProject.status === 'completed') {
+      const completionMessage = {
+        id: Date.now(),
+        content: `🎊 Project completed: "${updatedProject.name}"`,
+        type: 'system',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, completionMessage]);
+    }
   };
 
   // Render functions
@@ -596,6 +754,35 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
             </div>
           </div>
         </div>
+        
+        <div className="panel-item" onClick={() => handlePanelExpand('tasks')}>
+          <div className="panel-header">
+            <h3 className="panel-title">Task Management</h3>
+          </div>
+          <div className="panel-content">
+            <TaskDashboard 
+              data={taskData}
+              isExpanded={false}
+              onTaskCreate={handleTaskCreate}
+              onTaskUpdate={handleTaskUpdate}
+            />
+          </div>
+        </div>
+        
+        <div className="panel-item" onClick={() => handlePanelExpand('projects')}>
+          <div className="panel-header">
+            <h3 className="panel-title">Project Board</h3>
+          </div>
+          <div className="panel-content">
+            <ProjectBoard 
+              data={taskData}
+              isExpanded={false}
+              onProjectCreate={handleProjectCreate}
+              onProjectUpdate={handleProjectUpdate}
+              onTaskUpdate={handleTaskUpdate}
+            />
+          </div>
+        </div>
       </>
     );
   };
@@ -617,6 +804,21 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
         />;
       case 'diagnostics':
         return <DiagnosticsRepairPanel data={systemHealth} isExpanded={true} />;
+      case 'tasks':
+        return <TaskDashboard 
+          data={taskData}
+          isExpanded={true}
+          onTaskCreate={handleTaskCreate}
+          onTaskUpdate={handleTaskUpdate}
+        />;
+      case 'projects':
+        return <ProjectBoard 
+          data={taskData}
+          isExpanded={true}
+          onProjectCreate={handleProjectCreate}
+          onProjectUpdate={handleProjectUpdate}
+          onTaskUpdate={handleTaskUpdate}
+        />;
       default:
         return null;
     }

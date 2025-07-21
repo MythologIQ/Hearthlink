@@ -742,3 +742,82 @@ class Synapse:
             "error": "gemini_colab not implemented yet",
             "launched_at": datetime.now().isoformat()
         }
+    
+    def get_connections(self) -> List[Dict[str, Any]]:
+        """Get all active connections."""
+        try:
+            # Get connections from the traffic manager
+            connections = []
+            
+            # Mock connection data for now - in real implementation would get from active sessions
+            active_connections = [
+                {
+                    "id": "hearthlink_core",
+                    "agentId": "hearthlink-core",
+                    "status": "connected",
+                    "lastActivity": datetime.now().isoformat(),
+                    "trafficCount": len(self.traffic_logger.get_logs()),
+                    "permissions": ["core_access", "agent_management"],
+                    "riskLevel": "low"
+                }
+            ]
+            
+            # Check for Claude Code CLI connection
+            try:
+                import os
+                if os.environ.get('CLAUDE_CLI_ACTIVE'):
+                    active_connections.append({
+                        "id": "claude_code_cli",
+                        "agentId": "claude-code",
+                        "status": "connected",
+                        "lastActivity": datetime.now().isoformat(),
+                        "trafficCount": 1,
+                        "permissions": ["code_analysis", "file_operations"],
+                        "riskLevel": "medium"
+                    })
+            except:
+                pass
+            
+            return active_connections
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get connections: {e}")
+            return []
+    
+    def get_webhooks(self) -> List[Dict[str, Any]]:
+        """Get webhook configuration."""
+        try:
+            # Mock webhook data for now - in real implementation would get from storage
+            webhooks = [
+                {
+                    "id": "default_webhook",
+                    "name": "Default Webhook",
+                    "url": "https://example.com/webhook",
+                    "method": "POST",
+                    "headers": {"Content-Type": "application/json"},
+                    "enabled": True,
+                    "created_at": datetime.now().isoformat(),
+                    "last_triggered": None
+                }
+            ]
+            
+            return webhooks
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get webhooks: {e}")
+            return []
+    
+    def create_webhook(self, name: str, url: str, method: str = "POST", 
+                      headers: Dict[str, str] = None, enabled: bool = True) -> str:
+        """Create a new webhook."""
+        try:
+            webhook_id = str(uuid.uuid4())
+            
+            # In real implementation, would store webhook configuration
+            self.logger.info(f"Created webhook: {name} -> {url}")
+            
+            return webhook_id
+            
+        except Exception as e:
+            self.logger.error(f"Failed to create webhook: {e}")
+            raise e

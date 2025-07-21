@@ -1,0 +1,29 @@
+INFO:     Started server process [6620]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8003 (Press CTRL+C to quit)
+Starting Hearthlink Synapse API...
+Endpoints available:
+  GET  /api/synapse/health - Health check
+  POST /api/synapse/plugin/register - Register plugin
+  POST /api/synapse/plugin/{plugin_id}/approve - Approve plugin
+  POST /api/synapse/plugin/{plugin_id}/execute - Execute plugin
+  GET  /api/synapse/plugin/{plugin_id}/status - Get plugin status
+  GET  /api/synapse/plugins - List plugins
+  POST /api/synapse/plugin/{plugin_id}/permissions/request - Request permissions
+  POST /api/synapse/permissions/{request_id}/approve - Approve permissions
+  GET  /api/synapse/permissions/pending - Get pending permissions
+  POST /api/synapse/connection/request - Request connection
+  POST /api/synapse/connection/{connection_id}/approve - Approve connection
+  GET  /api/synapse/traffic/logs - Get traffic logs
+  GET  /api/synapse/traffic/summary - Get traffic summary
+  GET  /api/synapse/system/status - Get system status
+\nInitializing Synapse...
+\nStarting server on port 8003...
+INFO:     127.0.0.1:60434 - "GET /api/synapse/plugins HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60442 - "GET /api/synapse/connections HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60449 - "GET /api/synapse/webhooks HTTP/1.1" 404 Not Found
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [6620]

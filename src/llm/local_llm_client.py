@@ -182,7 +182,7 @@ class LLMConnectionPool:
         retry_strategy = Retry(
             total=max_retries,
             status_forcelist=[429, 500, 502, 503, 504],
-            method_whitelist=["HEAD", "GET", "POST"],
+            allowed_methods=["HEAD", "GET", "POST"],  # Updated parameter name
             backoff_factor=1
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)

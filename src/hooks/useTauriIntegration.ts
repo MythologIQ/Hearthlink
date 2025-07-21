@@ -9,7 +9,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
 import { emit, listen } from '@tauri-apps/api/event';
 import { sendNotification } from '@tauri-apps/api/notification';
-import { appWindow } from '@tauri-apps/api/window';
 
 interface TauriState {
   isNativeApp: boolean;

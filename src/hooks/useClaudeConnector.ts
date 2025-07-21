@@ -10,7 +10,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { getClaudeConnector, ClaudeConnector } from '../llm/ClaudeConnector';
-import LLMBackendManager, { LLMBackendType, BackendConfig } from '../llm/LLMBackendManager';
 
 interface ClaudeRequest {
   prompt: string;
@@ -76,7 +75,7 @@ export function useClaudeConnector(): ClaudeConnectorHook {
     error: null,
     requestId: null
   });
-  const [queueStatus, setQueueStatus] = useState({ active: 0, requests: [] });
+  const [queueStatus, setQueueStatus] = useState<{ active: number; requests: string[] }>({ active: 0, requests: [] });
   const [healthStatus, setHealthStatus] = useState<{ status: 'healthy' | 'degraded' | 'unhealthy'; details: Record<string, any> } | null>(null);
 
   // Update queue status periodically
@@ -100,7 +99,7 @@ export function useClaudeConnector(): ClaudeConnectorHook {
       } catch (error) {
         setHealthStatus({
           status: 'unhealthy',
-          details: { error: error.message, timestamp: new Date().toISOString() }
+          details: { error: error instanceof Error ? error.message : 'Unknown error', timestamp: new Date().toISOString() }
         });
       }
     };
@@ -178,7 +177,7 @@ export function useClaudeChat(agentId: string, module: string) {
   const chat = useCallback(async (prompt: string, systemMessage?: string) => {
     return claude.generate({
       prompt,
-      systemMessage,
+      systemMessage: systemMessage || '',
       agentId,
       module,
       context: { type: 'chat' }

@@ -1,216 +1,22 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge } = require('electron');
+const { electronAPI } = require('./preload/secureIpc');
 
-// Input validation functions for IPC security
-function validateString(input, fieldName, maxLength = 1000) {
-  if (!input || typeof input !== 'string') {
-    throw new Error(`Invalid ${fieldName}: must be a non-empty string`);
-  }
-  if (input.length > maxLength) {
-    throw new Error(`Invalid ${fieldName}: exceeds maximum length of ${maxLength}`);
-  }
-  // Remove potential XSS/injection attempts
-  const sanitized = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                         .replace(/javascript:/gi, '')
-                         .replace(/on\w+\s*=/gi, '');
-  return sanitized;
+// Generate a cryptographically secure nonce for CSP
+function generateSecureNonce() {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode.apply(null, array))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
 }
 
-function validateId(input, fieldName) {
-  if (!input || typeof input !== 'string') {
-    throw new Error(`Invalid ${fieldName}: must be a string`);
-  }
-  // Allow only alphanumeric, hyphens, and underscores
-  if (!/^[a-zA-Z0-9_-]+$/.test(input)) {
-    throw new Error(`Invalid ${fieldName}: contains invalid characters`);
-  }
-  if (input.length > 100) {
-    throw new Error(`Invalid ${fieldName}: too long`);
-  }
-  return input;
-}
+let securityNonce = null;
 
-function validateObject(input, fieldName, maxKeys = 50) {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) {
-    throw new Error(`Invalid ${fieldName}: must be an object`);
-  }
-  if (Object.keys(input).length > maxKeys) {
-    throw new Error(`Invalid ${fieldName}: too many properties`);
-  }
-  return input;
-}
+// Expose the secure electron API
+contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 
-function validateArray(input, fieldName, maxLength = 100) {
-  if (!Array.isArray(input)) {
-    throw new Error(`Invalid ${fieldName}: must be an array`);
-  }
-  if (input.length > maxLength) {
-    throw new Error(`Invalid ${fieldName}: too many items`);
-  }
-  return input;
-}
-
-// Secure IPC wrapper that validates inputs
-function secureIpcInvoke(channel, ...args) {
-  try {
-    // Log security events for audit
-    console.log(`[SECURITY] IPC call: ${channel}`, { timestamp: new Date().toISOString() });
-    return ipcRenderer.invoke(channel, ...args);
-  } catch (error) {
-    console.error(`[SECURITY] IPC validation failed for ${channel}:`, error.message);
-    throw error;
-  }
-}
-
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld('electronAPI', {
-  // App information
-  getAppVersion: () => secureIpcInvoke('get-app-version'),
-  getAppPath: () => secureIpcInvoke('get-app-path'),
-  getResourcePath: (resourcePath) => {
-    const validPath = validateString(resourcePath, 'resourcePath', 500);
-    return secureIpcInvoke('get-resource-path', validPath);
-  },
-  
-  // Documentation with validation
-  readDocumentation: (docPath) => {
-    const validDocPath = validateString(docPath, 'docPath', 500);
-    return secureIpcInvoke('read-documentation', validDocPath);
-  },
-  
-  // External links with validation
-  openExternal: (url) => {
-    const validUrl = validateString(url, 'url', 2000);
-    // Additional URL validation
-    try {
-      new URL(validUrl);
-    } catch {
-      throw new Error('Invalid URL format');
-    }
-    return secureIpcInvoke('open-external', validUrl);
-  },
-  
-  // Voice commands with validation
-  sendVoiceCommand: (command) => {
-    const validCommand = validateString(command, 'command', 500);
-    return secureIpcInvoke('voice-command', validCommand);
-  },
-  onVoiceCommandResponse: (callback) => {
-    ipcRenderer.on('voice-command-response', (event, data) => callback(data));
-  },
-  
-  // Core session management with validation
-  createSession: (userId, topic, participants) => {
-    const validUserId = validateId(userId, 'userId');
-    const validTopic = validateString(topic, 'topic', 200);
-    const validParticipants = validateArray(participants, 'participants', 20);
-    return secureIpcInvoke('core-create-session', { userId: validUserId, topic: validTopic, participants: validParticipants });
-  },
-  getSession: (sessionId) => {
-    const validSessionId = validateId(sessionId, 'sessionId');
-    return secureIpcInvoke('core-get-session', validSessionId);
-  },
-  addParticipant: (sessionId, userId, participantData) => {
-    const validSessionId = validateId(sessionId, 'sessionId');
-    const validUserId = validateId(userId, 'userId');
-    const validData = validateObject(participantData, 'participantData');
-    return secureIpcInvoke('core-add-participant', { sessionId: validSessionId, userId: validUserId, participantData: validData });
-  },
-  startTurnTaking: (sessionId, userId, turnOrder) => {
-    const validSessionId = validateId(sessionId, 'sessionId');
-    const validUserId = validateId(userId, 'userId');
-    const validTurnOrder = validateArray(turnOrder, 'turnOrder', 10);
-    return secureIpcInvoke('core-start-turn-taking', { sessionId: validSessionId, userId: validUserId, turnOrder: validTurnOrder });
-  },
-  advanceTurn: (sessionId, userId) => {
-    const validSessionId = validateId(sessionId, 'sessionId');
-    const validUserId = validateId(userId, 'userId');
-    return secureIpcInvoke('core-advance-turn', { sessionId: validSessionId, userId: validUserId });
-  },
-  
-  // Vault operations with validation
-  getPersonaMemory: (personaId, userId) => {
-    const validPersonaId = validateId(personaId, 'personaId');
-    const validUserId = validateId(userId, 'userId');
-    return secureIpcInvoke('vault-get-persona-memory', { personaId: validPersonaId, userId: validUserId });
-  },
-  updatePersonaMemory: (personaId, userId, data) => {
-    const validPersonaId = validateId(personaId, 'personaId');
-    const validUserId = validateId(userId, 'userId');
-    const validData = validateObject(data, 'data');
-    return secureIpcInvoke('vault-update-persona-memory', { personaId: validPersonaId, userId: validUserId, data: validData });
-  },
-  
-  // Synapse plugin operations with validation
-  executePlugin: (pluginId, payload, userId) => {
-    const validPluginId = validateId(pluginId, 'pluginId');
-    const validPayload = validateObject(payload, 'payload');
-    const validUserId = validateId(userId, 'userId');
-    return secureIpcInvoke('synapse-execute-plugin', { pluginId: validPluginId, payload: validPayload, userId: validUserId });
-  },
-  listPlugins: () => 
-    secureIpcInvoke('synapse-list-plugins'),
-  
-  // Google API Integration with validation
-  googleApiCall: (message, options) => {
-    const validMessage = validateString(message, 'message', 5000);
-    const validOptions = options ? validateObject(options, 'options') : {};
-    return secureIpcInvoke('google-api-call', validMessage, validOptions);
-  },
-  claudeDelegateToGoogle: (taskData) => {
-    const validTaskData = validateObject(taskData, 'taskData');
-    return secureIpcInvoke('claude-delegate-to-google', validTaskData);
-  },
-  googleApiStatus: () => 
-    secureIpcInvoke('google-api-status'),
-  getDelegationMetrics: () => 
-    secureIpcInvoke('get-delegation-metrics'),
-  
-  // Alden workspace operations with validation
-  aldenWriteFile: (filePath, content, createDirectories = true) => {
-    const validFilePath = validateString(filePath, 'filePath', 500);
-    const validContent = validateString(content, 'content', 100000);
-    return secureIpcInvoke('alden-write-file', { filePath: validFilePath, content: validContent, createDirectories });
-  },
-  aldenReadFile: (filePath) => {
-    const validFilePath = validateString(filePath, 'filePath', 500);
-    return secureIpcInvoke('alden-read-file', { filePath: validFilePath });
-  },
-  aldenListDirectory: (dirPath) => {
-    const validDirPath = validateString(dirPath, 'dirPath', 500);
-    return secureIpcInvoke('alden-list-directory', { dirPath: validDirPath });
-  },
-  
-  // Accessibility features with validation
-  toggleAccessibility: (feature) => {
-    const validFeature = validateString(feature, 'feature', 50);
-    return secureIpcInvoke('accessibility-toggle', validFeature);
-  },
-  onAccessibilityUpdate: (callback) => {
-    ipcRenderer.on('accessibility-update', (event, data) => callback(data));
-  },
-  
-  // Menu actions
-  onNewSession: (callback) => {
-    ipcRenderer.on('new-session', () => callback());
-  },
-  onOpenUserGuide: (callback) => {
-    ipcRenderer.on('open-user-guide', () => callback());
-  },
-  onOpenAccessibilityGuide: (callback) => {
-    ipcRenderer.on('open-accessibility-guide', () => callback());
-  },
-  onOpenTroubleshooting: (callback) => {
-    ipcRenderer.on('open-troubleshooting', () => callback());
-  },
-  
-  // Remove listeners
-  removeAllListeners: (channel) => {
-    ipcRenderer.removeAllListeners(channel);
-  }
-});
-
-// Expose a minimal process API for environment detection
+// Expose minimal process information for environment detection
 contextBridge.exposeInMainWorld('process', {
   env: {
     NODE_ENV: process.env.NODE_ENV,
@@ -220,140 +26,56 @@ contextBridge.exposeInMainWorld('process', {
   arch: process.arch
 });
 
-// Secure file system operations with path validation
-const ALLOWED_PATHS = [
-  'docs/public',
-  'assets',
-  'voice',
-  'LICENSE',
-  'README.md',
-  'SECURITY.md'
-];
-
-function validatePath(inputPath) {
-  if (!inputPath || typeof inputPath !== 'string') {
-    throw new Error('Invalid path parameter');
-  }
-  
-  // Remove any path traversal attempts
-  const normalized = inputPath.replace(/\.\./g, '').replace(/\/+/g, '/').replace(/^\//, '');
-  
-  // Check against whitelist
-  const isAllowed = ALLOWED_PATHS.some(allowedPath => 
-    normalized.startsWith(allowedPath) || allowedPath.startsWith(normalized)
-  );
-  
-  if (!isAllowed) {
-    throw new Error(`Access denied: Path '${inputPath}' is not allowed`);
-  }
-  
-  return normalized;
-}
-
-contextBridge.exposeInMainWorld('fileSystem', {
-  readFile: async (filePath) => {
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const safePath = validatePath(filePath);
-      const fullPath = path.resolve(process.resourcesPath, safePath);
-      
-      // Additional security: ensure resolved path is still within resources
-      if (!fullPath.startsWith(path.resolve(process.resourcesPath))) {
-        throw new Error('Path traversal attempt blocked');
-      }
-      
-      return await fs.promises.readFile(fullPath, 'utf8');
-    } catch (error) {
-      console.error('Secure file read error:', error.message);
-      throw new Error('File access denied');
-    }
-  },
-  
-  exists: async (filePath) => {
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const safePath = validatePath(filePath);
-      const fullPath = path.resolve(process.resourcesPath, safePath);
-      
-      if (!fullPath.startsWith(path.resolve(process.resourcesPath))) {
-        return false;
-      }
-      
-      return await fs.promises.access(fullPath).then(() => true).catch(() => false);
-    } catch (error) {
-      return false;
-    }
-  },
-  
-  listFiles: async (dirPath) => {
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const safePath = validatePath(dirPath);
-      const fullPath = path.resolve(process.resourcesPath, safePath);
-      
-      if (!fullPath.startsWith(path.resolve(process.resourcesPath))) {
-        throw new Error('Directory traversal blocked');
-      }
-      
-      const files = await fs.promises.readdir(fullPath, { withFileTypes: true });
-      return files.map(file => ({
-        name: file.name,
-        isDirectory: file.isDirectory(),
-        path: path.posix.join(safePath, file.name)
-      }));
-    } catch (error) {
-      console.error('Secure directory listing error:', error.message);
-      return [];
-    }
-  }
-});
-
 // Expose accessibility utilities
 contextBridge.exposeInMainWorld('accessibility', {
   // Screen reader support
   speak: (text, options = {}) => {
-    if (window.speechSynthesis) {
+    if (window.speechSynthesis && typeof text === 'string' && text.length < 1000) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = options.rate || 1;
-      utterance.pitch = options.pitch || 1;
-      utterance.volume = options.volume || 1;
+      utterance.rate = Math.max(0.1, Math.min(2, options.rate || 1));
+      utterance.pitch = Math.max(0, Math.min(2, options.pitch || 1));
+      utterance.volume = Math.max(0, Math.min(1, options.volume || 1));
       window.speechSynthesis.speak(utterance);
     }
   },
   
   // High contrast mode
   setHighContrast: (enabled) => {
-    document.documentElement.classList.toggle('high-contrast', enabled);
+    if (typeof enabled === 'boolean') {
+      document.documentElement.classList.toggle('high-contrast', enabled);
+    }
   },
   
   // Font size adjustment
   setFontSize: (size) => {
-    document.documentElement.style.fontSize = size;
+    if (typeof size === 'string' && /^\\d+(\\.\\d+)?(px|em|rem|%)$/.test(size)) {
+      document.documentElement.style.fontSize = size;
+    }
   },
   
   // Focus management
   focusElement: (selector) => {
-    const element = document.querySelector(selector);
-    if (element) {
-      element.focus();
+    if (typeof selector === 'string' && selector.length < 100) {
+      try {
+        const element = document.querySelector(selector);
+        if (element && element.focus) {
+          element.focus();
+        }
+      } catch (error) {
+        console.warn('Invalid selector for focus:', selector);
+      }
     }
   },
   
-  // Keyboard navigation
+  // Keyboard navigation setup
   setupKeyboardNavigation: () => {
     document.addEventListener('keydown', (event) => {
-      // Tab navigation
       if (event.key === 'Tab') {
-        // Ensure focus is visible
         document.body.classList.add('keyboard-navigation');
       }
     });
     
     document.addEventListener('mousedown', () => {
-      // Remove keyboard navigation class when using mouse
       document.body.classList.remove('keyboard-navigation');
     });
   }
@@ -370,32 +92,37 @@ contextBridge.exposeInMainWorld('voiceCommands', {
       recognition.continuous = true;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
+      recognition.maxAlternatives = 1;
       
       return recognition;
     }
     return null;
   },
   
-  // Process voice commands
+  // Process voice commands with enhanced security
   processCommand: (command) => {
+    if (typeof command !== 'string' || command.length > 500) {
+      return false;
+    }
+    
     const normalizedCommand = command.toLowerCase().trim();
     
-    // Define command patterns
-    const commands = {
-      'new session': () => window.electronAPI.onNewSession(() => window.location.reload()),
-      'open user guide': () => window.electronAPI.onOpenUserGuide(() => window.open('/docs/public/USER_GUIDE.md')),
-      'help': () => window.electronAPI.onOpenUserGuide(() => window.open('/docs/public/USER_GUIDE.md')),
-      'accessibility': () => window.electronAPI.onOpenAccessibilityGuide(() => window.open('/docs/public/ACCESSIBILITY.md')),
-      'troubleshooting': () => window.electronAPI.onOpenTroubleshooting(() => window.open('/docs/public/TROUBLESHOOTING.md')),
-      'exit': () => window.close(),
-      'quit': () => window.close(),
-      'close': () => window.close()
-    };
+    // Define safe command patterns
+    const commandPatterns = [
+      { pattern: 'new session', action: 'newSession' },
+      { pattern: 'open user guide', action: 'userGuide' },
+      { pattern: 'help', action: 'userGuide' },
+      { pattern: 'accessibility', action: 'accessibility' },
+      { pattern: 'troubleshooting', action: 'troubleshooting' }
+    ];
     
     // Execute matching command
-    for (const [pattern, action] of Object.entries(commands)) {
+    for (const { pattern, action } of commandPatterns) {
       if (normalizedCommand.includes(pattern)) {
-        action();
+        // Emit custom event instead of direct execution
+        window.dispatchEvent(new CustomEvent('voiceCommand', { 
+          detail: { action, command: normalizedCommand } 
+        }));
         return true;
       }
     }
@@ -407,10 +134,19 @@ contextBridge.exposeInMainWorld('voiceCommands', {
 // Expose notification utilities
 contextBridge.exposeInMainWorld('notifications', {
   show: (title, body, options = {}) => {
+    if (typeof title !== 'string' || typeof body !== 'string') {
+      return null;
+    }
+    
+    if (title.length > 100 || body.length > 500) {
+      return null;
+    }
+    
     if ('Notification' in window && Notification.permission === 'granted') {
       const notification = new Notification(title, {
         body,
         icon: '/assets/icon.ico',
+        tag: 'hearthlink',
         ...options
       });
       
@@ -419,8 +155,12 @@ contextBridge.exposeInMainWorld('notifications', {
         notification.close();
       };
       
+      // Auto-close after 5 seconds
+      setTimeout(() => notification.close(), 5000);
+      
       return notification;
     }
+    return null;
   },
   
   requestPermission: async () => {
@@ -431,75 +171,82 @@ contextBridge.exposeInMainWorld('notifications', {
   }
 });
 
-// Security: Prevent access to Node.js APIs and implement strict CSP
-let securityNonce = null;
+// Expose security utilities
+contextBridge.exposeInMainWorld('security', {
+  getNonce: () => securityNonce,
+  validateOrigin: (origin) => {
+    if (typeof origin !== 'string') return false;
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3005',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3005',
+      'app://-'
+    ];
+    
+    return allowedOrigins.some(allowed => origin.startsWith(allowed));
+  },
+  
+  getChannelVersion: () => require('./preload/channels').CHANNEL_VERSION
+});
 
-// Generate a cryptographically secure nonce for CSP
-function generateSecureNonce() {
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  return btoa(String.fromCharCode.apply(null, array)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-}
-
+// DOM Content Loaded handler for security setup
 window.addEventListener('DOMContentLoaded', () => {
   // Generate nonce for this session
   securityNonce = generateSecureNonce();
   
-  // Remove Node.js globals from window
+  // Remove potentially dangerous globals
   delete window.require;
   delete window.exports;
   delete window.module;
   delete window.global;
-  delete window.process;
   delete window.Buffer;
   
-  // Implement strict Content Security Policy
-  const meta = document.createElement('meta');
-  meta.httpEquiv = 'Content-Security-Policy';
-  meta.content = [
+  // Setup Content Security Policy
+  const cspMeta = document.createElement('meta');
+  cspMeta.httpEquiv = 'Content-Security-Policy';
+  cspMeta.content = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${securityNonce}'`,
-    "style-src 'self' 'unsafe-inline'", // Allow inline styles for React
+    `script-src 'self' 'nonce-${securityNonce}' 'unsafe-eval'`, // unsafe-eval needed for React dev
+    "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "media-src 'self' data: blob:",
-    "connect-src 'self' http://localhost:* https://localhost:*",
+    "connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
     "font-src 'self' data:",
     "object-src 'none'",
     "base-uri 'self'",
     "frame-ancestors 'none'",
-    "form-action 'self'",
-    "upgrade-insecure-requests"
+    "form-action 'self'"
   ].join('; ');
-  document.head.appendChild(meta);
   
-  // Additional security headers via meta tags
-  const metaHeaders = [
+  document.head.appendChild(cspMeta);
+  
+  // Additional security headers
+  const securityHeaders = [
     { name: 'X-Content-Type-Options', content: 'nosniff' },
     { name: 'X-Frame-Options', content: 'DENY' },
     { name: 'X-XSS-Protection', content: '1; mode=block' },
     { name: 'Referrer-Policy', content: 'strict-origin-when-cross-origin' }
   ];
   
-  metaHeaders.forEach(header => {
-    const metaElement = document.createElement('meta');
-    metaElement.httpEquiv = header.name;
-    metaElement.content = header.content;
-    document.head.appendChild(metaElement);
+  securityHeaders.forEach(({ name, content }) => {
+    const meta = document.createElement('meta');
+    meta.httpEquiv = name;
+    meta.content = content;
+    document.head.appendChild(meta);
   });
+  
+  console.log('✅ Secure preload script loaded - Channel version:', require('./preload/channels').CHANNEL_VERSION);
 });
 
-// Expose secure nonce for legitimate script execution
-contextBridge.exposeInMainWorld('security', {
-  getNonce: () => securityNonce,
-  validateOrigin: (origin) => {
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3005',
-      'app://-',
-      'file://'
-    ];
-    return allowedOrigins.some(allowed => origin.startsWith(allowed));
-  }
+// Error handling for unhandled rejections
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+  // In production, you might want to report this to a logging service
 });
 
-console.log('Preload script loaded successfully'); 
+window.addEventListener('error', (event) => {
+  console.error('Uncaught error:', event.error);
+  // In production, you might want to report this to a logging service
+});

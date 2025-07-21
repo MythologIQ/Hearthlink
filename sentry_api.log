@@ -16784,3 +16784,487 @@ INFO:__main__:Event: INFO from sentry: System health updated successfully
 INFO:__main__:Event: INFO from sentry: System health updated successfully
 INFO:__main__:Event: INFO from sentry: System health updated successfully
 INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:werkzeug:127.0.0.1 - - [20/Jul/2025 12:44:59] "[33mGET /health HTTP/1.1[0m" 404 -
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:werkzeug:127.0.0.1 - - [20/Jul/2025 12:47:29] "[33mGET /health HTTP/1.1[0m" 404 -
+WARNING:__main__:Alert: HIGH - Vault Service Down
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+WARNING:__main__:Alert: HIGH - Vault Service Down
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+WARNING:__main__:Alert: MEDIUM - High CPU Usage
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+WARNING:__main__:Alert: MEDIUM - High CPU Usage
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/vault_api.py', reloading
+Starting Hearthlink Sentry API...
+Endpoints available:
+  GET  /api/sentry/health - Health check
+  GET  /api/sentry/system-health - Get system health
+  GET  /api/sentry/events - Get recent events
+  GET  /api/sentry/alerts - Get active alerts
+  POST /api/sentry/alerts/<id>/acknowledge - Acknowledge alert
+  POST /api/sentry/alerts/<id>/resolve - Resolve alert
+  POST /api/sentry/start - Start monitoring
+  POST /api/sentry/stop - Stop monitoring
+  GET  /api/sentry/status - Get monitoring status
+
+Starting server on port 8004...
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting Sentry monitoring loop
+INFO:__main__:Monitoring thread started
+INFO:__main__:Event: INFO from sentry: Monitoring started
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/system_health.py', reloading
+Starting Hearthlink Sentry API...
+Endpoints available:
+  GET  /api/sentry/health - Health check
+  GET  /api/sentry/system-health - Get system health
+  GET  /api/sentry/events - Get recent events
+  GET  /api/sentry/alerts - Get active alerts
+  POST /api/sentry/alerts/<id>/acknowledge - Acknowledge alert
+  POST /api/sentry/alerts/<id>/resolve - Resolve alert
+  POST /api/sentry/start - Start monitoring
+  POST /api/sentry/stop - Stop monitoring
+  GET  /api/sentry/status - Get monitoring status
+
+Starting server on port 8004...
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting Sentry monitoring loop
+INFO:__main__:Monitoring thread started
+INFO:__main__:Event: INFO from sentry: Monitoring started
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/system_health.py', reloading
+Starting Hearthlink Sentry API...
+Endpoints available:
+  GET  /api/sentry/health - Health check
+  GET  /api/sentry/system-health - Get system health
+  GET  /api/sentry/events - Get recent events
+  GET  /api/sentry/alerts - Get active alerts
+  POST /api/sentry/alerts/<id>/acknowledge - Acknowledge alert
+  POST /api/sentry/alerts/<id>/resolve - Resolve alert
+  POST /api/sentry/start - Start monitoring
+  POST /api/sentry/stop - Stop monitoring
+  GET  /api/sentry/status - Get monitoring status
+
+Starting server on port 8004...
+INFO:werkzeug: * Restarting with stat
+INFO:__main__:Starting Sentry monitoring loop
+INFO:__main__:Monitoring thread started
+INFO:__main__:Event: INFO from sentry: Monitoring started
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+WARNING:__main__:Alert: HIGH - Vault Service Down
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+WARNING:__main__:Alert: HIGH - Vault Service Down
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+WARNING:__main__:Alert: HIGH - Vault Service Down
+INFO:__main__:Event: INFO from sentry: System health updated successfully
+WARNING:__main__:Alert: HIGH - Vault Service Down
+INFO:__main__:Event: INFO from sentry: System health updated successfully

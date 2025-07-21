@@ -282,11 +282,6 @@ const SentryMonitor: React.FC = () => {
     return new Date(timestamp).toLocaleTimeString();
   };
 
-  const formatDuration = (ms: number) => {
-    if (ms < 60000) return `${Math.round(ms / 1000)}s ago`;
-    if (ms < 3600000) return `${Math.round(ms / 60000)}m ago`;
-    return `${Math.round(ms / 3600000)}h ago`;
-  };
 
   if (isLoading) {
     return (

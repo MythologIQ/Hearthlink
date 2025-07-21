@@ -1,0 +1,40 @@
+{
+  "test_suite": "Hearthlink Mock UI Test Suite",
+  "timestamp": 1753036282.8904638,
+  "total_tests": 5,
+  "passed": 5,
+  "failed": 0,
+  "results": [
+    {
+      "test": "ALD001-MOCK - Alden Radial Menu (Mock)",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1753036282.8858657
+    },
+    {
+      "test": "COR001-MOCK - Core Interface (Mock)",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1753036282.8869858
+    },
+    {
+      "test": "LAU001-MOCK - Launcher Interface (Mock)",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1753036282.888116
+    },
+    {
+      "test": "RES001-MOCK - Responsive Design (Mock)",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1753036282.8891585
+    },
+    {
+      "test": "VLT001-MOCK - Vault Interface (Mock)",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1753036282.8901975
+    }
+  ],
+  "note": "Mock-based tests validate UI logic without browser dependencies"
+}

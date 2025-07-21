@@ -64,7 +64,7 @@ wsl -d Ubuntu -e bash -c "
     sudo service neo4j start 2>/dev/null || true
     
     # Wait for services
-    sleep 5
+    npx wait-on tcp:5432,tcp:6379,tcp:7687 --timeout 30000 || true
     
     # Start Claude in background
     echo '[$(date)] Starting Claude with dangerous permissions...'

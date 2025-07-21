@@ -152,8 +152,8 @@ class ReactStartupFixer {
                 ...packageJson.scripts,
                 'start:react': `cross-env PORT=${reactPort} react-scripts start`,
                 'start:static': `node -e "const express = require('express'); const app = express(); app.use(express.static('build')); app.listen(${staticPort}, () => console.log('Static server on port ${staticPort}'));"`,
-                'dev': `concurrently "npm run start:react" "sleep 5 && npm run start:electron"`,
-                'dev:enhanced': `concurrently "npm run start:react" "sleep 5 && npm run start:electron" "node start-hearthlink-clean.js"`
+                'dev': `concurrently "npm run start:react" "npx wait-on http://localhost:${reactPort} && npm run start:electron"`,
+                'dev:enhanced': `concurrently "npm run start:react" "npx wait-on http://localhost:${reactPort} && npm run start:electron" "node start-hearthlink-clean.js"`
             };
             
             fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));

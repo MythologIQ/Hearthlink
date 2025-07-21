@@ -1,0 +1,29 @@
+Starting Hearthlink System Health API...
+Endpoints available:
+  /api/llm/health - LLM service health
+  /api/vault/health - Vault service health
+  /api/vault/stats - Vault statistics
+  /api/vault/memories - Vault memories
+  /api/vault/audit-log - Vault audit log
+  /api/synapse/health - Synapse service health
+  /api/core/health - Core service health
+  /api/sentry/health - Sentry service health
+  /api/system/memory - System memory stats
+  /api/system/health - Overall system health
+
+Starting server on port 8001...
+ * Serving Flask app 'system_health'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8001
+ * Running on http://192.168.0.29:8001
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 400-997-232
+127.0.0.1 - - [20/Jul/2025 14:16:28] "GET /api/vault/health HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jul/2025 14:16:35] "GET /api/vault/stats HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jul/2025 14:16:35] "GET /api/vault/memories HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jul/2025 14:16:35] "GET /api/vault/audit-log HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jul/2025 21:28:06] "POST /api/chat HTTP/1.1" 404 -

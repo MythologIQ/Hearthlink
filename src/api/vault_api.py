@@ -372,5 +372,5 @@ if __name__ == '__main__':
     print("  POST /api/vault/backup - Create backup")
     print("  GET  /api/vault/integrity - Check integrity")
     print("  POST /api/vault/search - Search memories")
-    print("\\nStarting server on port 8002...")
-    app.run(host='0.0.0.0', port=8002, debug=True)
+    print("\\nStarting server on port 8001...")
+    app.run(host='0.0.0.0', port=8001, debug=True)

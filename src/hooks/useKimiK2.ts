@@ -92,7 +92,7 @@ export const useKimiK2 = (options: UseKimiK2Options = {}): UseKimiK2Result => {
       return data;
 
     } catch (err) {
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         // Request was cancelled, don't update error state
         return Promise.reject(err);
       }
@@ -162,10 +162,10 @@ export const useKimiK2Chat = (options: UseKimiK2Options = {}) => {
   ): Promise<KimiK2Response> => {
     const request: KimiK2Request = {
       prompt: message,
-      systemMessage,
+      systemMessage: systemMessage || undefined,
       agentId,
       module: 'chat',
-      context,
+      context: context || undefined,
       temperature: 0.7,
       maxTokens: 4096
     };
@@ -225,8 +225,8 @@ export const useKimiK2Agentic = (options: UseKimiK2Options = {}) => {
       systemMessage,
       agentId,
       module: 'agentic',
-      context,
-      tools,
+      context: context || undefined,
+      tools: tools || undefined,
       toolChoice: 'auto',
       temperature: 0.6,
       maxTokens: 8192

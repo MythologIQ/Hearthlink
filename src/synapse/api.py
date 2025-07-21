@@ -409,6 +409,74 @@ async def close_connection(
         logger.error(f"Connection close failed: {e}")
         raise HTTPException(status_code=500, detail="Connection close failed")
 
+@app.get("/api/synapse/connections", response_model=APIResponse)
+async def get_connections(
+    synapse_instance: Synapse = Depends(get_synapse)
+):
+    """Get all active connections."""
+    try:
+        # Get connections from Synapse instance
+        connections = synapse_instance.get_connections()
+        
+        return APIResponse(
+            status="success",
+            message="Connections retrieved successfully",
+            data={"connections": connections}
+        )
+    except Exception as e:
+        logger.error(f"Failed to get connections: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get connections")
+
+@app.get("/api/synapse/webhooks", response_model=APIResponse)
+async def get_webhooks(
+    synapse_instance: Synapse = Depends(get_synapse)
+):
+    """Get webhook configuration."""
+    try:
+        # Get webhook configuration
+        webhooks = synapse_instance.get_webhooks()
+        
+        return APIResponse(
+            status="success",
+            message="Webhooks retrieved successfully",
+            data={"webhooks": webhooks}
+        )
+    except Exception as e:
+        logger.error(f"Failed to get webhooks: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get webhooks")
+
+class WebhookRequest(BaseModel):
+    """Webhook creation request."""
+    name: str = Field(..., description="Webhook name")
+    url: str = Field(..., description="Webhook URL")
+    method: str = Field(default="POST", description="HTTP method")
+    headers: Dict[str, str] = Field(default={}, description="HTTP headers")
+    enabled: bool = Field(default=True, description="Webhook enabled status")
+
+@app.post("/api/synapse/webhooks", response_model=APIResponse)
+async def create_webhook(
+    webhook: WebhookRequest,
+    synapse_instance: Synapse = Depends(get_synapse)
+):
+    """Create a new webhook."""
+    try:
+        webhook_id = synapse_instance.create_webhook(
+            name=webhook.name,
+            url=webhook.url,
+            method=webhook.method,
+            headers=webhook.headers,
+            enabled=webhook.enabled
+        )
+        
+        return APIResponse(
+            status="success",
+            message="Webhook created successfully",
+            data={"webhook_id": webhook_id}
+        )
+    except Exception as e:
+        logger.error(f"Failed to create webhook: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create webhook")
+
 # Benchmarking Endpoints
 
 @app.post("/api/synapse/plugin/{plugin_id}/benchmark", response_model=APIResponse)

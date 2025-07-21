@@ -300,7 +300,7 @@ export class ClaudeConnector {
   /**
    * Handle and classify errors
    */
-  private handleError(error: any, requestId: string, request: ClaudeRequest): ClaudeError {
+  private handleError(error: any, requestId: string, _request: ClaudeRequest): ClaudeError {
     let errorType: ClaudeError['type'] = 'api_error';
     let statusCode: number | undefined;
     let retryAfter: number | undefined;
@@ -324,13 +324,21 @@ export class ClaudeConnector {
       errorType = 'vault_error';
     }
     
-    return {
+    const claudeError: ClaudeError = {
       type: errorType,
       message: error.message || 'Unknown error occurred',
-      statusCode,
-      retryAfter,
       requestId
     };
+    
+    if (statusCode !== undefined) {
+      claudeError.statusCode = statusCode;
+    }
+    
+    if (retryAfter !== undefined) {
+      claudeError.retryAfter = retryAfter;
+    }
+    
+    return claudeError;
   }
 
   /**
@@ -424,7 +432,7 @@ export class ClaudeConnector {
       return {
         status: 'unhealthy',
         details: {
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString()
         }
       };

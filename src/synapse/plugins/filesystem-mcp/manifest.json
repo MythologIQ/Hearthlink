@@ -1,0 +1,198 @@
+{
+  "plugin_id": "filesystem-mcp",
+  "name": "Filesystem MCP Server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server providing secure filesystem operations with comprehensive access control and audit logging",
+  "author": "Hearthlink Core Team",
+  "type": "mcp_server",
+  "category": "system",
+  "tags": ["filesystem", "files", "directories", "security", "mcp", "core"],
+  
+  "capabilities": [
+    "file_operations",
+    "directory_management",
+    "file_search",
+    "secure_access_control",
+    "audit_logging",
+    "path_validation",
+    "permission_management"
+  ],
+  
+  "permissions": [
+    "FILE_SYSTEM",
+    "READ_FILES",
+    "WRITE_FILES",
+    "CREATE_DIRECTORIES",
+    "SEARCH_FILES",
+    "AUDIT_LOGGING"
+  ],
+  
+  "mcp_config": {
+    "server_type": "built_in",
+    "transport": "direct",
+    "protocol_version": "2024-11-05",
+    "initialization_timeout": 5000,
+    "max_concurrent_requests": 50,
+    "allowed_directories": [
+      "/mnt/g/MythologIQ/Hearthlink",
+      "/tmp/hearthlink",
+      "/var/hearthlink/data"
+    ]
+  },
+  
+  "sandbox_config": {
+    "memory_limit": "128MB",
+    "cpu_limit": "200m",
+    "timeout": 30,
+    "network_policy": "none",
+    "file_access": "restricted",
+    "blocked_paths": [
+      "/etc",
+      "/bin", 
+      "/sbin",
+      "/usr/bin",
+      "/usr/sbin",
+      "/root",
+      "/home/*/.ssh",
+      "/var/log/auth.log"
+    ]
+  },
+  
+  "api_endpoints": [
+    {
+      "name": "read_file",
+      "description": "Read complete contents of a file",
+      "parameters": ["path", "head", "tail"]
+    },
+    {
+      "name": "read_multiple_files", 
+      "description": "Read contents of multiple files simultaneously",
+      "parameters": ["paths"]
+    },
+    {
+      "name": "write_file",
+      "description": "Create or overwrite file with content",
+      "parameters": ["path", "content"]
+    },
+    {
+      "name": "edit_file",
+      "description": "Make line-based edits to a text file", 
+      "parameters": ["path", "edits", "dryRun"]
+    },
+    {
+      "name": "create_directory",
+      "description": "Create directory or ensure directory exists",
+      "parameters": ["path"]
+    },
+    {
+      "name": "list_directory",
+      "description": "List files and directories in a path",
+      "parameters": ["path"]
+    },
+    {
+      "name": "list_directory_with_sizes",
+      "description": "List directory contents with file sizes",
+      "parameters": ["path", "sortBy"]
+    },
+    {
+      "name": "directory_tree", 
+      "description": "Get recursive tree view of directories",
+      "parameters": ["path"]
+    },
+    {
+      "name": "move_file",
+      "description": "Move or rename files and directories",
+      "parameters": ["source", "destination"]
+    },
+    {
+      "name": "search_files",
+      "description": "Search for files matching a pattern",
+      "parameters": ["path", "pattern", "excludePatterns"]
+    },
+    {
+      "name": "get_file_info",
+      "description": "Get detailed file metadata", 
+      "parameters": ["path"]
+    },
+    {
+      "name": "list_allowed_directories",
+      "description": "List directories accessible to the server",
+      "parameters": []
+    }
+  ],
+  
+  "security_profile": {
+    "risk_level": 75,
+    "risk_factors": [
+      "Direct filesystem access",
+      "File creation and modification",
+      "Directory traversal potential",
+      "Path manipulation risks"
+    ],
+    "mitigations": [
+      "Restricted directory access",
+      "Path validation and sanitization",
+      "Blocked system directories",
+      "Comprehensive audit logging",
+      "Permission-based access control"
+    ],
+    "data_classification": "system_critical",
+    "compliance_notes": "Core system component - highest security priority"
+  },
+  
+  "core_integration": {
+    "startup_priority": "critical",
+    "health_check_endpoint": "/health",
+    "metrics_enabled": true,
+    "logging_level": "info",
+    "integration_points": [
+      "vault_storage",
+      "audit_system", 
+      "security_service",
+      "plugin_manager"
+    ]
+  },
+  
+  "configuration_schema": {
+    "type": "object",
+    "properties": {
+      "max_file_size": {
+        "type": "integer",
+        "default": 10485760,
+        "description": "Maximum file size in bytes (10MB default)"
+      },
+      "enable_audit_logging": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable comprehensive audit logging"
+      },
+      "allowed_extensions": {
+        "type": "array",
+        "default": [".txt", ".json", ".js", ".py", ".md", ".css", ".html", ".xml", ".yaml"],
+        "description": "Allowed file extensions for operations"
+      },
+      "readonly_mode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable read-only mode for enhanced security"
+      }
+    }
+  },
+  
+  "lifecycle": {
+    "install_script": "echo 'Filesystem MCP server is built-in'",
+    "start_script": "internal://filesystem-mcp",
+    "health_check": "internal://filesystem-mcp/health",
+    "shutdown_timeout": 5000,
+    "restart_policy": "always"
+  },
+  
+  "metadata": {
+    "created_at": "2025-01-21T12:00:00Z",
+    "updated_at": "2025-01-21T12:00:00Z",
+    "documentation_url": "https://github.com/MythologIQ/Hearthlink/docs/mcp-servers/filesystem",
+    "support_url": "https://github.com/MythologIQ/Hearthlink/issues",
+    "license": "MIT",
+    "keywords": ["mcp", "filesystem", "files", "security", "core", "system"]
+  }
+}

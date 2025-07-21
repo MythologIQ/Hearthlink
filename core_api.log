@@ -1954,3 +1954,81 @@ Starting server on port 8000...
 INFO:werkzeug: * Restarting with stat
 WARNING:werkzeug: * Debugger is active!
 INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/vault_api.py', reloading
+Starting Hearthlink Core API...
+Endpoints available:
+  GET  /api/health - Health check
+  GET  /api/agents - Get all agents
+  GET  /api/agents/<id> - Get specific agent
+  PUT  /api/agents/<id> - Update agent
+  GET  /api/services - Get all services
+  GET  /api/services/<id>/health - Check service health
+  GET  /api/projects - Get all projects
+  GET  /api/projects/<id> - Get specific project
+  POST /api/projects/<id>/orchestrate - Start project orchestration
+  POST /api/projects/<id>/tasks/<task_id>/delegate - Delegate task
+  GET  /api/sessions - Get all sessions
+  POST /api/sessions - Create new session
+  GET  /api/sessions/<id> - Get session details
+  POST /api/sessions/<id>/join - Join session
+  POST /api/sessions/<id>/message - Send session message
+  GET  /api/orchestration/status - Get orchestration status
+  GET  /api/orchestration/logs - Get orchestration logs
+  GET  /api/system/metrics - Get system metrics
+
+Starting server on port 8000...
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/system_health.py', reloading
+Starting Hearthlink Core API...
+Endpoints available:
+  GET  /api/health - Health check
+  GET  /api/agents - Get all agents
+  GET  /api/agents/<id> - Get specific agent
+  PUT  /api/agents/<id> - Update agent
+  GET  /api/services - Get all services
+  GET  /api/services/<id>/health - Check service health
+  GET  /api/projects - Get all projects
+  GET  /api/projects/<id> - Get specific project
+  POST /api/projects/<id>/orchestrate - Start project orchestration
+  POST /api/projects/<id>/tasks/<task_id>/delegate - Delegate task
+  GET  /api/sessions - Get all sessions
+  POST /api/sessions - Create new session
+  GET  /api/sessions/<id> - Get session details
+  POST /api/sessions/<id>/join - Join session
+  POST /api/sessions/<id>/message - Send session message
+  GET  /api/orchestration/status - Get orchestration status
+  GET  /api/orchestration/logs - Get orchestration logs
+  GET  /api/system/metrics - Get system metrics
+
+Starting server on port 8000...
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232
+INFO:werkzeug: * Detected change in '/mnt/g/MythologIQ/Hearthlink/src/api/system_health.py', reloading
+Starting Hearthlink Core API...
+Endpoints available:
+  GET  /api/health - Health check
+  GET  /api/agents - Get all agents
+  GET  /api/agents/<id> - Get specific agent
+  PUT  /api/agents/<id> - Update agent
+  GET  /api/services - Get all services
+  GET  /api/services/<id>/health - Check service health
+  GET  /api/projects - Get all projects
+  GET  /api/projects/<id> - Get specific project
+  POST /api/projects/<id>/orchestrate - Start project orchestration
+  POST /api/projects/<id>/tasks/<task_id>/delegate - Delegate task
+  GET  /api/sessions - Get all sessions
+  POST /api/sessions - Create new session
+  GET  /api/sessions/<id> - Get session details
+  POST /api/sessions/<id>/join - Join session
+  POST /api/sessions/<id>/message - Send session message
+  GET  /api/orchestration/status - Get orchestration status
+  GET  /api/orchestration/logs - Get orchestration logs
+  GET  /api/system/metrics - Get system metrics
+
+Starting server on port 8000...
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 400-997-232

@@ -199,6 +199,107 @@ def get_memory_usage():
         'used': memory.used
     }
 
+@app.route('/api/vault/stats', methods=['GET'])
+def vault_stats():
+    """Get vault statistics"""
+    try:
+        # Mock vault statistics for the interface
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        return jsonify({
+            'totalMemories': 47,
+            'personaMemories': 32,
+            'communalMemories': 15,
+            'storageUsed': int(disk.used * 0.001),  # Convert to a reasonable number
+            'lastBackup': (datetime.now() - timedelta(hours=2)).isoformat(),
+            'integrityStatus': 'verified',
+            'encryptionStatus': 'enabled'
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/vault/memories', methods=['GET'])
+def vault_memories():
+    """Get vault memories"""
+    try:
+        # Mock memory data for the interface
+        mock_memories = [
+            {
+                'id': 'mem_001',
+                'memory_type': 'persona',
+                'persona_id': 'alden',
+                'content': 'User prefers concise responses and direct communication style',
+                'importance': 0.8,
+                'created_at': (datetime.now() - timedelta(days=1)).isoformat(),
+                'metadata': {'source': 'conversation_analysis'}
+            },
+            {
+                'id': 'mem_002',
+                'memory_type': 'communal',
+                'persona_id': 'system',
+                'content': 'Project focus is on Hearthlink AI orchestration system development',
+                'importance': 0.9,
+                'created_at': (datetime.now() - timedelta(days=2)).isoformat(),
+                'metadata': {'context': 'project_overview'}
+            },
+            {
+                'id': 'mem_003',
+                'memory_type': 'skill',
+                'persona_id': 'alden',
+                'content': 'Proficient in React, Python, FastAPI development patterns',
+                'importance': 0.7,
+                'created_at': (datetime.now() - timedelta(days=3)).isoformat(),
+                'metadata': {'skill_level': 'advanced'}
+            }
+        ]
+        
+        return jsonify({
+            'memories': mock_memories,
+            'count': len(mock_memories)
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/vault/audit-log', methods=['GET'])
+def vault_audit_log():
+    """Get vault audit log"""
+    try:
+        # Mock audit log data for the interface
+        mock_audit_log = [
+            {
+                'timestamp': (datetime.now() - timedelta(minutes=5)).isoformat(),
+                'level': 'info',
+                'component': 'vault',
+                'message': 'Memory mem_001 accessed by alden'
+            },
+            {
+                'timestamp': (datetime.now() - timedelta(minutes=15)).isoformat(),
+                'level': 'info',
+                'component': 'vault',
+                'message': 'Backup completed successfully'
+            },
+            {
+                'timestamp': (datetime.now() - timedelta(hours=1)).isoformat(),
+                'level': 'warning',
+                'component': 'vault',
+                'message': 'High memory usage detected'
+            },
+            {
+                'timestamp': (datetime.now() - timedelta(hours=2)).isoformat(),
+                'level': 'info',
+                'component': 'vault',
+                'message': 'Integrity check passed'
+            }
+        ]
+        
+        return jsonify({
+            'audit_log': mock_audit_log,
+            'count': len(mock_audit_log)
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/api/connect/llm', methods=['POST'])
 def connect_llm():
     """Connect to local LLM service"""
@@ -248,6 +349,9 @@ if __name__ == '__main__':
     print("Endpoints available:")
     print("  /api/llm/health - LLM service health")
     print("  /api/vault/health - Vault service health")
+    print("  /api/vault/stats - Vault statistics")
+    print("  /api/vault/memories - Vault memories")
+    print("  /api/vault/audit-log - Vault audit log")
     print("  /api/synapse/health - Synapse service health")
     print("  /api/core/health - Core service health")
     print("  /api/sentry/health - Sentry service health")

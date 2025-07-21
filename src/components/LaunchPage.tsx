@@ -44,6 +44,7 @@ const LaunchPage: React.FC<LaunchPageProps> = ({ onModuleSelect }) => {
       
       for (let i = 0; i < loadingSteps.length; i++) {
         const step = loadingSteps[i];
+        if (!step) continue; // TypeScript safety check
         
         await new Promise(resolve => setTimeout(resolve, step.delay));
         

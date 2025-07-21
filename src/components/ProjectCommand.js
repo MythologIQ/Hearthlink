@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import './ProjectCommand.css';
 import taskDelegationService from '../services/TaskDelegationService';
+import ProjectTemplateEngine from '../utils/ProjectTemplateEngine';
 
 const ProjectCommand = ({ accessibilitySettings, onVoiceCommand, currentAgent }) => {
   const [activeView, setActiveView] = useState('dashboard');
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [projectCreationForm, setProjectCreationForm] = useState({
+    name: '',
+    description: '',
+    requirements: {
+      category: '',
+      complexity: '',
+      skills: [],
+      duration: ''
+    }
+  });
   const [methodologyData, setMethodologyData] = useState({
     current: 'agile',
     confidence: 85,
@@ -212,6 +225,60 @@ const ProjectCommand = ({ accessibilitySettings, onVoiceCommand, currentAgent })
     setPendingTasks(prev => [newTask, ...prev]);
   };
 
+  // Handle project creation from template
+  const handleCreateProjectFromTemplate = (template) => {
+    setSelectedTemplate(template);
+    setProjectCreationForm(prev => ({
+      ...prev,
+      name: template.name,
+      description: template.description
+    }));
+    setShowTemplateModal(true);
+  };
+
+  // Create new project
+  const handleCreateProject = () => {
+    if (!selectedTemplate) return;
+    
+    const customizations = {
+      name: projectCreationForm.name,
+      description: projectCreationForm.description,
+      methodology: methodologyData.current
+    };
+    
+    const newProject = ProjectTemplateEngine.generateProject(selectedTemplate.id, customizations);
+    
+    // Convert to project format compatible with existing structure
+    const projectData = {
+      id: newProject.id,
+      name: newProject.name,
+      methodology: newProject.methodology,
+      status: 'active',
+      priority: newProject.complexity === 'high' || newProject.complexity === 'very-high' ? 'high' : 'medium',
+      lead_agent: 'Alden',
+      start_date: new Date().toISOString().split('T')[0],
+      completion: 0,
+      risk_level: newProject.complexity === 'very-high' ? 'high' : 'moderate',
+      team_size: Object.keys(newProject.resources).length,
+      sprint_length: newProject.methodology === 'agile' ? 14 : 7,
+      template: selectedTemplate,
+      generated_project: newProject
+    };
+    
+    setProjects(prev => [projectData, ...prev]);
+    setSelectedProject(projectData);
+    setShowTemplateModal(false);
+    setActiveView('dashboard');
+    
+    console.log('[PROJECT COMMAND] New project created:', projectData);
+  };
+
+  // Get template recommendations
+  const getTemplateRecommendations = () => {
+    if (!projectCreationForm.requirements.category) return [];
+    return ProjectTemplateEngine.recommendTemplates(projectCreationForm.requirements);
+  };
+
   const handleMethodologyEvaluation = () => {
     // Trigger methodology evaluation SOP
     const evaluation = {
@@ -268,6 +335,12 @@ const ProjectCommand = ({ accessibilitySettings, onVoiceCommand, currentAgent })
     <div className="project-dashboard">
       <div className="dashboard-header">
         <h3>Project Command Dashboard</h3>
+        <button 
+          className="create-project-btn"
+          onClick={() => setActiveView('templates')}
+        >
+          ⚡ Create New Project
+        </button>
         <div className="dashboard-stats">
           <div className="stat-card">
             <div className="stat-value">{projects.length}</div>
@@ -318,9 +391,97 @@ const ProjectCommand = ({ accessibilitySettings, onVoiceCommand, currentAgent })
                 />
               </div>
             </div>
+            
+            {/* Show template-generated project details */}
+            {project.generated_project && (
+              <div className="template-info">
+                <div className="template-metrics">
+                  <span>Tasks: {project.generated_project.metrics.totalTasks}</span>
+                  <span>Est. Hours: {Math.round(project.generated_project.metrics.estimatedEffort)}</span>
+                  <span>Phases: {project.generated_project.phases.length}</span>
+                </div>
+                <div className="resource-allocation">
+                  <strong>Resources:</strong>
+                  {Object.entries(project.generated_project.resources).map(([agent, allocation]) => (
+                    <span key={agent} className="resource-tag">
+                      {agent}: {Math.round(allocation.utilization * 100)}%
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
+      
+      {/* Project Details Panel */}
+      {selectedProject && selectedProject.generated_project && (
+        <div className="project-details-panel">
+          <h4>Project Analysis: {selectedProject.name}</h4>
+          <div className="project-analytics">
+            <div className="analytics-grid">
+              <div className="analytics-card">
+                <h5>Task Breakdown</h5>
+                <div className="task-stats">
+                  <div className="stat-item">
+                    <span>Total Tasks:</span>
+                    <span>{selectedProject.generated_project.metrics.totalTasks}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span>Estimated Hours:</span>
+                    <span>{Math.round(selectedProject.generated_project.metrics.estimatedEffort)}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span>Complexity:</span>
+                    <span className={`complexity ${selectedProject.generated_project.complexity}`}>
+                      {selectedProject.generated_project.complexity.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="analytics-card">
+                <h5>Resource Utilization</h5>
+                <div className="resource-chart">
+                  {Object.entries(selectedProject.generated_project.resources).map(([agent, allocation]) => (
+                    <div key={agent} className="resource-bar">
+                      <div className="resource-label">{agent.toUpperCase()}</div>
+                      <div className="resource-progress">
+                        <div 
+                          className="resource-fill"
+                          style={{ width: `${allocation.utilization * 100}%` }}
+                        />
+                      </div>
+                      <div className="resource-value">
+                        {Math.round(allocation.utilization * 100)}% ({allocation.tasks.length} tasks)
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="analytics-card">
+                <h5>Phase Timeline</h5>
+                <div className="timeline-view">
+                  {selectedProject.generated_project.phases.map((phase, idx) => (
+                    <div key={phase.id} className="timeline-item">
+                      <div className="timeline-marker"></div>
+                      <div className="timeline-content">
+                        <div className="phase-name">{phase.name}</div>
+                        <div className="phase-duration">{phase.duration}</div>
+                        <div className="phase-tasks">{phase.tasks.length} tasks</div>
+                        <div className={`phase-status ${phase.status}`}>
+                          {phase.status.toUpperCase()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -445,6 +606,133 @@ const ProjectCommand = ({ accessibilitySettings, onVoiceCommand, currentAgent })
           </div>
         </div>
       </div>
+    </div>
+  );
+
+  const renderTemplateSelection = () => (
+    <div className="template-selection">
+      <div className="template-header">
+        <h3>⚡ Project Templates</h3>
+        <p>Choose from pre-built project templates with intelligent task generation</p>
+      </div>
+      
+      <div className="requirements-form">
+        <h4>Project Requirements</h4>
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Category</label>
+            <select 
+              value={projectCreationForm.requirements.category}
+              onChange={(e) => setProjectCreationForm(prev => ({
+                ...prev,
+                requirements: { ...prev.requirements, category: e.target.value }
+              }))}
+            >
+              <option value="">Select category...</option>
+              <option value="development">Development</option>
+              <option value="ai">AI Integration</option>
+              <option value="analytics">Data Analytics</option>
+              <option value="architecture">Architecture</option>
+              <option value="mobile">Mobile Development</option>
+            </select>
+          </div>
+          
+          <div className="form-group">
+            <label>Complexity</label>
+            <select 
+              value={projectCreationForm.requirements.complexity}
+              onChange={(e) => setProjectCreationForm(prev => ({
+                ...prev,
+                requirements: { ...prev.requirements, complexity: e.target.value }
+              }))}
+            >
+              <option value="">Select complexity...</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="very-high">Very High</option>
+            </select>
+          </div>
+          
+          <div className="form-group">
+            <label>Duration</label>
+            <input 
+              type="text"
+              placeholder="e.g., 4-6 weeks"
+              value={projectCreationForm.requirements.duration}
+              onChange={(e) => setProjectCreationForm(prev => ({
+                ...prev,
+                requirements: { ...prev.requirements, duration: e.target.value }
+              }))}
+            />
+          </div>
+        </div>
+      </div>
+      
+      <div className="templates-grid">
+        {ProjectTemplateEngine.getAvailableTemplates().map(template => (
+          <div key={template.id} className="template-card">
+            <div className="template-header">
+              <h4>{template.name}</h4>
+              <span className={`complexity ${template.complexity.toLowerCase()}`}>
+                {template.complexity.toUpperCase()}
+              </span>
+            </div>
+            <div className="template-description">
+              {template.description}
+            </div>
+            <div className="template-meta">
+              <div className="template-info">
+                <span>Duration: {template.estimatedDuration}</span>
+                <span>Category: {template.category}</span>
+                <span>Methodology: {template.methodology}</span>
+              </div>
+              <div className="template-skills">
+                {template.requiredSkills.map(skill => (
+                  <span key={skill} className="skill-tag">{skill}</span>
+                ))}
+              </div>
+            </div>
+            <div className="template-phases">
+              <strong>Phases ({template.phases.length}):</strong>
+              <ul>
+                {template.phases.map((phase, idx) => (
+                  <li key={idx}>{phase.name} ({phase.duration})</li>
+                ))}
+              </ul>
+            </div>
+            <button 
+              className="select-template-btn"
+              onClick={() => handleCreateProjectFromTemplate(template)}
+            >
+              Select Template
+            </button>
+          </div>
+        ))}
+      </div>
+      
+      {getTemplateRecommendations().length > 0 && (
+        <div className="recommendations-section">
+          <h4>🎯 Recommended for Your Requirements</h4>
+          <div className="recommendations-grid">
+            {getTemplateRecommendations().map(rec => (
+              <div key={rec.template.id} className="recommendation-card">
+                <div className="rec-header">
+                  <span className="rec-name">{rec.template.name}</span>
+                  <span className="rec-score">{rec.score}% Match</span>
+                </div>
+                <div className="rec-reason">{rec.reason}</div>
+                <button 
+                  className="select-recommendation-btn"
+                  onClick={() => handleCreateProjectFromTemplate(rec.template)}
+                >
+                  Use This Template
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -634,6 +922,12 @@ const ProjectCommand = ({ accessibilitySettings, onVoiceCommand, currentAgent })
           📊 Dashboard
         </button>
         <button 
+          className={`nav-btn ${activeView === 'templates' ? 'active' : ''}`}
+          onClick={() => setActiveView('templates')}
+        >
+          ⚡ Templates
+        </button>
+        <button 
           className={`nav-btn ${activeView === 'methodology' ? 'active' : ''}`}
           onClick={() => setActiveView('methodology')}
         >
@@ -655,10 +949,116 @@ const ProjectCommand = ({ accessibilitySettings, onVoiceCommand, currentAgent })
       
       <div className="project-command-content">
         {activeView === 'dashboard' && renderDashboard()}
+        {activeView === 'templates' && renderTemplateSelection()}
         {activeView === 'methodology' && renderMethodologySelector()}
         {activeView === 'retrospective' && renderRetrospective()}
         {activeView === 'delegation' && renderAIDelegation()}
       </div>
+      
+      {/* Project Creation Modal */}
+      {showTemplateModal && selectedTemplate && (
+        <div className="template-modal-overlay">
+          <div className="template-modal">
+            <div className="modal-header">
+              <h3>Create Project: {selectedTemplate.name}</h3>
+              <button 
+                className="close-modal-btn"
+                onClick={() => setShowTemplateModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              <div className="template-preview">
+                <div className="preview-section">
+                  <h4>Template Overview</h4>
+                  <div className="template-details">
+                    <p><strong>Description:</strong> {selectedTemplate.description}</p>
+                    <p><strong>Duration:</strong> {selectedTemplate.estimatedDuration}</p>
+                    <p><strong>Complexity:</strong> {selectedTemplate.complexity}</p>
+                    <p><strong>Methodology:</strong> {selectedTemplate.methodology}</p>
+                  </div>
+                  
+                  <div className="phases-preview">
+                    <h5>Project Phases ({selectedTemplate.phases.length})</h5>
+                    <ul>
+                      {selectedTemplate.phases.map((phase, idx) => (
+                        <li key={idx}>
+                          <strong>{phase.name}</strong> ({phase.duration})
+                          <span className="task-count">{phase.tasks.length} tasks</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="project-form">
+                <h4>Project Details</h4>
+                <div className="form-group">
+                  <label>Project Name</label>
+                  <input 
+                    type="text"
+                    value={projectCreationForm.name}
+                    onChange={(e) => setProjectCreationForm(prev => ({
+                      ...prev,
+                      name: e.target.value
+                    }))}
+                    placeholder="Enter project name..."
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea 
+                    value={projectCreationForm.description}
+                    onChange={(e) => setProjectCreationForm(prev => ({
+                      ...prev,
+                      description: e.target.value
+                    }))}
+                    placeholder="Describe your project..."
+                    rows={4}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Methodology Override</label>
+                  <select 
+                    value={methodologyData.current}
+                    onChange={(e) => setMethodologyData(prev => ({
+                      ...prev,
+                      current: e.target.value
+                    }))}
+                  >
+                    {methodologies.map(method => (
+                      <option key={method.id} value={method.id}>
+                        {method.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-actions">
+              <button 
+                className="cancel-btn"
+                onClick={() => setShowTemplateModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="create-btn"
+                onClick={handleCreateProject}
+                disabled={!projectCreationForm.name.trim()}
+              >
+                Create Project
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
