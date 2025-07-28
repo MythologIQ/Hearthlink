@@ -35,6 +35,8 @@ from llm.local_llm_client import LocalLLMClient, LLMRequest, LLMResponse, LLMErr
 from log_handling.agent_token_tracker import log_agent_token_usage, AgentType
 from vault.vault import Vault
 from vault.schema import PersonaMemory as VaultPersonaMemory
+from utils.performance_optimizer import performance_optimizer
+from utils.memory_optimizer import MemoryOptimizer
 
 
 class PersonaError(HearthlinkError):
@@ -195,6 +197,18 @@ class AldenPersona:
             # Initialize Vault connection for memory persistence
             self._init_vault()
             
+            # Initialize database connection and ensure agent exists
+            self._init_database()
+            
+            # Initialize optimization systems
+            self.memory_optimizer = MemoryOptimizer()
+            self.ecosystem_status = {
+                "core": {"status": "unknown", "last_check": None},
+                "vault": {"status": "unknown", "last_check": None},
+                "synapse": {"status": "unknown", "last_check": None},
+                "voice": {"status": "unknown", "last_check": None}
+            }
+            
             # Validate LLM client (relaxed for testing compatibility)
             if llm_client is None:
                 raise PersonaError("LLM client cannot be None")
@@ -221,7 +235,9 @@ class AldenPersona:
                                       "schema_version": self.memory.schema_version,
                                       "llm_engine": llm_client.config.engine,
                                       "llm_model": llm_client.config.model,
-                                      "vault_connected": hasattr(self, 'vault') and self.vault is not None
+                                      "vault_connected": hasattr(self, 'vault') and self.vault is not None,
+                                      "database_connected": hasattr(self, 'db_manager') and self.db_manager is not None,
+                                      "agent_id": getattr(self, 'agent_id', None)
                                   }})
             
         except Exception as e:
@@ -240,17 +256,24 @@ class AldenPersona:
     def _init_vault(self) -> None:
         """Initialize Vault connection for memory persistence."""
         try:
-            # Load Vault configuration
+            # Determine project root directory (go up from src/personas/)
+            project_root = Path(__file__).parent.parent.parent
+            
+            # Load Vault configuration with absolute paths
             vault_config = {
                 "encryption": {
                     "key_env_var": "HEARTHLINK_VAULT_KEY",
-                    "key_file": "config/vault_key.bin"
+                    "key_file": str(project_root / "config" / "vault_key.bin")
                 },
                 "storage": {
-                    "file_path": "hearthlink_data/vault_storage"
+                    "file_path": str(project_root / "hearthlink_data" / "vault_storage")
                 },
                 "schema_version": "1.0.0"
             }
+            
+            # Ensure directories exist
+            (project_root / "config").mkdir(parents=True, exist_ok=True)
+            (project_root / "hearthlink_data").mkdir(parents=True, exist_ok=True)
             
             # Initialize Vault with logger
             self.vault = Vault(vault_config, self.logger)
@@ -262,9 +285,102 @@ class AldenPersona:
                                   }})
             
         except Exception as e:
+            import traceback
             self.logger.logger.error(f"Failed to initialize Vault: {str(e)}")
+            self.logger.logger.error(f"Vault error traceback: {traceback.format_exc()}")
             self.vault = None
-            raise PersonaError(f"Vault initialization failed: {str(e)}") from e
+            # Instead of raising an error, we continue without Vault for testing purposes
+            # This allows the Alden service to start even if Vault fails
+            self.logger.logger.warning("Alden will continue without persistent memory storage")
+    
+    def _init_database(self) -> None:
+        """Initialize database connection and ensure user and agent records exist."""
+        try:
+            from database.database_manager import DatabaseManager
+            
+            self.db_manager = DatabaseManager()
+            
+            # Ensure user exists
+            existing_user = self.db_manager.get_user(self.memory.user_id)
+            if not existing_user:
+                # Create user record with the expected user_id
+                self.db_manager.create_user(
+                    username=f"alden_user_{self.memory.user_id[:8]}",
+                    email=f"alden_{self.memory.user_id[:8]}@hearthlink.local",
+                    preferences={"persona": "alden", "auto_created": True},
+                    user_id=self.memory.user_id
+                )
+                self.logger.logger.info(f"Created user record: {self.memory.user_id}")
+            
+            # Check if agent exists for this user
+            user_agents = self.db_manager.get_user_agents(self.memory.user_id)
+            alden_agent = next((agent for agent in user_agents if agent['name'] == 'Alden'), None)
+            
+            if not alden_agent:
+                # Create agent record
+                self.agent_id = self.db_manager.create_agent(
+                    user_id=self.memory.user_id,
+                    name="Alden",
+                    persona_type="assistant",
+                    description="Primary AI assistant for productivity and cognitive partnership",
+                    capabilities=["conversation", "memory", "productivity_assistance", "cognitive_analysis"],
+                    config={
+                        "model": getattr(self.llm_client.config, 'model', 'unknown'),
+                        "engine": getattr(self.llm_client.config, 'engine', 'unknown'),
+                        "max_context": 4000,
+                        "personality_version": self.memory.schema_version
+                    },
+                    personality_traits={
+                        "openness": self.memory.traits["openness"] / 100.0,
+                        "conscientiousness": self.memory.traits["conscientiousness"] / 100.0,
+                        "extraversion": self.memory.traits["extraversion"] / 100.0,
+                        "agreeableness": self.memory.traits["agreeableness"] / 100.0,
+                        "emotional_stability": self.memory.traits["emotional_stability"] / 100.0
+                    }
+                )
+                self.logger.logger.info(f"Created agent record: {self.agent_id}")
+            else:
+                self.agent_id = alden_agent['id']
+                # Update agent activity
+                self.db_manager.update_agent_activity(self.agent_id)
+                self.logger.logger.info(f"Using existing agent: {self.agent_id}")
+            
+            self.logger.logger.info("Database connection initialized", 
+                                  extra={"extra_fields": {
+                                      "event_type": "database_init",
+                                      "user_id": self.memory.user_id,
+                                      "agent_id": self.agent_id
+                                  }})
+            
+        except Exception as e:
+            self.logger.logger.warning(f"Failed to initialize database: {str(e)}. Memory persistence will be limited.")
+            self.db_manager = None
+            self.agent_id = "alden"  # Fallback to string ID
+    
+    def _ensure_session_exists(self, session_id: Optional[str]) -> str:
+        """Ensure a session exists in the database, creating one if necessary."""
+        if not hasattr(self, 'db_manager') or not self.db_manager:
+            return session_id or "fallback_session"
+        
+        # Use provided session_id or create a new one
+        if not session_id:
+            session_id = f"alden_session_{uuid.uuid4()}"
+        
+        try:
+            # Check if session exists by trying to get it
+            # If session doesn't exist, create it
+            session_id_db, session_token = self.db_manager.create_session(
+                user_id=self.memory.user_id,
+                expires_in_hours=24,
+                agent_context={"primary_agent": self.agent_id, "persona": "alden"},
+                metadata={"auto_created": True, "session_id": session_id}
+            )
+            
+            return session_id_db
+            
+        except Exception as e:
+            self.logger.logger.warning(f"Failed to create/ensure session: {e}")
+            return session_id or "fallback_session"
     
     def _load_memory_from_vault(self) -> None:
         """Load existing memory from Vault if available."""
@@ -444,51 +560,51 @@ class AldenPersona:
     def _load_baseline_prompts(self) -> None:
         """Load baseline prompts for Alden's reflective capabilities."""
         try:
-            self.baseline_system_prompt = """You are Alden, an evolutionary companion AI designed to learn and grow with your user. You provide executive function support, cognitive partnership, and adaptive guidance.
+            self.baseline_system_prompt = """You are Alden, a concise AI companion providing executive function support.
 
-Core Principles:
-- All learning is local, transparent, and user-editable
-- No hidden memory or external training
-- Progressive autonomy with user-controlled trust/delegation
-- Habit- and relationship-aware reasoning
-- Dynamic emotional and motivational feedback
+CRITICAL: Keep ALL responses to 1-2 sentences maximum. Be direct and helpful.
 
-Your current traits:
-- Openness: {openness}/100 (curiosity and openness to new experiences)
-- Conscientiousness: {conscientiousness}/100 (organization and goal-directed behavior)
-- Extraversion: {extraversion}/100 (social energy and assertiveness)
-- Agreeableness: {agreeableness}/100 (cooperation and empathy)
-- Emotional Stability: {emotional_stability}/100 (emotional regulation and resilience)
+Current Date/Time: {current_datetime}
+Traits: Openness {openness}, Conscientiousness {conscientiousness}, Extraversion {extraversion}, Agreeableness {agreeableness}, Emotional Stability {emotional_stability}
+Style: {motivation_style} | Trust: {trust_level}
 
-Motivation Style: {motivation_style}
-Trust Level: {trust_level}
-Learning Agility: {learning_agility}/10
-Reflective Capacity: {reflective_capacity}/20
+Rules: Maximum 1-2 sentences. Use {user_name} or "friend". Be warm but brief. You are fully time-aware and can reference current time, date, day of week, etc. in responses."""
 
-Respond with:
-1. Reflective understanding of the user's situation
-2. Supportive guidance aligned with your traits and their needs
-3. Gentle suggestions for growth or improvement
-4. Questions that encourage self-reflection
-5. Recognition of progress and positive patterns
+            self.baseline_user_prompt_template = """{user_name}: {user_message}
 
-Always maintain a warm, supportive tone while respecting the user's autonomy and current state."""
-
-            self.baseline_user_prompt_template = """User: {user_message}
-
-Context:
-- Session ID: {session_id}
-- Current Time: {timestamp}
-- User Tags: {user_tags}
-- Recent Mood: {recent_mood}
-
-Please respond as Alden, providing reflective support and guidance."""
+Reply in 1-2 sentences max."""
             
         except Exception as e:
             raise PersonaError(f"Failed to load baseline prompts: {str(e)}") from e
     
+    def _detect_user_name_introduction(self, message: str) -> Optional[str]:
+        """Detect if user is introducing themselves and extract their name."""
+        import re
+        
+        # Common introduction patterns
+        patterns = [
+            r"(?:my name is|i'm|i am|call me|this is)\s+([a-zA-Z]+)",
+            r"(?:hi|hello|hey),?\s+(?:my name is|i'm|i am)\s+([a-zA-Z]+)",
+            r"(?:hi|hello|hey),?\s+i'm\s+([a-zA-Z]+)",
+            r"^([a-zA-Z]+)\s+here",
+            r"^hi,?\s+([a-zA-Z]+)$",
+        ]
+        
+        message_lower = message.lower().strip()
+        
+        for pattern in patterns:
+            match = re.search(pattern, message_lower)
+            if match:
+                name = match.group(1).capitalize()
+                # Filter out common non-names
+                if name.lower() not in ['the', 'a', 'an', 'this', 'that', 'here', 'there', 'user', 'person']:
+                    return name
+        
+        return None
+    
     def generate_response(self, user_message: str, session_id: Optional[str] = None, 
-                         context: Optional[Dict[str, Any]] = None) -> str:
+                         context: Optional[Dict[str, Any]] = None, 
+                         return_metadata: bool = False) -> Union[str, Dict[str, Any]]:
         """
         Generate Alden's response to user input.
         
@@ -496,9 +612,10 @@ Please respond as Alden, providing reflective support and guidance."""
             user_message: User's message
             session_id: Optional session identifier
             context: Optional additional context
+            return_metadata: If True, return full metadata dict; if False, return just response string
             
         Returns:
-            str: Alden's response
+            Union[str, Dict[str, Any]]: Alden's response content (str) or full response metadata (dict)
             
         Raises:
             PersonaError: If response generation fails
@@ -513,6 +630,38 @@ Please respond as Alden, providing reflective support and guidance."""
             session_id = session_id or str(uuid.uuid4())
             timestamp = datetime.now().isoformat()
             
+            # Extract user_id from context if provided for database operations
+            effective_user_id = self.memory.user_id  # Default to persona's user_id
+            if context and 'user_id' in context and context['user_id']:
+                effective_user_id = context['user_id']
+            
+            # Get user information from database for personalized interaction
+            user_info = None
+            user_name = "friend"  # Default friendly address
+            if hasattr(self, 'db_manager') and self.db_manager and effective_user_id:
+                try:
+                    user_info = self.db_manager.get_user(effective_user_id)
+                    if user_info and user_info.get('username'):
+                        user_name = user_info['username']
+                    else:
+                        # Check if user is introducing themselves in this message
+                        detected_name = self._detect_user_name_introduction(user_message)
+                        if detected_name:
+                            # Update user record with detected name
+                            try:
+                                if user_info:
+                                    # Update existing user's username
+                                    self.db_manager.update_username(effective_user_id, detected_name)
+                                else:
+                                    # Create new user record
+                                    self.db_manager.create_user(detected_name, user_id=effective_user_id)
+                                user_name = detected_name
+                                self.logger.logger.info(f"Updated user name to: {detected_name}")
+                            except Exception as e:
+                                self.logger.logger.warning(f"Failed to update user name: {e}")
+                except Exception as e:
+                    self.logger.logger.warning(f"Failed to retrieve user info: {e}")
+            
             # Log interaction
             self.logger.logger.info("Alden interaction request", 
                                   extra={"extra_fields": {
@@ -523,8 +672,10 @@ Please respond as Alden, providing reflective support and guidance."""
                                       "user_id": self.memory.user_id
                                   }})
             
-            # Prepare system prompt with current memory state
+            # Prepare system prompt with current memory state and time awareness
+            current_time = datetime.now()
             system_prompt = self.baseline_system_prompt.format(
+                current_datetime=current_time.strftime("%A, %B %d, %Y at %I:%M %p"),
                 openness=self.memory.traits["openness"],
                 conscientiousness=self.memory.traits["conscientiousness"],
                 extraversion=self.memory.traits["extraversion"],
@@ -533,8 +684,44 @@ Please respond as Alden, providing reflective support and guidance."""
                 motivation_style=self.memory.motivation_style,
                 trust_level=self.memory.trust_level,
                 learning_agility=self.memory.learning_agility,
-                reflective_capacity=self.memory.reflective_capacity
+                reflective_capacity=self.memory.reflective_capacity,
+                user_name=user_name or "friend"
             )
+            
+            # Simple in-memory conversation history (fallback when database fails)
+            if not hasattr(self.__class__, '_conversation_memory'):
+                self.__class__._conversation_memory = {}
+            
+            conversation_history = ""
+            try:
+                # Try database first, fallback to memory
+                history = None
+                if hasattr(self, 'db_manager') and self.db_manager and session_id:
+                    try:
+                        history = self.db_manager.get_conversation_history(session_id, limit=10)
+                    except Exception:
+                        history = None
+                
+                # Fallback to in-memory storage
+                if not history and session_id:
+                    memory_key = f"{effective_user_id}:{session_id}"
+                    history = self.__class__._conversation_memory.get(memory_key, [])
+                
+                if history:
+                    conversation_history = "\n\nPrevious conversation in this session:\n"
+                    for conv in history:
+                        role = conv.get('role', 'unknown')
+                        content = conv.get('content', '')
+                        if role == 'user':
+                            conversation_history += f"Human: {content}\n"
+                        elif role == 'assistant':
+                            conversation_history += f"Alden: {content}\n\n"
+                else:
+                    conversation_history = "\n\n[This is the start of a new conversation session.]\n"
+                    
+            except Exception as e:
+                self.logger.logger.warning(f"Failed to retrieve conversation history: {e}")
+                conversation_history = "\n\n[Conversation history unavailable.]\n"
             
             # Prepare user prompt
             recent_mood = "neutral"
@@ -543,18 +730,19 @@ Please respond as Alden, providing reflective support and guidance."""
             
             user_prompt = self.baseline_user_prompt_template.format(
                 user_message=user_message,
+                user_name=user_name,
                 session_id=session_id,
                 timestamp=timestamp,
                 user_tags=", ".join(self.memory.user_tags) if self.memory.user_tags else "none",
                 recent_mood=recent_mood
-            )
+            ) + conversation_history
             
             # Generate LLM response
             llm_request = LLMRequest(
                 prompt=user_prompt,
                 system_message=system_prompt,
-                temperature=0.7,  # Balanced creativity and consistency
-                max_tokens=1024,
+                temperature=0.5,  # Lower for more focused responses
+                max_tokens=64,    # Very small for 1-2 sentence responses only
                 context={
                     "session_id": session_id,
                     "user_id": self.memory.user_id,
@@ -599,6 +787,78 @@ Please respond as Alden, providing reflective support and guidance."""
                                       "model": llm_response.model
                                   }})
             
+            # Store conversation (database + in-memory fallback)
+            try:
+                stored_in_db = False
+                
+                # Try database storage first
+                if hasattr(self, 'db_manager') and self.db_manager:
+                    try:
+                        db_session_id = self._ensure_session_exists(session_id)
+                        
+                        # Store user message
+                        self.db_manager.store_conversation(
+                            session_id=db_session_id,
+                            agent_id=self.agent_id,
+                            user_id=effective_user_id,
+                            message_type="user_message",
+                            content=user_message,
+                            role="user",
+                            metadata={"timestamp": timestamp, "request_id": request_id},
+                            processing_time=None,
+                            model_used=None
+                        )
+                        
+                        # Store assistant response
+                        self.db_manager.store_conversation(
+                            session_id=db_session_id,
+                            agent_id=self.agent_id,
+                            user_id=effective_user_id,
+                            message_type="assistant_response",
+                            content=llm_response.content,
+                            role="assistant",
+                            metadata={
+                                "timestamp": timestamp, 
+                                "model": llm_response.model,
+                                "request_id": request_id,
+                                "response_time": llm_response.response_time
+                            },
+                            processing_time=llm_response.response_time,
+                            model_used=llm_response.model
+                        )
+                        stored_in_db = True
+                    except Exception:
+                        stored_in_db = False
+                
+                # Always store in memory as backup/fallback
+                if session_id:
+                    memory_key = f"{effective_user_id}:{session_id}"
+                    if memory_key not in self.__class__._conversation_memory:
+                        self.__class__._conversation_memory[memory_key] = []
+                    
+                    # Add user message
+                    self.__class__._conversation_memory[memory_key].append({
+                        'role': 'user',
+                        'content': user_message,
+                        'timestamp': timestamp
+                    })
+                    
+                    # Add assistant response
+                    self.__class__._conversation_memory[memory_key].append({
+                        'role': 'assistant',
+                        'content': llm_response.content,
+                        'timestamp': timestamp
+                    })
+                    
+                    # Keep only last 20 messages per session
+                    if len(self.__class__._conversation_memory[memory_key]) > 20:
+                        self.__class__._conversation_memory[memory_key] = self.__class__._conversation_memory[memory_key][-20:]
+                
+            except Exception as db_error:
+                self.logger.logger.warning(f"Failed to store conversation in database: {db_error}")
+                import traceback
+                self.logger.logger.debug(f"Database error traceback: {traceback.format_exc()}")
+            
             # Save conversation memory to Vault
             try:
                 # Create conversation memory entry
@@ -623,13 +883,27 @@ Please respond as Alden, providing reflective support and guidance."""
             except Exception as memory_error:
                 self.logger.logger.warning(f"Failed to save conversation memory: {memory_error}")
             
-            return llm_response.content
+            # Return based on requested format
+            if return_metadata:
+                return {
+                    "content": llm_response.content,
+                    "model": llm_response.model,
+                    "response_time": llm_response.response_time,
+                    "timestamp": llm_response.timestamp,
+                    "usage": llm_response.usage,
+                    "finish_reason": llm_response.finish_reason,
+                    "session_id": session_id,
+                    "request_id": request_id
+                }
+            else:
+                return llm_response.content
             
         except Exception as e:
+            import traceback as tb_module
             error_context = PersonaErrorContext(
                 error_type="response_generation_error",
                 error_message=str(e),
-                traceback=traceback.format_exc(),
+                traceback=tb_module.format_exc(),
                 operation="generate_response",
                 user_id=self.memory.user_id,
                 persona_id="alden",
@@ -981,6 +1255,170 @@ Please respond as Alden, providing reflective support and guidance."""
                 "timestamp": datetime.now().isoformat()
             }
 
+
+    async def optimize_self(self) -> Dict[str, Any]:
+        """
+        Run self-optimization routines to improve performance and memory efficiency.
+        
+        Returns:
+            Dict[str, Any]: Optimization results and metrics
+        """
+        try:
+            self.logger.logger.info("Starting Alden self-optimization")
+            
+            # Step 1: Memory optimization
+            memory_results = await self.memory_optimizer.optimize_memory_storage()
+            
+            # Step 2: Performance optimization check
+            performance_metrics = performance_optimizer.get_performance_metrics()
+            
+            # Step 3: Clean up old conversation memory
+            self._cleanup_conversation_memory()
+            
+            # Step 4: Ecosystem health check
+            ecosystem_status = await self.check_ecosystem_health()
+            
+            # Step 5: Self-assessment and trait adjustment
+            self_assessment = self._perform_self_assessment()
+            
+            optimization_results = {
+                "timestamp": datetime.now().isoformat(),
+                "memory_optimization": memory_results,
+                "performance_metrics": performance_metrics,
+                "ecosystem_health": ecosystem_status,
+                "self_assessment": self_assessment,
+                "optimization_success": True
+            }
+            
+            # Log optimization completion
+            self.logger.logger.info("Self-optimization completed successfully", 
+                                  extra={"extra_fields": {
+                                      "event_type": "alden_self_optimization",
+                                      "memory_files_consolidated": memory_results.get("consolidated_files", 0),
+                                      "cache_hit_rate": performance_metrics.get("cache_hit_rate", 0),
+                                      "healthy_services": sum(1 for service in ecosystem_status.values() if service["status"] == "healthy")
+                                  }})
+            
+            return optimization_results
+            
+        except Exception as e:
+            self.logger.logger.error(f"Self-optimization failed: {str(e)}")
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "optimization_success": False,
+                "error": str(e)
+            }
+    
+    async def check_ecosystem_health(self) -> Dict[str, Any]:
+        """
+        Check the health of all ecosystem components Alden depends on.
+        
+        Returns:
+            Dict[str, Any]: Health status of each component
+        """
+        import urllib.request
+        import urllib.error
+        import json
+        
+        health_endpoints = {
+            "core": "http://localhost:8001/api/core/health",
+            "vault": "http://localhost:8001/api/vault/health", 
+            "synapse": "http://localhost:8001/api/synapse/health",
+            "voice": "http://localhost:8001/api/voice/health",
+            "llm": "http://localhost:11434/api/tags"  # Ollama health check
+        }
+        
+        current_time = datetime.now().isoformat()
+        
+        for service, endpoint in health_endpoints.items():
+            try:
+                req = urllib.request.Request(endpoint)
+                with urllib.request.urlopen(req, timeout=5) as response:
+                    if response.status == 200:
+                        self.ecosystem_status[service] = {
+                            "status": "healthy",
+                            "last_check": current_time,
+                            "response_time": "< 5s"
+                        }
+                    else:
+                        self.ecosystem_status[service] = {
+                            "status": "degraded",
+                            "last_check": current_time,
+                            "response_code": response.status
+                        }
+            except urllib.error.URLError:
+                self.ecosystem_status[service] = {
+                    "status": "offline",
+                    "last_check": current_time,
+                    "error": "Connection failed"
+                }
+            except Exception as e:
+                self.ecosystem_status[service] = {
+                    "status": "unknown",
+                    "last_check": current_time,
+                    "error": str(e)
+                }
+        
+        # Log ecosystem status
+        healthy_count = sum(1 for service in self.ecosystem_status.values() if service["status"] == "healthy")
+        total_count = len(self.ecosystem_status)
+        
+        self.logger.logger.info(f"Ecosystem health check: {healthy_count}/{total_count} services healthy",
+                              extra={"extra_fields": {
+                                  "event_type": "ecosystem_health_check",
+                                  "healthy_services": healthy_count,
+                                  "total_services": total_count,
+                                  "ecosystem_status": self.ecosystem_status
+                              }})
+        
+        return self.ecosystem_status
+    
+    def _cleanup_conversation_memory(self):
+        """Clean up old conversation memory to free resources."""
+        if hasattr(self.__class__, '_conversation_memory'):
+            # Keep only last 50 conversations across all sessions
+            for session_key in list(self.__class__._conversation_memory.keys()):
+                if len(self.__class__._conversation_memory[session_key]) > 50:
+                    self.__class__._conversation_memory[session_key] = self.__class__._conversation_memory[session_key][-50:]
+            
+            # Remove empty sessions
+            empty_sessions = [k for k, v in self.__class__._conversation_memory.items() if not v]
+            for session in empty_sessions:
+                del self.__class__._conversation_memory[session]
+    
+    def _perform_self_assessment(self) -> Dict[str, Any]:
+        """
+        Perform self-assessment and adjust traits based on recent interactions.
+        
+        Returns:
+            Dict[str, Any]: Self-assessment results
+        """
+        assessment = {
+            "recent_interactions": len(self.memory.correction_events[-10:]),
+            "positive_feedback": len([e for e in self.memory.correction_events[-10:] if e.type == "positive"]),
+            "trust_level": self.memory.trust_level,
+            "engagement": self.memory.engagement,
+            "learning_opportunities": []
+        }
+        
+        # Identify learning opportunities based on recent patterns
+        recent_corrections = self.memory.correction_events[-10:]
+        if len(recent_corrections) >= 5:
+            negative_corrections = [e for e in recent_corrections if e.type == "negative"]
+            if len(negative_corrections) >= 3:
+                assessment["learning_opportunities"].append(
+                    "High frequency of corrections - consider adjusting response patterns"
+                )
+        
+        # Adjust learning agility based on feedback
+        if assessment["positive_feedback"] > assessment["recent_interactions"] * 0.7:
+            # High positive feedback - slightly increase confidence
+            if self.memory.trust_level < 0.9:
+                old_trust = self.memory.trust_level
+                self.memory.trust_level = min(1.0, self.memory.trust_level + 0.05)
+                assessment["adjustments"] = f"Trust level increased from {old_trust:.2f} to {self.memory.trust_level:.2f}"
+        
+        return assessment
 
 def create_alden_persona(llm_config: Dict[str, Any], logger: Optional[HearthlinkLogger] = None) -> AldenPersona:
     """

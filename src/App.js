@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+
+// Import Tauri API compatibility layer
+import './utils/TauriAPI';
 
 // Import components
 import AldenInterface from './personas/alden/AldenInterface';
@@ -40,8 +42,9 @@ function App() {
     fontSize: 'medium'
   });
   const [showHelp, setShowHelp] = useState(false);
+  const [showAccessibility, setShowAccessibility] = useState(false);
   const [appVersion, setAppVersion] = useState('1.3.0');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isRadialMenuOpen, setIsRadialMenuOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(() => {
     const forceSettings = localStorage.getItem('forceSettings') === 'true';
@@ -280,6 +283,14 @@ function App() {
                 src="./assets/Hearthlink.png" 
                 alt="Hearthlink" 
                 className="hearthlink-icon"
+                onError={(e) => {
+                  console.error('Failed to load Hearthlink icon');
+                  e.target.style.border = '2px solid red';
+                  e.target.alt = 'HEARTHLINK (FAILED)';
+                }}
+                onLoad={() => {
+                  console.log('Successfully loaded Hearthlink icon');
+                }}
               />
             </button>
             
@@ -319,6 +330,14 @@ function App() {
                       src={module.icon} 
                       alt={module.label}
                       className="radial-menu-icon"
+                      onError={(e) => {
+                        console.error(`Failed to load icon: ${module.icon}`);
+                        e.target.style.border = '2px solid red';
+                        e.target.alt = `${module.label} (FAILED)`;
+                      }}
+                      onLoad={() => {
+                        console.log(`Successfully loaded icon: ${module.icon}`);
+                      }}
                     />
                   </button>
                 );
@@ -478,8 +497,8 @@ function App() {
       <AccessibilityPanel 
         settings={accessibilitySettings}
         onSettingChange={toggleAccessibility}
-        isVisible={showHelp}
-        onClose={() => setShowHelp(false)}
+        isVisible={showAccessibility}
+        onClose={() => setShowAccessibility(false)}
       />
 
       {/* Help Menu */}
@@ -518,6 +537,20 @@ function App() {
       />
     </div>
   );
+
+  // Function to get current module component
+  const getModuleComponent = () => {
+    switch(currentPersona) {
+      case 'core': return <CoreModule />;
+      case 'alden': return <AldenModule />;
+      case 'synapse': return <SynapseModule />;
+      case 'vault': return <VaultModule />;
+      case 'mimic': return <MimicModule />;
+      case 'sentry': return <SentryModule />;
+      case 'alice': return <AliceModule />;
+      default: return <AldenModule />;
+    }
+  };
 
   // Placeholder components for module routes
   const CoreModule = () => (
@@ -631,33 +664,19 @@ function App() {
   );
 
   return (
-    <Router>
-      
-      <Routes>
-        {/* Launch Page Route */}
-        <Route path="/" element={
-          (() => {
-            // console.log('Routing decision:', { isLoading, currentPersona, navigateTo: `/${currentPersona}` });
-            return isLoading ? 
-              <LaunchPage onModuleSelect={handleModuleSelect} /> : 
-              <Navigate to={`/${currentPersona}`} replace />;
-          })()
-        } />
-        
-        {/* Module Routes */}
-        <Route path="/core" element={<CoreModule />} />
-        <Route path="/alden" element={<AldenModule />} />
-        <Route path="/synapse" element={<SynapseModule />} />
-        <Route path="/vault" element={<VaultModule />} />
-        <Route path="/mimic" element={<MimicModule />} />
-        <Route path="/sentry" element={<SentryModule />} />
-        <Route path="/alice" element={<AliceModule />} />
-        <Route path="/tokens" element={<TokenGenerator />} />
-        
-        {/* Fallback route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+    <div className="app-container">
+      {isLoading ? (
+        <LaunchPage 
+          onModuleSelect={handleModuleSelect}
+          onShowAccessibility={() => setShowAccessibility(true)}
+          onShowHelp={() => setShowHelp(true)}
+        />
+      ) : (
+        <AppContent />
+      )}
+      {showHelp && <HelpMenu onClose={() => setShowHelp(false)} />}
+      {showAccessibility && <AccessibilityPanel onClose={() => setShowAccessibility(false)} />}
+    </div>
   );
 }
 
