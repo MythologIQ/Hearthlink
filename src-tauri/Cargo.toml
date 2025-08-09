@@ -1,0 +1,33 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
+license = ""
+repository = ""
+default-run = "app"
+edition = "2021"
+rust-version = "1.60"
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[target.'cfg(windows)'.build-dependencies]
+embed-resource = "3.0"
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.0", features = ["devtools"] }
+tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+aes-gcm = "0.10"
+rand = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+rusqlite = { version = "0.30", features = ["bundled"] }
+prometheus = "0.13"
+base64 = "0.21"
+lazy_static = "1.4"
+
+[features]
+custom-protocol = [ "tauri/custom-protocol" ]
