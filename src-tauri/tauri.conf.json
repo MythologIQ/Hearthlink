@@ -1,18 +1,18 @@
 {
-  "productName": "Hearthlink SPEC-2 Native",
-  "version": "1.3.0-spec2",
-  "identifier": "com.hearthlink.native.spec2",
+  "productName": "Hearthlink Native",
+  "version": "1.3.0",
+  "identifier": "com.hearthlink.native",
   "build": {
     "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run compile:ts",
-    "devUrl": "http://localhost:3016",
+    "beforeDevCommand": "npm run dev:react",
+    "devUrl": "http://localhost:3005",
     "frontendDist": "../build",
     "withGlobalTauri": true
   },
   "bundle": {
     "active": true,
     "targets": "all",
-    "identifier": "com.hearthlink.native.spec2",
+    "identifier": "com.hearthlink.native",
     "publisher": "Hearthlink Development Team",
     "icon": [
       "icons/32x32.png",
@@ -22,26 +22,25 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "assets/validation.json",
-      "assets/ci_badges.json", 
-      "assets/installer_manifest.json",
-      "../src/components/TaskCreator.js",
-      "../src/components/TaskCreator.css",
-      "../src/components/MemoryDebugPanel.js",
-      "../src/components/MemoryDebugPanel.css",
-      "../src/api/task_templates.py",
-      "../src/api/vault_tasks.py"
+      "../src/**/*.py",
+      "../config/**/*.json",
+      "../hearthlink_data/**/*",
+      "../requirements.txt",
+      "../requirements_full.txt"
     ],
-    "externalBin": [],
+    "externalBin": [
+      "python3",
+      "python"
+    ],
     "copyright": "Copyright © 2025 Hearthlink Development Team. All rights reserved.",
     "category": "Productivity",
-    "shortDescription": "AI Orchestration System with SPEC-2 Memory Integration",
-    "longDescription": "Advanced AI Orchestration System featuring enhanced task management, Vault-backed memory persistence, cross-agent synchronization, and comprehensive debugging tools. SPEC-2 compliance with Llama 3.5 micro integration.",
+    "shortDescription": "AI Orchestration System with Multi-Agent Architecture",
+    "longDescription": "Advanced AI Orchestration System featuring multiple AI agents (Alden, Vault, Core, Synapse), voice interaction capabilities, and comprehensive project management tools. Single-click native Windows application with automatic service orchestration.",
     "appimage": {
       "bundleMediaFramework": false
     },
     "deb": {
-      "depends": ["python3", "python3-pip", "nodejs"],
+      "depends": ["python3", "python3-pip", "python3-venv"],
       "priority": "optional",
       "section": "utils"
     },
@@ -67,9 +66,7 @@
         "featureGroupRefs": [],
         "featureRefs": [],
         "mergeRefs": [],
-        "skipWebviewInstall": false,
-        "bannerPath": "assets/banner.bmp",
-        "dialogImagePath": "assets/dialog.bmp"
+        "skipWebviewInstall": false
       },
       "nsis": {
         "template": "installer.nsi",
@@ -80,7 +77,6 @@
         "installMode": "both",
         "allowDowngrades": true,
         "allowToChangeInstallationDirectory": true,
-        "installerHooks": "assets/installer-hooks",
         "compressionLevel": "high",
         "packagingFormat": "oneClick"
       }
@@ -90,7 +86,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Hearthlink SPEC-2 Native - Memory Integration Suite",
+        "title": "Hearthlink - AI Orchestration System",
         "width": 1400,
         "height": 900,
         "minWidth": 1000,
@@ -111,7 +107,7 @@
       "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ws: wss: http://localhost:* https://localhost:*; connect-src 'self' ws: wss: http://localhost:* https://localhost:* https://api.openai.com https://api.anthropic.com"
     },
     "systemTray": {
-      "iconPath": "icons/tray-icon.png",
+      "iconPath": "icons/icon.png",
       "iconAsTemplate": true
     }
   },
@@ -120,14 +116,22 @@
       "all": false,
       "shell": {
         "all": false,
-        "open": true
+        "open": true,
+        "execute": true,
+        "sidecar": true,
+        "scope": ["python", "python3", "python.exe", "src/main.py", "src/api/*"]
       },
       "path": {
         "all": true
       },
       "fs": {
         "all": true,
-        "scope": ["$APPDATA/*", "$LOCALDATA/*", "$DOCUMENT/*", "$DOWNLOAD/*", "$CACHE/*"]
+        "scope": ["$APPDATA/*", "$LOCALDATA/*", "$DOCUMENT/*", "$DOWNLOAD/*", "$CACHE/*", "$RESOURCE/*"]
+      },
+      "process": {
+        "all": false,
+        "exit": true,
+        "relaunch": true
       },
       "protocol": {
         "all": false,
@@ -152,6 +156,25 @@
         "message": true,
         "open": true,
         "save": true
+      },
+      "window": {
+        "all": false,
+        "create": true,
+        "center": true,
+        "requestUserAttention": true,
+        "setResizable": true,
+        "setTitle": true,
+        "maximize": true,
+        "minimize": true,
+        "show": true,
+        "hide": true,
+        "close": true,
+        "setDecorations": true,
+        "setShadow": true,
+        "setEffects": true,
+        "setVisibleOnAllWorkspaces": true,
+        "setContentProtection": true,
+        "print": true
       }
     },
     "updater": {
@@ -161,7 +184,7 @@
       "pubkey": ""
     },
     "systemTray": {
-      "iconPath": "icons/tray-icon.png"
+      "iconPath": "icons/icon.png"
     }
   }
 }
