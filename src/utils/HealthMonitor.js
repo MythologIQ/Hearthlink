@@ -208,13 +208,16 @@ class HealthMonitor {
   }
 
   startMonitoring() {
-    const monitoringInterval = getConfig('monitoring.metricsInterval', 5000);
+    const monitoringInterval = getConfig('monitoring.metricsInterval', 30000); // Increased to 30 seconds
     
-    this.monitoringInterval = setInterval(() => {
-      this.performHealthChecks();
-      this.collectMetrics();
-      this.evaluateAlerts();
-    }, monitoringInterval);
+    // Add startup grace period - wait 10 seconds before starting health checks
+    setTimeout(() => {
+      this.monitoringInterval = setInterval(() => {
+        this.performHealthChecks();
+        this.collectMetrics();
+        this.evaluateAlerts();
+      }, monitoringInterval);
+    }, 10000);
 
     // Watch for configuration changes
     watchConfig('monitoring.enabled', (enabled) => {
@@ -534,17 +537,33 @@ class HealthMonitor {
   checkAlertConditions(name, healthCheck) {
     const result = healthCheck.lastResult;
     
+    // Add cooldown to prevent alert spam - only alert once per 60 seconds for same check
+    const alertKey = `${name}_${result.state}`;
+    const now = Date.now();
+    const lastAlertTime = this.lastAlerts?.get(alertKey) || 0;
+    const cooldownPeriod = 60000; // 60 seconds
+    
+    if (now - lastAlertTime < cooldownPeriod) {
+      return; // Skip this alert due to cooldown
+    }
+    
+    if (!this.lastAlerts) {
+      this.lastAlerts = new Map();
+    }
+    
     if (result.state === HEALTH_STATES.CRITICAL) {
       this.createAlert(ALERT_LEVELS.CRITICAL, `Health check critical: ${name}`, {
         healthCheck: name,
         value: result.value,
         error: result.error
       });
+      this.lastAlerts.set(alertKey, now);
     } else if (result.state === HEALTH_STATES.WARNING) {
       this.createAlert(ALERT_LEVELS.WARNING, `Health check warning: ${name}`, {
         healthCheck: name,
         value: result.value
       });
+      this.lastAlerts.set(alertKey, now);
     }
     
     // Check for consecutive failures

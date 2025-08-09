@@ -117,6 +117,67 @@ const TaskDashboard = ({ data, isExpanded, onTaskCreate, onTaskUpdate }) => {
     }
   }, [onTaskCreate]);
 
+  const handleDeleteTask = useCallback(async (taskId) => {
+    const taskToDelete = tasks.find(task => task.id === taskId);
+    if (!taskToDelete) return;
+
+    // Confirm deletion
+    if (!window.confirm(`Are you sure you want to delete "${taskToDelete.title}"?`)) {
+      return;
+    }
+
+    // Optimistic update
+    setTasks(prev => prev.filter(task => task.id !== taskId));
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(`/api/task-templates/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('hearthlink_token')}`
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+
+      // Audit log for deletion
+      const auditController = new AbortController();
+      const auditTimeoutId = setTimeout(() => auditController.abort(), 5000);
+      
+      await fetch('/api/task-templates/audit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('hearthlink_token')}`
+        },
+        body: JSON.stringify({
+          operation: 'DELETE',
+          entityType: 'task',
+          entityId: taskId,
+          userId: 'current_user', // TODO: Get from auth context
+          timestamp: new Date().toISOString()
+        }),
+        signal: auditController.signal
+      });
+      
+      clearTimeout(auditTimeoutId);
+
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      
+      // Rollback optimistic update
+      setTasks(prev => [taskToDelete, ...prev]);
+      alert('Failed to delete task. Please try again.');
+    }
+  }, [tasks]);
+
   const filteredTasks = tasks.filter(task => {
     const matchesPriority = selectedPriority === 'all' || task.priority === selectedPriority;
     const matchesSearch = searchQuery === '' || 
@@ -451,6 +512,16 @@ const TaskDashboard = ({ data, isExpanded, onTaskCreate, onTaskUpdate }) => {
                       )}
                     </div>
                   </div>
+                  
+                  <div className="task-actions">
+                    <button
+                      className="delete-task-btn"
+                      onClick={() => handleDeleteTask(task.id)}
+                      title="Delete Task"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
                 
                 {task.progress > 0 && task.status !== 'completed' && (
@@ -480,18 +551,34 @@ const TaskDashboard = ({ data, isExpanded, onTaskCreate, onTaskUpdate }) => {
             <div className="analytics-card">
               <h4>Completion Trends</h4>
               <div className="trend-visualization">
-                {/* Simple visualization - in production would use a charting library */}
+                {/* Real completion trend visualization */}
                 <div className="trend-bars">
-                  {Array.from({ length: 7 }, (_, i) => (
-                    <div
-                      key={i}
-                      className="trend-bar"
-                      style={{
-                        height: `${Math.random() * 80 + 20}%`,
-                        backgroundColor: '#22d3ee'
-                      }}
-                    />
-                  ))}
+                  {Array.from({ length: 7 }, (_, i) => {
+                    // Calculate actual completion rates for last 7 days
+                    const date = new Date();
+                    date.setDate(date.getDate() - (6 - i));
+                    const dateString = date.toDateString();
+                    
+                    const dayTasks = tasks.filter(task => {
+                      if (!task.completedAt) return false;
+                      return new Date(task.completedAt).toDateString() === dateString;
+                    });
+                    
+                    // Calculate completion percentage for this day (max 5 tasks = 100%)
+                    const completionPercent = Math.min((dayTasks.length / 5) * 100, 100);
+                    
+                    return (
+                      <div
+                        key={i}
+                        className="trend-bar"
+                        style={{
+                          height: `${Math.max(completionPercent, 10)}%`,
+                          backgroundColor: '#22d3ee'
+                        }}
+                        title={`${date.toLocaleDateString()}: ${dayTasks.length} tasks completed`}
+                      />
+                    );
+                  })}
                 </div>
                 <div className="trend-labels">
                   <span>7d ago</span>

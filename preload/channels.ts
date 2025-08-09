@@ -1,3 +1,4 @@
+﻿export {}
 // Version 1.0 - Secure IPC channel definitions
 // These channels represent the narrow, versioned APIs exposed to the renderer
 
@@ -93,4 +94,4 @@ module.exports = {
   IPC_CHANNELS,
   CHANNEL_VERSION,
   validateChannel
-};
+};export {}

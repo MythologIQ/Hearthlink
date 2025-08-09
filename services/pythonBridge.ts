@@ -1,3 +1,4 @@
+﻿export {}
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -162,4 +163,4 @@ module.exports = {
   sendToPython,
   stopPythonBackend,
   getPythonProcess
-};
+};export {}

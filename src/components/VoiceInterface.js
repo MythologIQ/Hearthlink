@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './VoiceInterface.css';
 import VoiceTTSManager from './VoiceTTSManager';
+import spriteService from '../services/SpriteService.js';
 
 const VoiceInterface = ({ onCommand, isActive, onClose, currentAgent, availableAgents, onAgentChange }) => {
   const [isListening, setIsListening] = useState(false);
@@ -202,186 +203,203 @@ const VoiceInterface = ({ onCommand, isActive, onClose, currentAgent, availableA
     return suggestions;
   };
 
-  // Voice routing logic implementation
-  const handleVoiceInput = (input, confidenceScore = 0.8) => {
-    const lowerInput = input.toLowerCase();
-    let targetAgent = null;
-    let routingDecision = null;
+  // Voice routing logic implementation with Sprite Light architecture
+  const handleVoiceInput = async (input, confidenceScore = 0.8) => {
+    try {
+      // Check for voice adjustment commands first
+      if (ttsManagerRef.current && ttsManagerRef.current.processVoiceAdjustmentCommand) {
+        const wasVoiceCommand = ttsManagerRef.current.processVoiceAdjustmentCommand(input, currentAgent);
+        if (wasVoiceCommand) {
+          setAgentConfirmation('Voice settings updated.');
+          return;
+        }
+      }
 
-    // Check for voice adjustment commands first
-    if (ttsManagerRef.current && ttsManagerRef.current.processVoiceAdjustmentCommand) {
-      const wasVoiceCommand = ttsManagerRef.current.processVoiceAdjustmentCommand(input, currentAgent);
-      if (wasVoiceCommand) {
-        routingDecision = 'voice_adjustment_processed';
-        setAgentConfirmation('Voice settings updated.');
+      // Check for secure mode activation
+      if (checkSecureModeActivation(input)) {
+        setSecureMode(true);
+        setAgentConfirmation('Feature not implemented: Secure mode authentication system not available.');
         return;
       }
-    }
 
-    // Check for secure mode activation
-    if (checkSecureModeActivation(input)) {
-      setSecureMode(true);
-      setAgentConfirmation('Secure mode activated. Please provide authentication.');
-      routingDecision = 'secure_mode_activated';
-      // TODO: Implement authentication challenge
-      return;
-    }
+      // Process through Sprite Service for conversational AI routing
+      const voiceInput = {
+        transcript: input,
+        confidence: confidenceScore,
+        duration: 0, // Would be calculated from audio
+        language: 'en-US'
+      };
 
-    // Agent Agnostic Mode: Listen for any active agent by name
-    if (routingMode === 'agnostic') {
-      for (const agent of localAgents) {
-        if (lowerInput.includes(`hey ${agent}`) || lowerInput.includes(`${agent},`)) {
-          targetAgent = agent;
-          routingDecision = 'local_agent_detected';
-          break;
+      // Try real Alden integration first, fallback to sprite service
+      let result;
+      try {
+        // Real Alden backend integration
+        const aldenResponse = await fetch('http://localhost:8888/conversation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: input,
+            user_id: 'voice_user',
+            session_id: `voice_${Date.now()}`,
+            voice_input: true,
+            context: {
+              confidence: confidenceScore,
+              timestamp: new Date().toISOString()
+            }
+          })
+        });
+
+        if (aldenResponse.ok) {
+          const aldenResult = await aldenResponse.json();
+          result = {
+            success: true,
+            response: aldenResult.response,
+            voiceResponse: aldenResult.response,
+            persona: 'alden',
+            confidence: 0.9,
+            source: 'alden_backend'
+          };
+
+          // Trigger voice output through TTS Manager
+          if (ttsManagerRef.current && ttsManagerRef.current.speak) {
+            ttsManagerRef.current.speak(aldenResult.response, 'alden');
+          }
+        } else {
+          throw new Error(`Alden backend unavailable: ${aldenResponse.status}`);
         }
+      } catch (error) {
+        console.warn('⚠️ Alden backend unavailable, falling back to Sprite Service:', error.message);
+        // Fallback to sprite service
+        result = await spriteService.handleVoiceCommand(voiceInput);
       }
 
-      // Check for external agents (only if enabled)
-      if (externalAgentsEnabled) {
-        for (const agent of externalAgents) {
-          if (lowerInput.includes(`hey ${agent}`) || lowerInput.includes(`${agent},`)) {
-            targetAgent = agent;
-            routingDecision = 'external_agent_detected';
-            break;
+      if (result.success) {
+        // Handle confirmation dialogs
+        if (result.requiresConfirmation) {
+          setAgentConfirmation(result.confirmationMessage);
+          setDeferenceOptions([{
+            agent: result.persona || 'alden',
+            reason: 'Confirm this action',
+            requiresConfirmation: true,
+            originalRequest: input
+          }]);
+          
+          // Add routing breadcrumb for confirmation request
+          setRoutingBreadcrumbs(prev => [...prev, {
+            step: 'confirmation_required',
+            agent: result.persona || 'alden',
+            confidence: result.confidence,
+            timestamp: new Date()
+          }]);
+        } else {
+          // Standard successful processing
+          const targetAgent = result.persona || 'alden';
+          setAgentConfirmation(`${result.voiceResponse || result.response}`);
+          setDeferenceOptions([]);
+          
+          // Add routing breadcrumb for successful processing
+          setRoutingBreadcrumbs(prev => [...prev, {
+            step: 'sprite_processed',
+            agent: targetAgent,
+            confidence: result.confidence,
+            source: result.source,
+            timestamp: new Date()
+          }]);
+
+          // Update current agent if needed
+          if (onAgentChange && targetAgent !== currentAgent) {
+            onAgentChange(targetAgent);
           }
         }
-      }
 
-      // If no agent specified, delegate to currently active agent
-      if (!targetAgent) {
-        targetAgent = currentAgent || 'alden';
-        routingDecision = 'delegated_to_active';
-      }
-    } else {
-      // Isolated Mode: All voice input routes to pinned agent
-      targetAgent = pinnedAgent || currentAgent || 'alden';
-      routingDecision = 'isolated_mode';
-    }
+        // Log successful command processing
+        setCommands(prev => [...prev, { 
+          command: input, 
+          agent: result.persona || 'alden',
+          routing: 'sprite_service',
+          timestamp: new Date(), 
+          processed: true,
+          confidence: result.confidence,
+          source: result.source
+        }]);
 
-    // Safety reinforcement: External agent routing confirmation
-    if (externalAgents.includes(targetAgent) && !externalAgentsEnabled) {
-      setAgentConfirmation(`External agent ${targetAgent} is not enabled. Please enable in Core → Settings → External Agents → Voice Interaction.`);
-      logVoiceEvent('external_agent_blocked', { agent: targetAgent, input });
-      return;
-    }
+        // Log voice session to Vault
+        logVoiceSession(input, result.persona || 'alden', 'sprite_processed');
 
-    // Check for agent deference - suggest better suited agent if available
-    const deferenceOption = analyzeAgentDeference(input, targetAgent);
-    if (deferenceOption && deferenceOption.confidence > 0.7) {
-      setDeferenceOptions([{
-        agent: deferenceOption.suggested,
-        reason: deferenceOption.reason,
-        original: targetAgent
-      }]);
-      setAgentConfirmation(`${deferenceOption.reason} Would you like to switch to ${deferenceOption.suggested} instead?`);
-      
-      // Add routing breadcrumb for deference suggestion
-      setRoutingBreadcrumbs(prev => [...prev, {
-        step: 'deference_suggested',
-        from: targetAgent,
-        to: deferenceOption.suggested,
-        reason: deferenceOption.reason,
-        timestamp: new Date()
-      }]);
-    } else {
-      // Standard agent confirmation message
-      if (externalAgents.includes(targetAgent)) {
-        setAgentConfirmation(`You're speaking with ${targetAgent} now.`);
       } else {
-        setAgentConfirmation(`You're speaking with ${targetAgent}.`);
+        // Handle processing errors
+        console.error('Voice command processing failed:', result.error);
+        setAgentConfirmation(result.voiceResponse || 'Sorry, I had trouble understanding that. Could you try again?');
+        
+        // Log failed command processing
+        setCommands(prev => [...prev, { 
+          command: input, 
+          agent: 'system',
+          routing: 'error',
+          timestamp: new Date(), 
+          processed: false,
+          error: result.error
+        }]);
+
+        // Log voice session error
+        logVoiceSession(input, 'system', 'processing_error');
       }
+
+      onCommand(input, result.persona || currentAgent || 'alden');
+      setTranscript('');
+
+    } catch (error) {
+      console.error('Failed to process voice input:', error);
+      setAgentConfirmation('I encountered an error processing your voice command. Please try again.');
       
-      // Clear deference options if no suggestion
-      setDeferenceOptions([]);
-    }
-
-    // Add routing breadcrumb
-    setRoutingBreadcrumbs(prev => [...prev, {
-      step: routingDecision,
-      agent: targetAgent,
-      confidence: confidenceScore,
-      timestamp: new Date()
-    }]);
-
-    // Log voice session to Vault
-    logVoiceSession(input, targetAgent, routingDecision);
-
-    // Process command
-    const processed = processVoiceCommand(input, targetAgent);
-    
-    if (processed) {
+      // Log error
       setCommands(prev => [...prev, { 
         command: input, 
-        agent: targetAgent,
-        routing: routingDecision,
+        agent: 'system',
+        routing: 'error',
         timestamp: new Date(), 
-        processed: true 
+        processed: false,
+        error: error.message
       }]);
-      
-      // Update current agent if needed
-      if (onAgentChange && targetAgent !== currentAgent) {
-        onAgentChange(targetAgent);
-      }
-    } else {
-      setCommands(prev => [...prev, { 
-        command: input, 
-        agent: targetAgent,
-        routing: routingDecision,
-        timestamp: new Date(), 
-        processed: false 
-      }]);
+
+      logVoiceEvent('voice_processing_error', { error: error.message, input });
+      setTranscript('');
     }
-    
-    onCommand(input, targetAgent);
-    setTranscript('');
   };
 
-  // Process voice command based on agent
-  const processVoiceCommand = (command, agent) => {
-    // Basic command processing
-    const lowerCommand = command.toLowerCase();
-    
-    // Universal commands
-    if (lowerCommand.includes('new session') || lowerCommand.includes('start session')) {
-      return true;
-    }
-    if (lowerCommand.includes('help') || lowerCommand.includes('user guide')) {
-      return true;
-    }
-    if (lowerCommand.includes('accessibility')) {
-      return true;
-    }
-    if (lowerCommand.includes('troubleshooting')) {
-      return true;
-    }
-    if (lowerCommand.includes('exit') || lowerCommand.includes('quit')) {
-      return true;
-    }
-
-    // Agent-specific commands
-    if (agent === 'alden') {
-      if (lowerCommand.includes('schedule') || lowerCommand.includes('today')) {
-        return true;
+  // Handle confirmation responses for security-flagged requests
+  const handleConfirmationResponse = async (confirmed, originalRequest) => {
+    try {
+      if (confirmed) {
+        // Process the original request with confirmation provided
+        const result = await spriteService.processConfirmation({ text: originalRequest }, true);
+        
+        if (result.success) {
+          setAgentConfirmation(result.response);
+          setDeferenceOptions([]);
+          
+          // Log confirmed action
+          logVoiceEvent('confirmation_provided', { 
+            confirmed: true, 
+            originalRequest,
+            result: result.response 
+          });
+        }
+      } else {
+        // User declined the action
+        setAgentConfirmation('Understood. I won\'t proceed with that action.');
+        setDeferenceOptions([]);
+        
+        // Log declined action
+        logVoiceEvent('confirmation_provided', { 
+          confirmed: false, 
+          originalRequest 
+        });
       }
+    } catch (error) {
+      console.error('Failed to process confirmation:', error);
+      setAgentConfirmation('Sorry, I had trouble processing your response.');
     }
-    if (agent === 'alice') {
-      if (lowerCommand.includes('session review') || lowerCommand.includes('analytics')) {
-        return true;
-      }
-    }
-    if (agent === 'mimic') {
-      if (lowerCommand.includes('rewrite') || lowerCommand.includes('paragraph')) {
-        return true;
-      }
-    }
-    if (agent === 'sentry') {
-      if (lowerCommand.includes('security') || lowerCommand.includes('kill switch')) {
-        return true;
-      }
-    }
-
-    return false;
   };
 
   // Log voice session to Vault (per VOICE_ACCESS_POLICY.md)
@@ -398,11 +416,30 @@ const VoiceInterface = ({ onCommand, isActive, onClose, currentAgent, availableA
       purpose: 'user_interaction'
     };
 
-    // Log to Vault (simulated)
-    if (window.vaultAPI) {
-      window.vaultAPI.logVoiceSession(sessionData);
-    } else {
-      console.log('Voice session logged to Vault:', sessionData);
+    // Log to Vault - try real integration first
+    try {
+      if (window.vaultAPI && typeof window.vaultAPI.logVoiceSession === 'function') {
+        window.vaultAPI.logVoiceSession(sessionData);
+      } else {
+        // Vault API not available - store locally or skip
+        console.warn('Feature not implemented: Vault voice session logging not available');
+        
+        // Store locally for debugging if possible
+        if (typeof localStorage !== 'undefined') {
+          const key = 'hearthlink_voice_sessions';
+          const existingSessions = JSON.parse(localStorage.getItem(key) || '[]');
+          existingSessions.push(sessionData);
+          
+          // Keep only last 50 sessions
+          if (existingSessions.length > 50) {
+            existingSessions.splice(0, existingSessions.length - 50);
+          }
+          
+          localStorage.setItem(key, JSON.stringify(existingSessions));
+        }
+      }
+    } catch (error) {
+      console.error('❌ Voice session logging failed:', error.message);
     }
 
     logVoiceEvent('session_logged', sessionData);
@@ -581,21 +618,38 @@ const VoiceInterface = ({ onCommand, isActive, onClose, currentAgent, availableA
           </div>
         )}
 
-        {/* Agent Deference Options */}
+        {/* Agent Deference Options and Confirmation Dialogs */}
         {deferenceOptions.length > 0 && (
           <div className="deference-options">
             <div className="deference-header">
-              <strong>Agent Suggestion:</strong>
+              <strong>{deferenceOptions[0].requiresConfirmation ? 'Confirmation Required:' : 'Agent Suggestion:'}</strong>
             </div>
             {deferenceOptions.map((option, index) => (
               <div key={index} className="deference-option">
                 <span>{option.reason}</span>
-                <button 
-                  onClick={() => handleAgentSwitch(option.agent)}
-                  className="switch-agent-btn"
-                >
-                  Switch to {option.agent}
-                </button>
+                {option.requiresConfirmation ? (
+                  <div className="confirmation-buttons">
+                    <button 
+                      onClick={() => handleConfirmationResponse(true, option.originalRequest)}
+                      className="confirm-btn"
+                    >
+                      Confirm
+                    </button>
+                    <button 
+                      onClick={() => handleConfirmationResponse(false, option.originalRequest)}
+                      className="cancel-btn"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => handleAgentSwitch(option.agent)}
+                    className="switch-agent-btn"
+                  >
+                    Switch to {option.agent}
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -653,22 +707,28 @@ const VoiceInterface = ({ onCommand, isActive, onClose, currentAgent, availableA
         )}
       </div>
       
-      {/* Available Commands */}
+      {/* Conversational Examples */}
       <div className="voice-commands">
-        <h4>Available Commands:</h4>
+        <h4>Conversational Voice Examples:</h4>
         <div className="command-category">
-          <strong>Universal:</strong>
-          <div className="voice-command">"New session" - Start a new session</div>
-          <div className="voice-command">"Help" - Open user guide</div>
-          <div className="voice-command">"Accessibility" - Open accessibility guide</div>
-          <div className="voice-command">"Exit" or "Quit" - Close the application</div>
+          <strong>Natural Requests:</strong>
+          <div className="voice-command">"What's on my schedule today?" - AI will route to Alden for scheduling</div>
+          <div className="voice-command">"Help me organize my thoughts" - AI will route to Alice for analysis</div>
+          <div className="voice-command">"I need to create a new project" - AI will route to appropriate persona</div>
+          <div className="voice-command">"Check system security" - AI will route to Sentry for monitoring</div>
         </div>
         <div className="command-category">
-          <strong>Agent-Specific:</strong>
-          <div className="voice-command">"Hey Alden, what's on my schedule today?"</div>
-          <div className="voice-command">"Mimic, help me rewrite this paragraph"</div>
-          <div className="voice-command">"Alice, show me session review"</div>
-          <div className="voice-command">"Sentry, check security status"</div>
+          <strong>Explicit Persona Requests:</strong>
+          <div className="voice-command">"Hey Alden, what can you help me with today?"</div>
+          <div className="voice-command">"Alice, I'd like to review my productivity patterns"</div>
+          <div className="voice-command">"Sentry, is everything secure?"</div>
+          <div className="voice-command">"Show me the available AI assistants"</div>
+        </div>
+        <div className="command-category">
+          <strong>System Actions:</strong>
+          <div className="voice-command">"Start a new session" or "Open user guide"</div>
+          <div className="voice-command">"Enable accessibility features"</div>
+          <div className="voice-command">"Save my current work" (will request confirmation)</div>
         </div>
       </div>
       

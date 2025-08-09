@@ -112,7 +112,7 @@ export interface AccessibilityAPI {
 
 // Voice command utilities
 export interface VoiceCommandAPI {
-  initSpeechRecognition(): SpeechRecognition | null;
+  initSpeechRecognition(): any | null;
   processCommand(command: string): boolean;
 }
 

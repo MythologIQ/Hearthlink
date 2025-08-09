@@ -1,7 +1,7 @@
 {
   "models": [
     {
-      "name": "llama3.2-1b",
+      "name": "llama3.2:1b",
       "size_gb": 0.7,
       "priority": 3,
       "endpoint": "http://localhost:11434",
@@ -9,7 +9,7 @@
       "description": "Lightweight emergency model for offline use"
     },
     {
-      "name": "llama3.2-3b", 
+      "name": "llama3.2:3b", 
       "size_gb": 2.0,
       "priority": 2,
       "endpoint": "http://localhost:11434",
@@ -17,7 +17,7 @@
       "description": "Balanced model for general use"
     },
     {
-      "name": "llama3.1-8b",
+      "name": "llama3.1:8b",
       "size_gb": 4.7,
       "priority": 1,
       "endpoint": "http://localhost:11434", 
@@ -25,7 +25,7 @@
       "description": "Primary model with advanced capabilities"
     },
     {
-      "name": "qwen2.5-coder-7b",
+      "name": "qwen2.5-coder:7b",
       "size_gb": 4.1,
       "priority": 1,
       "endpoint": "http://localhost:11434",
@@ -56,7 +56,7 @@
     "compression_enabled": true
   },
   "redundancy_settings": {
-    "min_models_available": 2,
+    "min_models_available": 1,
     "health_check_interval": 30,
     "max_failure_rate": 0.3,
     "circuit_breaker_threshold": 5,
@@ -68,7 +68,7 @@
     "offline_notification": true,
     "sync_on_reconnect": true,
     "intelligent_prefetch": true,
-    "emergency_models": ["llama3.2-1b", "phi3-mini"]
+    "emergency_models": ["llama3.2:1b", "phi3-mini"]
   },
   "performance_optimization": {
     "model_warming": true,

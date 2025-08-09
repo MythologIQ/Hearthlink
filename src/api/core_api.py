@@ -24,7 +24,7 @@ try:
     from core.core import Core, Session, Participant, SessionStatus, ParticipantType
     from vault.vault import Vault
 except ImportError as e:
-    print(f"Warning: Core imports failed: {e}. Using mock implementation.")
+    raise ImportError("Core module is required but not available. Please check installation.")
 
 app = Flask(__name__)
 CORS(app)

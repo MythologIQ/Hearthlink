@@ -16,6 +16,7 @@ from .synapse import Synapse, SynapseConfig, ConnectionRequest, ConnectionResult
 from .manifest import PluginManifest, RiskTier
 from .permissions import PermissionRequest
 from .plugin_manager import PluginExecutionResult, PluginStatus
+from .agent_handoff import AgentHandoffManager, get_handoff_manager, HandoffPriority
 
 # Pydantic models for API requests/responses
 
@@ -79,6 +80,28 @@ class APIResponse(BaseModel):
     message: str = Field(..., description="Response message")
     data: Optional[Dict[str, Any]] = Field(None, description="Response data")
 
+# Agent Handoff Models
+
+class HandoffRequest(BaseModel):
+    """Agent handoff request."""
+    target_agent_id: str = Field(..., description="Target agent ID")
+    reason: str = Field(..., description="Reason for handoff")
+    priority: str = Field(default="normal", description="Handoff priority")
+    tags: List[str] = Field(default=[], description="Handoff tags")
+    metadata: Dict[str, Any] = Field(default={}, description="Additional metadata")
+
+class HandoffStatusResponse(BaseModel):
+    """Handoff status response."""
+    handoff_id: str
+    source_agent_id: str
+    target_agent_id: str
+    status: str
+    reason: str
+    created_at: str
+    updated_at: str
+    completion_time: Optional[str] = None
+    error_message: Optional[str] = None
+
 # API setup
 
 app = FastAPI(
@@ -89,8 +112,9 @@ app = FastAPI(
 
 security = HTTPBearer()
 
-# Global Synapse instance
+# Global Synapse instance and handoff manager
 synapse: Optional[Synapse] = None
+handoff_manager: Optional[AgentHandoffManager] = None
 logger: Optional[logging.Logger] = None
 
 def get_synapse() -> Synapse:
@@ -98,6 +122,12 @@ def get_synapse() -> Synapse:
     if synapse is None:
         raise HTTPException(status_code=500, detail="Synapse not initialized")
     return synapse
+
+def get_handoff_manager() -> AgentHandoffManager:
+    """Get Handoff Manager instance."""
+    if handoff_manager is None:
+        raise HTTPException(status_code=500, detail="Handoff Manager not initialized")
+    return handoff_manager
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
     """Get current user from JWT token."""
@@ -109,9 +139,10 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 
 def initialize_synapse(config: Optional[SynapseConfig] = None):
     """Initialize Synapse instance."""
-    global synapse, logger
+    global synapse, handoff_manager, logger
     logger = logging.getLogger(__name__)
     synapse = Synapse(config, logger)
+    handoff_manager = get_handoff_manager()
     logger.info("Synapse API initialized")
 
 # Plugin Management Endpoints
@@ -717,4 +748,167 @@ async def health_check():
         status="success",
         message="Synapse API is healthy",
         data={"version": "1.0.0"}
-    ) 
+    )
+
+# Agent Handoff Endpoints
+
+@app.post("/api/synapse/handoff/{source_agent_id}/initiate", response_model=APIResponse)
+async def initiate_handoff(
+    source_agent_id: str,
+    handoff: HandoffRequest,
+    session_token: str,
+    current_user: str = Depends(get_current_user),
+    handoff_manager: AgentHandoffManager = Depends(get_handoff_manager)
+):
+    """Initiate a handoff between agents."""
+    try:
+        # Convert priority string to enum
+        priority = HandoffPriority.NORMAL
+        if handoff.priority.lower() == "low":
+            priority = HandoffPriority.LOW
+        elif handoff.priority.lower() == "high":
+            priority = HandoffPriority.HIGH
+        elif handoff.priority.lower() == "urgent":
+            priority = HandoffPriority.URGENT
+        
+        handoff_id = await handoff_manager.initiate_handoff(
+            source_agent_id=source_agent_id,
+            target_agent_id=handoff.target_agent_id,
+            session_token=session_token,
+            reason=handoff.reason,
+            priority=priority,
+            tags=handoff.tags,
+            metadata=handoff.metadata
+        )
+        
+        return APIResponse(
+            status="success",
+            message="Handoff initiated successfully",
+            data={"handoff_id": handoff_id}
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error(f"Handoff initiation failed: {e}")
+        raise HTTPException(status_code=500, detail="Handoff initiation failed")
+
+@app.get("/api/synapse/handoff/{handoff_id}/status", response_model=APIResponse)
+async def get_handoff_status(
+    handoff_id: str,
+    handoff_manager: AgentHandoffManager = Depends(get_handoff_manager)
+):
+    """Get status of a handoff."""
+    try:
+        status = await handoff_manager.get_handoff_status(handoff_id)
+        
+        if status:
+            return APIResponse(
+                status="success",
+                message="Handoff status retrieved",
+                data={
+                    "handoff_id": status.handoff_id,
+                    "source_agent_id": status.source_agent_id,
+                    "target_agent_id": status.target_agent_id,
+                    "status": status.status.value,
+                    "reason": status.reason,
+                    "created_at": status.created_at.isoformat(),
+                    "updated_at": status.updated_at.isoformat(),
+                    "completion_time": status.completion_time.isoformat() if status.completion_time else None,
+                    "error_message": status.error_message,
+                    "context_tags": status.context.tags
+                }
+            )
+        else:
+            raise HTTPException(status_code=404, detail="Handoff not found")
+    except Exception as e:
+        logger.error(f"Failed to get handoff status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get handoff status")
+
+@app.post("/api/synapse/handoff/{handoff_id}/cancel", response_model=APIResponse)
+async def cancel_handoff(
+    handoff_id: str,
+    reason: str = "user_request",
+    handoff_manager: AgentHandoffManager = Depends(get_handoff_manager)
+):
+    """Cancel an active handoff."""
+    try:
+        success = await handoff_manager.cancel_handoff(handoff_id, reason)
+        
+        if success:
+            return APIResponse(
+                status="success",
+                message="Handoff cancelled successfully",
+                data={"handoff_id": handoff_id}
+            )
+        else:
+            raise HTTPException(status_code=400, detail="Handoff cancellation failed")
+    except Exception as e:
+        logger.error(f"Handoff cancellation failed: {e}")
+        raise HTTPException(status_code=500, detail="Handoff cancellation failed")
+
+@app.get("/api/synapse/handoffs/active", response_model=APIResponse)
+async def list_active_handoffs(
+    handoff_manager: AgentHandoffManager = Depends(get_handoff_manager)
+):
+    """List all active handoffs."""
+    try:
+        handoffs = handoff_manager.list_active_handoffs()
+        
+        return APIResponse(
+            status="success",
+            message="Active handoffs retrieved",
+            data={"handoffs": handoffs}
+        )
+    except Exception as e:
+        logger.error(f"Failed to list active handoffs: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list active handoffs")
+
+@app.get("/api/synapse/handoffs/history", response_model=APIResponse)
+async def get_handoff_history(
+    limit: int = 50,
+    handoff_manager: AgentHandoffManager = Depends(get_handoff_manager)
+):
+    """Get handoff history."""
+    try:
+        history = handoff_manager.get_handoff_history(limit)
+        
+        return APIResponse(
+            status="success",
+            message="Handoff history retrieved",
+            data={"history": history}
+        )
+    except Exception as e:
+        logger.error(f"Failed to get handoff history: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get handoff history")
+
+@app.get("/api/synapse/agents/capabilities", response_model=APIResponse)
+async def get_agent_capabilities(
+    agent_id: Optional[str] = None,
+    handoff_manager: AgentHandoffManager = Depends(get_handoff_manager)
+):
+    """Get agent capabilities."""
+    try:
+        if agent_id:
+            capabilities = handoff_manager.get_agent_capabilities(agent_id)
+            if capabilities:
+                return APIResponse(
+                    status="success",
+                    message="Agent capabilities retrieved",
+                    data={"agent_id": agent_id, "capabilities": capabilities}
+                )
+            else:
+                raise HTTPException(status_code=404, detail="Agent not found")
+        else:
+            # Return all agent capabilities
+            all_capabilities = {}
+            for aid in handoff_manager.agent_capabilities:
+                all_capabilities[aid] = handoff_manager.get_agent_capabilities(aid)
+            
+            return APIResponse(
+                status="success",
+                message="All agent capabilities retrieved",
+                data={"agents": all_capabilities}
+            )
+    except Exception as e:
+        logger.error(f"Failed to get agent capabilities: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get agent capabilities") 

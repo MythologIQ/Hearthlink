@@ -1,0 +1,526 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hearthlink Configuration Schema",
+  "description": "Cross-service configuration validation schema for Core, Vault, and Synapse modules",
+  "version": "1.5.0",
+  "type": "object",
+  
+  "definitions": {
+    "portNumber": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "timeoutSeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3600
+    },
+    "positiveInteger": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "percentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "securityLevel": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "logLevel": {
+      "type": "string",
+      "enum": ["debug", "info", "warn", "error", "critical"]
+    },
+    "encryptionAlgorithm": {
+      "type": "string",
+      "enum": ["AES-256", "AES-192", "AES-128", "ChaCha20-Poly1305"]
+    },
+    "storageType": {
+      "type": "string",
+      "enum": ["file", "memory", "redis", "sqlite", "postgresql"]
+    },
+    "connectionType": {
+      "type": "string",
+      "enum": ["direct", "api", "stdio", "process", "websocket"]
+    }
+  },
+  
+  "properties": {
+    "environment": {
+      "type": "object",
+      "description": "Environment-specific configuration",
+      "properties": {
+        "NODE_ENV": {
+          "type": "string",
+          "enum": ["development", "production", "test"],
+          "default": "development"
+        },
+        "HEARTHLINK_ENV": {
+          "type": "string",
+          "enum": ["local", "development", "staging", "production"],
+          "default": "local"
+        },
+        "DEBUG": {
+          "type": "boolean",
+          "default": false
+        },
+        "LOG_LEVEL": {
+          "$ref": "#/definitions/logLevel",
+          "default": "info"
+        }
+      },
+      "required": ["NODE_ENV", "HEARTHLINK_ENV"]
+    },
+    
+    "core": {
+      "type": "object",
+      "description": "Core module configuration",
+      "properties": {
+        "CORE_API_PORT": {
+          "$ref": "#/definitions/portNumber",
+          "default": 8000
+        },
+        "CORE_API_HOST": {
+          "type": "string",
+          "format": "hostname",
+          "default": "localhost"
+        },
+        "CORE_API_BASE_URL": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://localhost:8000"
+        },
+        "session": {
+          "type": "object",
+          "properties": {
+            "max_participants": {
+              "$ref": "#/definitions/positiveInteger",
+              "default": 10
+            },
+            "max_breakouts_per_session": {
+              "$ref": "#/definitions/positiveInteger",
+              "default": 5
+            },
+            "session_timeout_minutes": {
+              "$ref": "#/definitions/positiveInteger",
+              "default": 480
+            },
+            "auto_archive_after_days": {
+              "$ref": "#/definitions/positiveInteger",
+              "default": 30
+            }
+          }
+        },
+        "turn_taking": {
+          "type": "object",
+          "properties": {
+            "turn_timeout_seconds": {
+              "$ref": "#/definitions/timeoutSeconds",
+              "default": 300
+            },
+            "auto_advance": {
+              "type": "boolean",
+              "default": true
+            },
+            "max_turn_duration_minutes": {
+              "$ref": "#/definitions/positiveInteger", 
+              "default": 10
+            }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "cache_ttl_seconds": {
+              "$ref": "#/definitions/timeoutSeconds",
+              "default": 300
+            },
+            "max_concurrent_sessions": {
+              "$ref": "#/definitions/positiveInteger",
+              "default": 20
+            }
+          }
+        }
+      },
+      "required": ["CORE_API_PORT", "CORE_API_HOST"]
+    },
+    
+    "vault": {
+      "type": "object",
+      "description": "Vault module configuration",
+      "properties": {
+        "VAULT_STORAGE_PATH": {
+          "type": "string",
+          "default": "hearthlink_data/vault_storage"
+        },
+        "VAULT_DB_PATH": {
+          "type": "string",
+          "default": "hearthlink_data/vault.db"
+        },
+        "VAULT_ENCRYPTION_KEY": {
+          "type": "string",
+          "minLength": 32,
+          "description": "Encryption key for vault data (min 32 chars)"
+        },
+        "VAULT_KEY_FILE": {
+          "type": "string",
+          "default": "vault.key"
+        },
+        "encryption": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "$ref": "#/definitions/encryptionAlgorithm",
+              "default": "AES-256"
+            },
+            "key_file": {
+              "type": "string",
+              "default": "vault.key"
+            },
+            "key_env_var": {
+              "type": "string",
+              "default": "VAULT_ENCRYPTION_KEY"
+            }
+          }
+        },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "$ref": "#/definitions/storageType",
+              "default": "file"
+            },
+            "file_path": {
+              "type": "string",
+              "default": "hearthlink_data/vault_storage"
+            },
+            "connection_pool_size": {
+              "$ref": "#/definitions/positiveInteger",
+              "default": 10
+            },
+            "timeout_seconds": {
+              "$ref": "#/definitions/timeoutSeconds",
+              "default": 30
+            }
+          }
+        },
+        "audit": {
+          "type": "object",
+          "properties": {
+            "log_file": {
+              "type": "string",
+              "default": "logs/vault_audit.log"
+            },
+            "retention_days": {
+              "$ref": "#/definitions/positiveInteger",
+              "default": 365
+            }
+          }
+        }
+      },
+      "required": ["VAULT_STORAGE_PATH"]
+    },
+    
+    "synapse": {
+      "type": "object",
+      "description": "Synapse module configuration",
+      "properties": {
+        "SYNAPSE_API_PORT": {
+          "$ref": "#/definitions/portNumber",
+          "default": 8001
+        },
+        "SYNAPSE_API_HOST": {
+          "type": "string",
+          "format": "hostname", 
+          "default": "localhost"
+        },
+        "SYNAPSE_PLUGIN_PATH": {
+          "type": "string",
+          "default": "src/synapse/plugins"
+        },
+        "SYNAPSE_MCP_REGISTRY": {
+          "type": "string",
+          "default": "src/synapse/config/mcp_server_registry.json"
+        },
+        "configuration": {
+          "type": "object",
+          "properties": {
+            "default_security_level": {
+              "$ref": "#/definitions/securityLevel",
+              "default": "medium"
+            },
+            "auto_discovery": {
+              "type": "boolean",
+              "default": true
+            },
+            "health_check_interval": {
+              "$ref": "#/definitions/timeoutSeconds",
+              "default": 300
+            },
+            "max_concurrent_servers": {
+              "$ref": "#/definitions/positiveInteger",
+              "default": 20
+            },
+            "plugin_timeout": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 300000,
+              "default": 30000
+            },
+            "sandbox_by_default": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "security_policies": {
+          "type": "object",
+          "properties": {
+            "require_manifest_validation": {
+              "type": "boolean",
+              "default": true
+            },
+            "enforce_sandboxing": {
+              "type": "boolean",
+              "default": true
+            },
+            "oauth_token_encryption": {
+              "type": "boolean",
+              "default": true
+            },
+            "rate_limiting": {
+              "type": "object",
+              "properties": {
+                "requests_per_minute": {
+                  "$ref": "#/definitions/positiveInteger",
+                  "default": 100
+                },
+                "burst_limit": {
+                  "$ref": "#/definitions/positiveInteger",
+                  "default": 20
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": ["SYNAPSE_API_PORT", "SYNAPSE_PLUGIN_PATH"]
+    },
+    
+    "database": {
+      "type": "object",
+      "description": "Database configuration",
+      "properties": {
+        "DATABASE_PATH": {
+          "type": "string",
+          "default": "hearthlink_data/hearthlink.db"
+        },
+        "HEARTHLINK_DB_PATH": {
+          "type": "string",
+          "default": "hearthlink_data/hearthlink.db"
+        },
+        "DATABASE_BACKUP_PATH": {
+          "type": "string",
+          "default": "hearthlink_data/backups"
+        },
+        "DATABASE_POOL_SIZE": {
+          "$ref": "#/definitions/positiveInteger",
+          "default": 10
+        },
+        "DATABASE_TIMEOUT": {
+          "$ref": "#/definitions/timeoutSeconds",
+          "default": 30
+        },
+        "DATABASE_WAL_MODE": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": ["DATABASE_PATH"]
+    },
+    
+    "frontend": {
+      "type": "object",
+      "description": "Frontend configuration",
+      "properties": {
+        "REACT_APP_HEARTHLINK_API_URL": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://localhost:8000"
+        },
+        "REACT_APP_HEARTHLINK_WS_URL": {
+          "type": "string",
+          "format": "uri",
+          "default": "ws://localhost:8000"
+        },
+        "REACT_APP_ENVIRONMENT": {
+          "type": "string",
+          "enum": ["development", "production"],
+          "default": "development"
+        },
+        "REACT_APP_DEBUG": {
+          "type": "boolean",
+          "default": false
+        },
+        "PORT": {
+          "$ref": "#/definitions/portNumber",
+          "default": 3000
+        },
+        "BROWSER": {
+          "type": "string",
+          "default": "none"
+        }
+      },
+      "required": ["REACT_APP_HEARTHLINK_API_URL"]
+    },
+    
+    "ai_services": {
+      "type": "object",
+      "description": "AI services configuration",
+      "properties": {
+        "OPENAI_API_KEY": {
+          "type": "string",
+          "minLength": 20,
+          "pattern": "^sk-"
+        },
+        "ANTHROPIC_API_KEY": {
+          "type": "string",
+          "minLength": 20,
+          "pattern": "^sk-"
+        },
+        "OLLAMA_HOST": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://localhost:11434"
+        },
+        "OLLAMA_API_URL": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://localhost:11434"
+        },
+        "LLM_BACKEND_PORT": {
+          "$ref": "#/definitions/portNumber",
+          "default": 8002
+        },
+        "LOCAL_LLM_API_PORT": {
+          "$ref": "#/definitions/portNumber",
+          "default": 8003
+        },
+        "AI_MODEL_TIMEOUT": {
+          "$ref": "#/definitions/timeoutSeconds",
+          "default": 120
+        }
+      }
+    },
+    
+    "security": {
+      "type": "object",
+      "description": "Security configuration",
+      "properties": {
+        "SECRET_KEY": {
+          "type": "string",
+          "minLength": 32,
+          "description": "Secret key for cryptographic operations (min 32 chars)"
+        },
+        "JWT_SECRET": {
+          "type": "string",
+          "minLength": 32,
+          "description": "JWT signing secret (min 32 chars)"
+        },
+        "SESSION_SECRET": {
+          "type": "string", 
+          "minLength": 32,
+          "description": "Session encryption secret (min 32 chars)"
+        },
+        "ENCRYPTION_KEY": {
+          "type": "string",
+          "minLength": 32,
+          "description": "Default encryption key (min 32 chars)"
+        },
+        "CORS_ORIGINS": {
+          "type": "string",
+          "default": "http://localhost:3000,http://localhost:3001"
+        },
+        "RATE_LIMIT_WINDOW_MS": {
+          "type": "integer",
+          "minimum": 1000,
+          "default": 60000
+        },
+        "RATE_LIMIT_MAX_REQUESTS": {
+          "$ref": "#/definitions/positiveInteger",
+          "default": 100
+        }
+      },
+      "required": ["SECRET_KEY"]
+    },
+    
+    "logging": {
+      "type": "object",
+      "description": "Logging configuration",
+      "properties": {
+        "LOG_LEVEL": {
+          "$ref": "#/definitions/logLevel",
+          "default": "info"
+        },
+        "LOG_FILE": {
+          "type": "string",
+          "default": "logs/hearthlink.log"
+        },
+        "LOG_MAX_SIZE": {
+          "type": "string",
+          "pattern": "^[0-9]+[kmg]?b?$",
+          "default": "10mb"
+        },
+        "LOG_MAX_FILES": {
+          "$ref": "#/definitions/positiveInteger",
+          "default": 5
+        },
+        "AUDIT_LOG_FILE": {
+          "type": "string",
+          "default": "logs/audit.log"
+        }
+      }
+    },
+    
+    "development": {
+      "type": "object",
+      "description": "Development-specific configuration",
+      "properties": {
+        "HOT_RELOAD": {
+          "type": "boolean",
+          "default": true
+        },
+        "MOCK_AI_RESPONSES": {
+          "type": "boolean",
+          "default": false
+        },
+        "ENABLE_PROFILING": {
+          "type": "boolean",
+          "default": false
+        },
+        "DEBUG_SQL": {
+          "type": "boolean",
+          "default": false
+        },
+        "ELECTRON_DEV_TOOLS": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  },
+  
+  "required": [
+    "environment",
+    "core",
+    "vault", 
+    "synapse",
+    "database",
+    "frontend",
+    "security"
+  ],
+  
+  "additionalProperties": false
+}

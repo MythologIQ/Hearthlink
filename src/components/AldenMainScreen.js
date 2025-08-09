@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './AldenMainScreen.css';
+import aldenAPIService from '../services/AldenAPIService.js';
 
 // Import individual panel components
 import ObservatoryPanel from './panels/ObservatoryPanel';
@@ -9,6 +10,7 @@ import InteractionInterfacePanel from './panels/InteractionInterfacePanel';
 import DiagnosticsRepairPanel from './panels/DiagnosticsRepairPanel';
 import TaskDashboard from './panels/TaskDashboard';
 import ProjectBoard from './panels/ProjectBoard';
+import CalendarIntegration from './panels/CalendarIntegration';
 import AliceInterface from './AliceInterface';
 import MimicInterface from './MimicInterface';
 import LocalLLMInterface from './LocalLLMInterface';
@@ -48,84 +50,97 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
     ]
   });
 
-  // Task management data state
+  // Personal task and goal management data state
   const [taskData, setTaskData] = useState({
     tasks: [
       {
         id: 'task_1',
-        title: 'Complete Phase 3A UI implementation',
-        description: 'Implement advanced UI panels for Alden interface with task management capabilities',
+        title: 'Morning workout routine',
+        description: '30-minute cardio session and strength training',
         priority: 'high',
         status: 'in_progress',
-        createdAt: '2025-01-21T10:00:00Z',
-        dueDate: '2025-01-22T18:00:00Z',
-        progress: 65,
-        estimatedTime: 8,
-        assignedAgent: 'alden',
-        tags: ['ui', 'development', 'priority']
+        createdAt: '2025-01-22T06:00:00Z',
+        dueDate: '2025-01-22T08:00:00Z',
+        progress: 45,
+        estimatedTime: 1,
+        category: 'health',
+        tags: ['fitness', 'daily', 'wellness']
       },
       {
         id: 'task_2',
-        title: 'Optimize memory usage in vector embeddings',
-        description: 'Improve performance of vector embedding storage and retrieval',
+        title: 'Review quarterly financial goals',
+        description: 'Check savings progress and investment portfolio performance',
         priority: 'medium',
         status: 'todo',
-        createdAt: '2025-01-21T09:30:00Z',
-        dueDate: '2025-01-23T12:00:00Z',
+        createdAt: '2025-01-22T09:30:00Z',
+        dueDate: '2025-01-23T17:00:00Z',
         progress: 0,
-        estimatedTime: 4,
-        assignedAgent: 'alice',
-        tags: ['performance', 'memory']
+        estimatedTime: 2,
+        category: 'finance',
+        tags: ['planning', 'money', 'goals']
       },
       {
         id: 'task_3',
-        title: 'Update security protocols',
-        description: 'Review and update security protocols for multi-agent communication',
+        title: 'Call mom for birthday planning',
+        description: 'Discuss plans for mom\'s upcoming birthday celebration',
         priority: 'high',
         status: 'todo',
-        createdAt: '2025-01-21T08:15:00Z',
-        dueDate: '2025-01-21T16:00:00Z',
+        createdAt: '2025-01-22T08:15:00Z',
+        dueDate: '2025-01-22T19:00:00Z',
         progress: 0,
-        estimatedTime: 6,
-        assignedAgent: 'sentry',
-        tags: ['security', 'protocols']
+        estimatedTime: 0.5,
+        category: 'family',
+        tags: ['family', 'birthday', 'phone']
       },
       {
         id: 'task_4',
-        title: 'Test voice command accuracy',
-        description: 'Run comprehensive tests on voice command recognition system',
+        title: 'Complete online course module',
+        description: 'Finish Module 3: Advanced Communication Skills',
         priority: 'medium',
         status: 'completed',
-        createdAt: '2025-01-20T14:00:00Z',
-        completedAt: '2025-01-21T11:30:00Z',
+        createdAt: '2025-01-21T14:00:00Z',
+        completedAt: '2025-01-21T20:30:00Z',
         progress: 100,
-        estimatedTime: 3,
-        assignedAgent: 'mimic',
-        tags: ['testing', 'voice']
+        estimatedTime: 2,
+        category: 'learning',
+        tags: ['education', 'skills', 'professional']
       },
       {
         id: 'task_5',
-        title: 'Backup system configurations',
-        description: 'Create automated backup system for all agent configurations',
+        title: 'Organize home office desk',
+        description: 'Declutter and reorganize workspace for better productivity',
         priority: 'low',
         status: 'todo',
-        createdAt: '2025-01-21T07:45:00Z',
-        dueDate: '2025-01-25T10:00:00Z',
+        createdAt: '2025-01-22T07:45:00Z',
+        dueDate: '2025-01-23T15:00:00Z',
         progress: 0,
-        estimatedTime: 2,
-        assignedAgent: 'vault',
-        tags: ['backup', 'maintenance']
+        estimatedTime: 1.5,
+        category: 'home',
+        tags: ['organization', 'workspace', 'productivity']
       }
     ],
-    projects: [
+    goals: [
       {
-        id: 'project_1',
-        name: 'Hearthlink Phase 3A',
-        description: 'Advanced UI Panels implementation',
+        id: 'goal_1',
+        name: 'Health & Fitness',
+        description: 'Maintain consistent exercise routine and healthy eating habits',
         status: 'active',
-        progress: 65,
-        dueDate: '2025-01-30T00:00:00Z',
-        taskIds: ['task_1', 'task_2']
+        progress: 72,
+        target: 'Exercise 4x per week, drink 8 glasses of water daily',
+        dueDate: '2025-03-31T00:00:00Z',
+        taskIds: ['task_1'],
+        category: 'wellness'
+      },
+      {
+        id: 'goal_2',
+        name: 'Professional Development',
+        description: 'Complete certification course and networking goals',
+        status: 'active',
+        progress: 45,
+        target: 'Finish online certification by end of Q1',
+        dueDate: '2025-03-31T00:00:00Z',
+        taskIds: ['task_4'],
+        category: 'career'
       }
     ]
   });
@@ -217,14 +232,32 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    // Initialize Alden with welcome message
-    const welcomeMessage = {
-      id: Date.now(),
-      type: 'system',
-      content: 'ALDEN MAIN SCREEN OPERATIONAL\n\nAll panels loaded successfully. System controls active.\nReady for interaction.',
-      timestamp: new Date()
+    // Initialize Alden API Service and welcome message
+    const initializeAlden = async () => {
+      try {
+        await aldenAPIService.initialize();
+        console.log('Alden API Service initialized successfully');
+        
+        const welcomeMessage = {
+          id: Date.now(),
+          type: 'system',
+          content: `ALDEN MAIN SCREEN OPERATIONAL\n\nBackend Status: ${aldenAPIService.isAvailable() ? 'CONNECTED' : 'DISCONNECTED'}\nAll panels loaded successfully. System controls active.\nReady for interaction.`,
+          timestamp: new Date()
+        };
+        setMessages([welcomeMessage]);
+      } catch (error) {
+        console.error('Failed to initialize Alden API Service:', error);
+        const errorMessage = {
+          id: Date.now(),
+          type: 'system',
+          content: `ALDEN MAIN SCREEN OPERATIONAL\n\nBackend Status: DISCONNECTED\nError: ${error.message}\nUI panels loaded. Backend connection failed.`,
+          timestamp: new Date()
+        };
+        setMessages([errorMessage]);
+      }
     };
-    setMessages([welcomeMessage]);
+    
+    initializeAlden();
   }, []);
 
   useEffect(() => {
@@ -262,7 +295,13 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
         }));
 
       } catch (error) {
-        console.warn('Failed to update system data:', error);
+        console.warn('❌ System data update failed:', error.message);
+        
+        // Set default values when system monitoring is not available
+        if (error.message.includes('Feature not implemented')) {
+          // Keep existing static data rather than clearing it
+          console.log('⚠️ Using static fallback data for system monitoring panels');
+        }
       }
     };
 
@@ -280,31 +319,38 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
     const health = {};
     
     try {
-      // Check LLM service
-      const llmResponse = await fetch('http://localhost:8001/api/llm/health', { method: 'GET' }).catch(() => null);
-      health.alden = llmResponse?.ok ? 'green' : 'red';
-      health.alice = llmResponse?.ok ? 'green' : 'red';
-      health.mimic = llmResponse?.ok ? 'green' : 'red';
+      // Check Alden service (primary)
+      const aldenHealthy = await aldenAPIService.checkHealth();
+      health.alden = aldenHealthy ? 'green' : 'red';
       
-      // Check Vault service
+      // Check other services with fallback defaults
+      // Note: These endpoints may not be implemented yet
       const vaultResponse = await fetch('http://localhost:8002/api/vault/health', { method: 'GET' }).catch(() => null);
-      health.vault = vaultResponse?.ok ? 'green' : 'red';
+      health.vault = vaultResponse?.ok ? 'green' : 'yellow'; // Default to yellow if not available
       
-      // Check Synapse service
       const synapseResponse = await fetch('http://localhost:8003/api/synapse/health', { method: 'GET' }).catch(() => null);
-      health.synapse = synapseResponse?.ok ? 'green' : 'red';
+      health.synapse = synapseResponse?.ok ? 'green' : 'yellow';
       
-      // Check Core service
       const coreResponse = await fetch('http://localhost:8000/api/health', { method: 'GET' }).catch(() => null);
-      health.core = coreResponse?.ok ? 'green' : 'red';
+      health.core = coreResponse?.ok ? 'green' : 'yellow';
       
-      // Check Sentry service
       const sentryResponse = await fetch('http://localhost:8004/api/sentry/health', { method: 'GET' }).catch(() => null);
-      health.sentry = sentryResponse?.ok ? 'green' : 'red';
+      health.sentry = sentryResponse?.ok ? 'green' : 'yellow';
+      
+      // Alice and Mimic status based on Alden availability (they share backend)
+      health.alice = health.alden;
+      health.mimic = health.alden;
       
     } catch (error) {
-      // Default to red if health checks fail
-      Object.keys(health).forEach(key => { health[key] = 'red'; });
+      console.warn('Health check failed:', error);
+      // Default to yellow if health checks fail (services may not be fully implemented)
+      health.alden = aldenAPIService.isAvailable() ? 'green' : 'red';
+      health.alice = health.alden;
+      health.mimic = health.alden;
+      health.vault = 'yellow';
+      health.synapse = 'yellow';
+      health.core = 'yellow';
+      health.sentry = 'yellow';
     }
     
     return health;
@@ -320,20 +366,8 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
       console.warn('Failed to fetch memory stats:', error);
     }
     
-    // Return simulated data if API fails
-    return {
-      usage: {
-        shortTerm: Math.floor(Math.random() * 40) + 20,
-        longTerm: Math.floor(Math.random() * 30) + 50,
-        embedded: Math.floor(Math.random() * 20) + 15,
-        total: Math.floor(Math.random() * 25) + 35
-      },
-      cognitiveLoad: {
-        current: Math.floor(Math.random() * 30) + 50,
-        queueSize: Math.floor(Math.random() * 5) + 3,
-        processingRate: Math.random() * 0.3 + 0.7
-      }
-    };
+    // No simulations - throw clear error for unimplemented feature
+    throw new Error('Feature not implemented: Real-time memory monitoring API not available. Memory statistics require backend system monitoring service.');
   };
 
   const getSystemHealthMetrics = async () => {
@@ -346,26 +380,8 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
       console.warn('Failed to fetch system health:', error);
     }
     
-    // Return simulated metrics if API fails
-    const now = Date.now();
-    return {
-      uptime: { 
-        days: Math.floor(Math.random() * 5) + 1, 
-        hours: Math.floor(Math.random() * 24), 
-        minutes: Math.floor(Math.random() * 60) 
-      },
-      heartbeat: 'stable',
-      latency: { 
-        current: Math.floor(Math.random() * 50) + 20, 
-        average: Math.floor(Math.random() * 20) + 40, 
-        peak: Math.floor(Math.random() * 100) + 80, 
-        floor: Math.floor(Math.random() * 20) + 10 
-      },
-      recentPrompts: [
-        { id: 'p1', content: 'System status check', tokens: 20, response: 'All systems operational', responseTokens: 100, timestamp: now - 60000 },
-        { id: 'p2', content: 'Memory analysis', tokens: 30, response: 'Memory usage within normal range', responseTokens: 120, timestamp: now - 180000 }
-      ]
-    };
+    // No simulations - throw clear error for unimplemented feature
+    throw new Error('Feature not implemented: Real-time system health monitoring API not available. Health metrics require backend system monitoring service.');
   };
 
   // Utility functions removed - radial navigation handled globally
@@ -391,51 +407,40 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
     setIsTyping(true);
 
     try {
-      // Try to get real LLM response
-      const response = await fetch('http://localhost:8001/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: `You are Alden, a helpful AI assistant in the Hearthlink system. You are the primary persona responsible for productivity, reasoning, and general assistance. Respond professionally and helpfully.\n\nUser: ${content.trim()}`,
-          task_type: 'reasoning',
-          profile: 'mid'
-        })
+      // Use Alden API Service for direct communication with Alden backend
+      const result = await aldenAPIService.sendMessage(content.trim(), {
+        interface: 'alden_main',
+        timestamp: Date.now(),
+        messageHistory: messages.slice(-5).map(msg => ({
+          type: msg.type,
+          content: msg.content,
+          timestamp: msg.timestamp
+        })) // Last 5 messages for context
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        const assistantMessage = {
-          id: Date.now() + 1,
-          type: 'assistant',
-          content: data.response || data.message || 'I received your message and am processing it.',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-      } else {
-        throw new Error('LLM API request failed');
-      }
-    } catch (error) {
-      console.warn('LLM API unavailable, using fallback response:', error);
       
-      // Fallback to a more intelligent simulated response
-      const fallbackResponses = [
-        `I understand you're asking about "${content.trim()}". While I'm currently operating in offline mode, I can help you with system operations and general assistance.`,
-        `Thank you for your message about "${content.trim()}". I'm functioning normally and ready to assist with your tasks.`,
-        `I received your request regarding "${content.trim()}". My cognitive systems are operational and I'm here to help with productivity and reasoning tasks.`,
-        `Your message about "${content.trim()}" has been processed. I'm currently monitoring system operations and ready to provide assistance.`
-      ];
-      
-      const randomResponse = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
-      
-      const response = {
+      // Display Alden's response
+      const assistantMessage = {
         id: Date.now() + 1,
         type: 'assistant',
-        content: randomResponse,
-        timestamp: new Date()
+        content: result.response || 'I received your message and am processing it.',
+        timestamp: new Date(),
+        metadata: result.metadata
       };
-      setMessages(prev => [...prev, response]);
+      setMessages(prev => [...prev, assistantMessage]);
+      
+    } catch (error) {
+      console.warn('Alden API Service unavailable:', error);
+      
+      // Enhanced fallback response
+      const fallbackMessage = {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: `I'm having trouble connecting to my backend service right now. This might be temporary - please try again in a moment. In the meantime, I can help you navigate the interface or provide general assistance with your tasks.`,
+        timestamp: new Date(),
+        fallback: true,
+        error: error.message
+      };
+      setMessages(prev => [...prev, fallbackMessage]);
     }
     
     setIsTyping(false);
@@ -450,6 +455,47 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
         listening: !voiceInputActive
       }
     }));
+  };
+
+  // Handle confirmation responses (simplified for direct Alden communication)
+  const handleConfirmation = async (confirmed, originalRequest) => {
+    setIsTyping(true);
+    
+    try {
+      const confirmationMessage = confirmed 
+        ? `Yes, please proceed with: ${originalRequest}`
+        : `No, please cancel: ${originalRequest}`;
+        
+      const result = await aldenAPIService.sendMessage(confirmationMessage, {
+        interface: 'alden_main',
+        isConfirmation: true,
+        originalRequest: originalRequest,
+        timestamp: Date.now()
+      });
+      
+      const responseMessage = {
+        id: Date.now(),
+        type: 'assistant', 
+        content: result.response,
+        timestamp: new Date(),
+        confirmationResult: true
+      };
+      setMessages(prev => [...prev, responseMessage]);
+      
+    } catch (error) {
+      console.error('Confirmation processing failed:', error);
+      const errorMessage = {
+        id: Date.now(),
+        type: 'assistant',
+        content: confirmed 
+          ? 'I apologize, but I encountered an issue processing that action.' 
+          : 'Understood. I won\'t proceed with that action.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+    
+    setIsTyping(false);
   };
 
   // Task management handlers
@@ -489,40 +535,167 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
     }
   };
 
-  // Project management handlers
-  const handleProjectCreate = (newProject) => {
+  // Goal management handlers
+  const handleGoalCreate = (newGoal) => {
     setTaskData(prev => ({
       ...prev,
-      projects: [newProject, ...prev.projects]
+      goals: [newGoal, ...prev.goals]
     }));
     
-    // Add chat message for project creation
-    const projectMessage = {
+    // Add chat message for goal creation
+    const goalMessage = {
       id: Date.now(),
-      content: `🚀 New project created: "${newProject.name}"`,
+      content: `🎯 New goal created: "${newGoal.name}"`,
       type: 'system',
       timestamp: new Date()
     };
-    setMessages(prev => [...prev, projectMessage]);
+    setMessages(prev => [...prev, goalMessage]);
   };
 
-  const handleProjectUpdate = (updatedProject) => {
+  const handleGoalUpdate = (updatedGoal) => {
     setTaskData(prev => ({
       ...prev,
-      projects: prev.projects.map(project => 
-        project.id === updatedProject.id ? updatedProject : project
+      goals: prev.goals.map(goal => 
+        goal.id === updatedGoal.id ? updatedGoal : goal
       )
     }));
     
-    // Add chat message for project status changes
-    if (updatedProject.status === 'completed') {
+    // Add chat message for goal status changes
+    if (updatedGoal.status === 'completed') {
       const completionMessage = {
         id: Date.now(),
-        content: `🎊 Project completed: "${updatedProject.name}"`,
+        content: `🎊 Goal achieved: "${updatedGoal.name}"`,
         type: 'system',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, completionMessage]);
+    }
+  };
+
+  // Calendar event handlers - connect to actual MCP calendar server
+  const handleEventCreate = async (event) => {
+    try {
+      // Call MCP Gmail/Calendar server to create event
+      const response = await fetch('http://localhost:8000/synapse/mcp/gmail-calendar-mcp/create_event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(event)
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Add system message
+        const eventMessage = {
+          id: Date.now(),
+          content: `📅 Calendar event created: "${event.title}" on ${new Date(event.startDate).toLocaleDateString()}`,
+          type: 'system',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, eventMessage]);
+        
+        return result;
+      } else {
+        throw new Error('Failed to create calendar event');
+      }
+    } catch (error) {
+      console.error('Calendar event creation failed:', error);
+      
+      // Add error message
+      const errorMessage = {
+        id: Date.now(),
+        content: `❌ Failed to create calendar event: ${error.message}`,
+        type: 'error',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
+  const handleEventUpdate = async (event) => {
+    try {
+      // Call MCP Gmail/Calendar server to update event
+      const response = await fetch('http://localhost:8000/synapse/mcp/gmail-calendar-mcp/update_event', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(event)
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Add system message
+        const eventMessage = {
+          id: Date.now(),
+          content: `📅 Calendar event updated: "${event.title}"`,
+          type: 'system',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, eventMessage]);
+        
+        return result;
+      } else {
+        throw new Error('Failed to update calendar event');
+      }
+    } catch (error) {
+      console.error('Calendar event update failed:', error);
+      
+      // Add error message
+      const errorMessage = {
+        id: Date.now(),
+        content: `❌ Failed to update calendar event: ${error.message}`,
+        type: 'error',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
+  const handleTaskSchedule = async (task, schedule) => {
+    try {
+      // Create a calendar event from the task
+      const event = {
+        title: `Task: ${task.title}`,
+        description: task.description || '',
+        startDate: schedule.startDate,
+        endDate: schedule.endDate || new Date(new Date(schedule.startDate).getTime() + 60*60*1000), // 1 hour default
+        location: schedule.location || '',
+        attendees: schedule.attendees || []
+      };
+      
+      const result = await handleEventCreate(event);
+      
+      if (result) {
+        // Update task with calendar event ID
+        const updatedTask = {
+          ...task,
+          calendarEventId: result.eventId,
+          scheduledDate: schedule.startDate,
+          status: 'scheduled'
+        };
+        
+        await handleTaskUpdate(updatedTask);
+        
+        // Add system message
+        const scheduleMessage = {
+          id: Date.now(),
+          content: `📅 Task "${task.title}" scheduled for ${new Date(schedule.startDate).toLocaleString()}`,
+          type: 'system',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, scheduleMessage]);
+      }
+    } catch (error) {
+      console.error('Task scheduling failed:', error);
+      
+      // Add error message
+      const errorMessage = {
+        id: Date.now(),
+        content: `❌ Failed to schedule task: ${error.message}`,
+        type: 'error',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
     }
   };
 
@@ -769,17 +942,33 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
           </div>
         </div>
         
-        <div className="panel-item" onClick={() => handlePanelExpand('projects')}>
+        <div className="panel-item" onClick={() => handlePanelExpand('goals')}>
           <div className="panel-header">
-            <h3 className="panel-title">Project Board</h3>
+            <h3 className="panel-title">Goal Tracking</h3>
           </div>
           <div className="panel-content">
             <ProjectBoard 
               data={taskData}
               isExpanded={false}
-              onProjectCreate={handleProjectCreate}
-              onProjectUpdate={handleProjectUpdate}
+              onGoalCreate={handleGoalCreate}
+              onGoalUpdate={handleGoalUpdate}
               onTaskUpdate={handleTaskUpdate}
+              mode="goals"
+            />
+          </div>
+        </div>
+        
+        <div className="panel-item" onClick={() => handlePanelExpand('calendar')}>
+          <div className="panel-header">
+            <h3 className="panel-title">Calendar Integration</h3>
+          </div>
+          <div className="panel-content">
+            <CalendarIntegration 
+              data={taskData}
+              isExpanded={false}
+              onEventCreate={handleEventCreate}
+              onEventUpdate={handleEventUpdate}
+              onTaskSchedule={handleTaskSchedule}
             />
           </div>
         </div>
@@ -792,7 +981,7 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
       case 'observatory':
         return <ObservatoryPanel data={agentGraphData} isExpanded={true} />;
       case 'personality':
-        return <PersonalityMoodPanel data={personalityData} isExpanded={true} />;
+        return <PersonalityMoodPanel isExpanded={true} />;
       case 'cognition':
         return <CognitionMemoryPanel data={memoryData} isExpanded={true} />;
       case 'interaction':
@@ -811,13 +1000,23 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
           onTaskCreate={handleTaskCreate}
           onTaskUpdate={handleTaskUpdate}
         />;
-      case 'projects':
+      case 'goals':
         return <ProjectBoard 
           data={taskData}
           isExpanded={true}
-          onProjectCreate={handleProjectCreate}
-          onProjectUpdate={handleProjectUpdate}
+          onGoalCreate={handleGoalCreate}
+          onGoalUpdate={handleGoalUpdate}
           onTaskUpdate={handleTaskUpdate}
+          mode="goals"
+        />;
+      case 'calendar':
+        return <CalendarIntegration 
+          data={taskData}
+          isExpanded={true}
+          onEventCreate={handleEventCreate}
+          onEventUpdate={handleEventUpdate}
+          onTaskSchedule={handleTaskSchedule}
+          mode="personal"
         />;
       default:
         return null;
@@ -830,8 +1029,27 @@ const AldenMainScreen = ({ accessibilitySettings, onVoiceCommand }) => {
         {messages.map(message => (
           <div key={message.id} className={`chat-message ${message.type}`}>
             <div className="message-content">{message.content}</div>
+            {message.requiresConfirmation && (
+              <div className="confirmation-buttons">
+                <button 
+                  className="confirm-btn yes"
+                  onClick={() => handleConfirmation(true, message.originalRequest)}
+                >
+                  Yes, proceed
+                </button>
+                <button 
+                  className="confirm-btn no"
+                  onClick={() => handleConfirmation(false, message.originalRequest)}
+                >
+                  No, cancel
+                </button>
+              </div>
+            )}
             <div className="message-timestamp">
               {message.timestamp.toLocaleTimeString()}
+              {message.metadata && (
+                <span className="message-source"> • via {message.metadata.source}</span>
+              )}
             </div>
           </div>
         ))}

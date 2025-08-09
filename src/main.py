@@ -632,29 +632,6 @@ class HearthlinkContainer:
             self.logger.log_error(e, "status_retrieval")
             return {"error": str(e)}
     
-    def simulate_error(self, error_type: str = "test") -> None:
-        """
-        Simulate an error for testing purposes.
-        
-        Args:
-            error_type: Type of error to simulate
-        """
-        try:
-            if error_type == "value":
-                raise ValueError("Simulated ValueError for testing")
-            elif error_type == "runtime":
-                raise RuntimeError("Simulated RuntimeError for testing")
-            elif error_type == "io":
-                raise IOError("Simulated IOError for testing")
-            elif error_type == "keyboard":
-                raise KeyboardInterrupt("Simulated KeyboardInterrupt for testing")
-            else:
-                raise Exception(f"Simulated {error_type} error for testing")
-                
-        except Exception as e:
-            self._handle_error(e, f"simulated_error_{error_type}")
-
-
 class IPCHandler:
     """
     Handler for Inter-Process Communication with Electron main process.

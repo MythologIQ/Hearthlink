@@ -1,1 +1,0 @@
-{"audit_log_header": {"created_at": "2025-07-12T23:10:14.907473+00:00", "version": "1.0", "description": "Synapse external interactions audit log", "format": "jsonl", "signature_algorithm": "hmac-sha256"}}

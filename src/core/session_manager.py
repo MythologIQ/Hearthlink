@@ -84,12 +84,16 @@ class SessionInfo:
     agent_context: Dict[str, Any]
     metadata: Dict[str, Any]
     conversation_count: int = 0
+    current_turn: Optional[str] = None  # Current agent with turn
+    turn_queue: List[str] = None  # Queue of agents waiting for turn
     
     def __post_init__(self):
         if self.agent_context is None:
             self.agent_context = {}
         if self.metadata is None:
             self.metadata = {}
+        if self.turn_queue is None:
+            self.turn_queue = []
 
 class SessionManager:
     """Main session manager with persistent storage"""
@@ -106,6 +110,16 @@ class SessionManager:
         expires_hours = expires_in_hours or self.config.default_expiry_hours
         agent_context = agent_context or {}
         metadata = metadata or {}
+        
+        # Ensure user exists before creating session
+        user = self.db.get_user(user_id)
+        if not user:
+            # Create user if it doesn't exist - make username unique
+            import time
+            timestamp = str(int(time.time() * 1000))[-6:]  # Last 6 digits of timestamp
+            username = f"user_{user_id[:8]}_{timestamp}"  # Generate unique username
+            self.db.create_user(username=username, user_id=user_id)
+            logger.info(f"Auto-created user {username} ({user_id}) for session")
         
         # Add session creation metadata
         metadata.update({
@@ -205,13 +219,16 @@ class SessionManager:
                                      memory_references: List[str] = None,
                                      processing_time: float = None,
                                      model_used: str = None) -> Optional[str]:
-        """Add a message to the conversation"""
+        """Add a message to the conversation with FOREIGN KEY validation"""
         session = await self.get_session(session_token)
         if not session:
             logger.warning(f"Attempted to add message to invalid session: {session_token}")
             return None
         
         async with self._session_locks.get(session_token, asyncio.Lock()):
+            # Ensure agent exists before creating conversation
+            await self._ensure_agent_exists(agent_id, session.user_id)
+            
             # Create conversation message
             message = ConversationMessage(
                 id=str(uuid.uuid4()),
@@ -228,26 +245,103 @@ class SessionManager:
                 model_used=model_used
             )
             
-            # Store in database
-            conversation_id = self.db.store_conversation(
-                session_id=session.id,
-                agent_id=agent_id,
-                user_id=session.user_id,
-                message_type=message_type,
-                content=content,
-                role=role.value,
-                metadata=message.metadata,
-                memory_references=message.memory_references,
-                processing_time=processing_time,
-                model_used=model_used
+            try:
+                # Store in database
+                conversation_id = self.db.store_conversation(
+                    session_id=session.id,
+                    agent_id=agent_id,
+                    user_id=session.user_id,
+                    message_type=message_type,
+                    content=content,
+                    role=role.value,
+                    metadata=message.metadata,
+                    memory_references=message.memory_references,
+                    processing_time=processing_time,
+                    model_used=model_used
+                )
+                
+                # Update session activity
+                session.conversation_count += 1
+                await self.update_session_activity(session_token)
+                
+                logger.debug(f"Added {role.value} message to session {session.id}")
+                return conversation_id
+                
+            except Exception as e:
+                logger.error(f"Failed to store conversation message: {e}")
+                # If FOREIGN KEY constraint still fails, log details and return None
+                if "FOREIGN KEY constraint failed" in str(e):
+                    logger.error(f"FOREIGN KEY constraint failed for agent_id={agent_id}, session_id={session.id}")
+                return None
+    
+    async def _ensure_agent_exists(self, agent_id: str, user_id: str):
+        """Ensure agent exists in database, create if missing"""
+        try:
+            # Check if agent exists
+            agent = self.db.get_agent(agent_id)
+            if agent:
+                return  # Agent exists
+            
+            # Agent doesn't exist, create it
+            logger.info(f"Auto-creating agent {agent_id} for user {user_id}")
+            
+            # Define agent configurations for common agents
+            agent_configs = {
+                "alden": {
+                    "name": "Alden",
+                    "persona_type": "assistant", 
+                    "description": "Primary AI assistant",
+                    "capabilities": ["conversation", "memory", "analysis", "rag"],
+                    "personality_traits": {"openness": 0.8, "conscientiousness": 0.9}
+                },
+                "alice": {
+                    "name": "Alice",
+                    "persona_type": "cognitive_analyst",
+                    "description": "Cognitive-behavioral analysis specialist", 
+                    "capabilities": ["analysis", "psychology", "behavioral_assessment"],
+                    "personality_traits": {"analytical": 0.95, "empathetic": 0.85}
+                },
+                "system": {
+                    "name": "System",
+                    "persona_type": "system",
+                    "description": "System management agent",
+                    "capabilities": ["system", "admin"],
+                    "personality_traits": {"reliability": 1.0}
+                }
+            }
+            
+            # Get configuration for this agent or use default
+            config = agent_configs.get(agent_id, {
+                "name": agent_id.capitalize(),
+                "persona_type": "dynamic",
+                "description": f"Auto-created agent for {agent_id}",
+                "capabilities": ["conversation"],
+                "personality_traits": {}
+            })
+            
+            # Create the agent
+            created_agent_id = self.db.create_agent(
+                user_id=user_id,
+                name=config["name"],
+                persona_type=config["persona_type"],
+                description=config["description"],
+                capabilities=config["capabilities"],
+                personality_traits=config["personality_traits"]
             )
             
-            # Update session activity
-            session.conversation_count += 1
-            await self.update_session_activity(session_token)
+            # Update the agent ID to match the requested one if different
+            if created_agent_id != agent_id:
+                # This is a workaround for UUID generation in create_agent
+                # We need to update the ID to match what was requested
+                with self.db.transaction() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE agents SET id = ? WHERE id = ?", (agent_id, created_agent_id))
             
-            logger.debug(f"Added {role.value} message to session {session.id}")
-            return conversation_id
+            logger.info(f"Successfully created agent {agent_id} for user {user_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to ensure agent {agent_id} exists: {e}")
+            # Don't raise - let the conversation creation proceed with triggers handling it
     
     async def get_conversation_history(self, session_token: str, 
                                      limit: int = None) -> List[ConversationMessage]:
@@ -390,6 +484,80 @@ class SessionManager:
             "config": asdict(self.config),
             "uptime_seconds": (datetime.now() - datetime.now()).total_seconds() # Would track actual uptime
         }
+    
+    # Turn-taking functionality
+    async def request_turn(self, session_token: str, agent_id: str) -> bool:
+        """Request turn for an agent in the session"""
+        if session_token not in self._active_sessions:
+            return False
+        
+        session = self._active_sessions[session_token]
+        
+        # If no current turn holder, grant immediately
+        if not session.current_turn:
+            session.current_turn = agent_id
+            logger.info(f"Turn granted to {agent_id} in session {session_token}")
+            return True
+        
+        # If same agent already has turn, keep it
+        if session.current_turn == agent_id:
+            return True
+        
+        # Add to queue if not already there
+        if agent_id not in session.turn_queue:
+            session.turn_queue.append(agent_id)
+            logger.info(f"Agent {agent_id} added to turn queue in session {session_token}")
+        
+        return False
+    
+    async def release_turn(self, session_token: str, agent_id: str) -> Optional[str]:
+        """Release turn and pass to next agent in queue"""
+        if session_token not in self._active_sessions:
+            return None
+        
+        session = self._active_sessions[session_token]
+        
+        # Only the current turn holder can release
+        if session.current_turn != agent_id:
+            return None
+        
+        # Pass to next in queue
+        if session.turn_queue:
+            next_agent = session.turn_queue.pop(0)
+            session.current_turn = next_agent
+            logger.info(f"Turn passed from {agent_id} to {next_agent} in session {session_token}")
+            return next_agent
+        else:
+            session.current_turn = None
+            logger.info(f"Turn released by {agent_id} in session {session_token}")
+            return None
+    
+    async def get_current_turn(self, session_token: str) -> Optional[str]:
+        """Get current turn holder"""
+        if session_token not in self._active_sessions:
+            return None
+        return self._active_sessions[session_token].current_turn
+    
+    # Context propagation functionality
+    async def propagate_context(self, session_token: str, context_update: Dict[str, Any]) -> bool:
+        """Propagate context changes across the session"""
+        if session_token not in self._active_sessions:
+            return False
+        
+        session = self._active_sessions[session_token]
+        
+        # Update agent context
+        session.agent_context.update(context_update)
+        
+        # Persist to database
+        try:
+            # For now, we'll store it in memory; database method would be added later
+            session.metadata['last_context_update'] = datetime.now().isoformat()
+            logger.info(f"Context propagated in session {session_token}: {context_update}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to propagate context: {e}")
+            return False
 
 # Conversation Helper Functions
 class ConversationHelper:

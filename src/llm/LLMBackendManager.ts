@@ -142,7 +142,10 @@ export class LLMBackendManager {
     // Kimi K2 Backend
     if (this.config.kimi_k2?.apiKey) {
       const { KimiK2Backend } = await import('./KimiK2Backend');
-      this.backends.set('kimi-k2', new KimiK2Backend(this.config.kimi_k2));
+      this.backends.set('kimi-k2', new KimiK2Backend({
+        ...this.config.kimi_k2,
+        endpoint: (this.config.kimi_k2 as any).baseUrl || (this.config.kimi_k2 as any).endpoint || 'https://api.kimi.moonshot.cn'
+      }));
     }
   }
 

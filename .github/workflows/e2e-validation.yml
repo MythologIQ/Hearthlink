@@ -1,0 +1,883 @@
+name: E2E Context Retrieval Validation
+
+on:
+  pull_request:
+    branches: [ develop, main ]
+    paths:
+      - 'src/**'
+      - 'tests/e2e/**'
+      - 'package.json'
+      - 'requirements*.txt'
+      - '.github/workflows/e2e-validation.yml'
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+    inputs:
+      performance_threshold:
+        description: 'Performance threshold in milliseconds'
+        required: false
+        default: '500'
+        type: string
+      test_environment:
+        description: 'Test environment'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - integration
+          - production
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.10'
+  PERFORMANCE_THRESHOLD_MS: ${{ github.event.inputs.performance_threshold || '500' }}
+  TEST_ENVIRONMENT: ${{ github.event.inputs.test_environment || 'staging' }}
+  E2E_TEST_TOKEN: ${{ secrets.E2E_TEST_TOKEN }}
+  GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }}
+
+jobs:
+  prepare-environment:
+    name: 🚀 Prepare Test Environment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      cache-key: ${{ steps.cache-keys.outputs.cache-key }}
+      services-ready: ${{ steps.health-check.outputs.services-ready }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Generate cache keys
+        id: cache-keys
+        run: |
+          echo "cache-key=e2e-deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-python${{ env.PYTHON_VERSION }}-${{ hashFiles('package-lock.json', 'requirements*.txt') }}" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+            node_modules
+            venv
+          key: ${{ steps.cache-keys.outputs.cache-key }}
+          restore-keys: |
+            e2e-deps-${{ runner.os }}-node${{ env.NODE_VERSION }}-python${{ env.PYTHON_VERSION }}-
+
+      - name: Install Node.js dependencies
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup Python virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements_full.txt
+
+      - name: Start services for health check
+        run: |
+          # Start backend services in background
+          source venv/bin/activate
+          python src/main.py &
+          BACKEND_PID=$!
+          echo "BACKEND_PID=$BACKEND_PID" >> $GITHUB_ENV
+          
+          # Start frontend dev server
+          npm run dev &
+          FRONTEND_PID=$!
+          echo "FRONTEND_PID=$FRONTEND_PID" >> $GITHUB_ENV
+          
+          # Wait for services to start
+          sleep 30
+
+      - name: Health check services
+        id: health-check
+        run: |
+          # Check backend health
+          backend_health=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8002/api/health || echo "000")
+          
+          # Check frontend health  
+          frontend_health=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 || echo "000")
+          
+          echo "Backend health: $backend_health"
+          echo "Frontend health: $frontend_health"
+          
+          if [ "$backend_health" = "200" ] && [ "$frontend_health" = "200" ]; then
+            echo "services-ready=true" >> $GITHUB_OUTPUT
+            echo "✅ All services are healthy and ready for testing"
+          else
+            echo "services-ready=false" >> $GITHUB_OUTPUT
+            echo "❌ Services not ready - Backend: $backend_health, Frontend: $frontend_health"
+            exit 1
+          fi
+
+      - name: Cleanup background processes
+        if: always()
+        run: |
+          # Kill background processes
+          if [ ! -z "$BACKEND_PID" ]; then kill $BACKEND_PID || true; fi
+          if [ ! -z "$FRONTEND_PID" ]; then kill $FRONTEND_PID || true; fi
+          pkill -f "python src/main.py" || true
+          pkill -f "npm run dev" || true
+
+  api-smoke-tests:
+    name: 🧪 API Smoke Tests
+    runs-on: ubuntu-latest
+    needs: prepare-environment
+    timeout-minutes: 20
+    if: needs.prepare-environment.outputs.services-ready == 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+            node_modules
+            venv
+          key: ${{ needs.prepare-environment.outputs.cache-key }}
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install -r requirements_full.txt
+          pip install pytest pytest-json-report requests
+
+      - name: Start backend services
+        run: |
+          source venv/bin/activate
+          python src/main.py &
+          BACKEND_PID=$!
+          echo "BACKEND_PID=$BACKEND_PID" >> $GITHUB_ENV
+          
+          # Wait for backend to be ready
+          timeout 60 bash -c 'until curl -f http://localhost:8002/api/health; do sleep 2; done'
+
+      - name: Run API smoke tests
+        run: |
+          source venv/bin/activate
+          python tests/e2e/api/api_test_runner.py \
+            --api-url http://localhost:8002 \
+            --threshold ${{ env.PERFORMANCE_THRESHOLD_MS }} \
+            --timeout 30 \
+            --verbose
+
+      - name: Run pytest API tests
+        run: |
+          source venv/bin/activate
+          python -m pytest tests/e2e/api/test_semantic_pipeline.py \
+            -v \
+            --tb=short \
+            --json-report \
+            --json-report-file=tests/e2e/reports/pytest-api-report.json \
+            --timeout=120
+
+      - name: Upload API test reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: api-test-reports
+          path: |
+            tests/e2e/reports/api-*.json
+            tests/e2e/reports/pytest-*.json
+          retention-days: 30
+
+      - name: Check API test results
+        run: |
+          # Check if API tests passed by examining report files
+          if [ -f "tests/e2e/reports/pytest-api-report.json" ]; then
+            python -c "
+            import json
+            with open('tests/e2e/reports/pytest-api-report.json', 'r') as f:
+              report = json.load(f)
+            failed = report.get('summary', {}).get('failed', 0)
+            if failed > 0:
+              print(f'❌ API tests failed: {failed} failures')
+              exit(1)
+            else:
+              print('✅ All API tests passed')
+            "
+          else
+            echo "⚠️ No pytest report found"
+            exit 1
+          fi
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ ! -z "$BACKEND_PID" ]; then kill $BACKEND_PID || true; fi
+          pkill -f "python src/main.py" || true
+
+  ui-automation-tests:
+    name: 🎭 UI Automation Tests  
+    runs-on: ubuntu-latest
+    needs: prepare-environment
+    timeout-minutes: 30
+    if: needs.prepare-environment.outputs.services-ready == 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+            node_modules
+            venv
+          key: ${{ needs.prepare-environment.outputs.cache-key }}
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install chromium
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install -r requirements_full.txt
+
+      - name: Start full application stack
+        run: |
+          # Start backend
+          source venv/bin/activate
+          python src/main.py &
+          BACKEND_PID=$!
+          echo "BACKEND_PID=$BACKEND_PID" >> $GITHUB_ENV
+          
+          # Start frontend  
+          npm run dev &
+          FRONTEND_PID=$!
+          echo "FRONTEND_PID=$FRONTEND_PID" >> $GITHUB_ENV
+          
+          # Wait for both services
+          timeout 90 bash -c 'until curl -f http://localhost:8002/api/health && curl -f http://localhost:3000; do sleep 3; done'
+
+      - name: Run Playwright E2E tests
+        env:
+          TAURI_APP_URL: http://localhost:3000
+          API_BASE_URL: http://localhost:8002
+          E2E_TEST_TOKEN: ${{ env.E2E_TEST_TOKEN }}
+        run: |
+          # Run the comprehensive E2E test suite
+          npx playwright test tests/e2e/playwright/e2e-tauri-automation.spec.js \
+            --project=chromium \
+            --reporter=json \
+            --output-dir=tests/e2e/reports/playwright-output
+
+      - name: Process E2E test results
+        if: always()
+        run: |
+          # Check if Playwright generated results
+          if [ -f "test-results.json" ]; then
+            echo "📊 Processing Playwright test results..."
+            python -c "
+            import json
+            import sys
+            try:
+              with open('test-results.json', 'r') as f:
+                results = json.load(f)
+              
+              total_tests = len(results.get('tests', []))
+              passed_tests = len([t for t in results.get('tests', []) if t.get('outcome') == 'passed'])
+              failed_tests = total_tests - passed_tests
+              
+              print(f'Total tests: {total_tests}')
+              print(f'Passed: {passed_tests}')
+              print(f'Failed: {failed_tests}')
+              
+              if failed_tests > 0:
+                print('❌ E2E tests failed')
+                sys.exit(1)
+              else:
+                print('✅ All E2E tests passed')
+            except Exception as e:
+              print(f'Error processing results: {e}')
+              sys.exit(1)
+            "
+          else
+            echo "⚠️ No Playwright results file found"
+            # Check for any test output files
+            find tests/e2e/reports -name "*.json" -type f | head -5
+          fi
+
+      - name: Upload UI test artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ui-test-artifacts
+          path: |
+            tests/e2e/reports/
+            test-results.json
+            playwright-report/
+          retention-days: 30
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ ! -z "$BACKEND_PID" ]; then kill $BACKEND_PID || true; fi
+          if [ ! -z "$FRONTEND_PID" ]; then kill $FRONTEND_PID || true; fi
+          pkill -f "python src/main.py" || true
+          pkill -f "npm run dev" || true
+
+  performance-validation:
+    name: ⚡ Performance Validation
+    runs-on: ubuntu-latest
+    needs: [api-smoke-tests, ui-automation-tests]
+    timeout-minutes: 15
+    if: always() && (needs.api-smoke-tests.result == 'success' || needs.ui-automation-tests.result == 'success')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: test-artifacts
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Analyze performance metrics
+        run: |
+          python -c "
+          import json
+          import glob
+          import os
+          
+          # Collect all test reports
+          report_files = []
+          for root, dirs, files in os.walk('test-artifacts'):
+              for file in files:
+                  if file.endswith('.json') and ('report' in file or 'results' in file):
+                      report_files.append(os.path.join(root, file))
+          
+          print(f'Found {len(report_files)} report files')
+          
+          all_latencies = []
+          total_tests = 0
+          performance_violations = 0
+          threshold_ms = int('${{ env.PERFORMANCE_THRESHOLD_MS }}')
+          
+          for report_file in report_files:
+              try:
+                  with open(report_file, 'r') as f:
+                      report = json.load(f)
+                  
+                  # Extract latency data from different report formats
+                  if 'detailed_results' in report:
+                      for result in report['detailed_results']:
+                          if 'latency_ms' in result:
+                              latency = result['latency_ms']
+                              all_latencies.append(latency)
+                              total_tests += 1
+                              if latency > threshold_ms:
+                                  performance_violations += 1
+                  
+                  elif 'tests' in report:
+                      for test in report['tests']:
+                          if 'duration' in test:
+                              latency = int(test['duration'] * 1000)  # Convert to ms
+                              all_latencies.append(latency)
+                              total_tests += 1
+                              if latency > threshold_ms:
+                                  performance_violations += 1
+                  
+                  print(f'Processed: {report_file}')
+              except Exception as e:
+                  print(f'Error processing {report_file}: {e}')
+          
+          if total_tests > 0:
+              avg_latency = sum(all_latencies) / len(all_latencies)
+              max_latency = max(all_latencies)
+              p95_latency = sorted(all_latencies)[int(len(all_latencies) * 0.95)] if all_latencies else 0
+              
+              print(f'\\n📊 PERFORMANCE ANALYSIS')
+              print(f'Total tests analyzed: {total_tests}')
+              print(f'Average latency: {avg_latency:.1f}ms')
+              print(f'Max latency: {max_latency}ms')
+              print(f'95th percentile: {p95_latency}ms')
+              print(f'Performance threshold: {threshold_ms}ms')
+              print(f'Violations: {performance_violations}/{total_tests} ({performance_violations/total_tests*100:.1f}%)')
+              
+              # Performance gates
+              violation_rate = performance_violations / total_tests
+              
+              if violation_rate > 0.2:  # More than 20% violations
+                  print(f'❌ PERFORMANCE GATE FAILED: {violation_rate:.1%} violation rate exceeds 20% threshold')
+                  exit(1)
+              elif violation_rate > 0.1:  # 10-20% violations
+                  print(f'⚠️ PERFORMANCE WARNING: {violation_rate:.1%} violation rate')
+              else:
+                  print(f'✅ PERFORMANCE GATE PASSED: {violation_rate:.1%} violation rate')
+          else:
+              print('⚠️ No performance data found in reports')
+              exit(1)
+          "
+
+  error-injection-tests:
+    name: 🔥 Error Path Validation
+    runs-on: ubuntu-latest
+    needs: prepare-environment
+    timeout-minutes: 20
+    if: needs.prepare-environment.outputs.services-ready == 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Python  
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/pip
+            node_modules
+            venv
+          key: ${{ needs.prepare-environment.outputs.cache-key }}
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install -r requirements_full.txt
+
+      - name: Start services for error testing
+        run: |
+          source venv/bin/activate
+          python src/main.py &
+          BACKEND_PID=$!
+          echo "BACKEND_PID=$BACKEND_PID" >> $GITHUB_ENV
+          
+          npm run dev &
+          FRONTEND_PID=$!
+          echo "FRONTEND_PID=$FRONTEND_PID" >> $GITHUB_ENV
+          
+          # Wait for services
+          timeout 60 bash -c 'until curl -f http://localhost:8002/api/health && curl -f http://localhost:3000; do sleep 3; done'
+
+      - name: Test Vault failure scenarios
+        run: |
+          source venv/bin/activate
+          python -c "
+          import requests
+          import time
+          
+          base_url = 'http://localhost:8002'
+          
+          # Inject Vault failure
+          print('🔴 Injecting Vault failure...')
+          fault_response = requests.post(f'{base_url}/api/test/inject-fault', json={
+              'fault_type': 'vault_unavailable',
+              'duration_ms': 10000
+          })
+          
+          if fault_response.status_code == 200:
+              print('✅ Vault fault injected')
+              
+              # Test retrieval during fault
+              print('Testing retrieval during Vault failure...')
+              test_response = requests.post(f'{base_url}/api/semantic/retrieve', json={
+                  'query': 'test query during fault',
+                  'user_id': 'fault-test-user'
+              })
+              
+              if test_response.status_code not in [500, 502, 503]:
+                  print(f'✅ Graceful failure handling: status {test_response.status_code}')
+              else:
+                  print(f'❌ Hard failure: status {test_response.status_code}')
+                  exit(1)
+                  
+              # Clear fault
+              clear_response = requests.post(f'{base_url}/api/test/clear-faults')
+              print('🟢 Faults cleared')
+          else:
+              print('⚠️ Fault injection not available - skipping error tests')
+          "
+
+      - name: Test LLM timeout scenarios
+        run: |
+          source venv/bin/activate
+          python -c "
+          import requests
+          import time
+          
+          base_url = 'http://localhost:8002'
+          
+          # Test LLM timeout handling
+          print('⏰ Testing LLM timeout handling...')
+          
+          try:
+              # Make inference request with very short timeout expectation
+              start_time = time.time()
+              inference_response = requests.post(f'{base_url}/api/llm/infer', json={
+                  'prompt': 'This is a test prompt that should complete quickly',
+                  'user_id': 'timeout-test-user',
+                  'agent': 'alden',
+                  'max_tokens': 50
+              }, timeout=15)
+              
+              elapsed = time.time() - start_time
+              
+              if inference_response.status_code == 200:
+                  print(f'✅ LLM inference completed in {elapsed:.2f}s')
+              elif inference_response.status_code == 408:
+                  print('✅ Timeout handled gracefully with 408 status')
+              else:
+                  print(f'⚠️ Unexpected status: {inference_response.status_code}')
+                  
+          except requests.exceptions.Timeout:
+              print('✅ Request timeout handled by client')
+          except Exception as e:
+              print(f'❌ Error in timeout test: {e}')
+              exit(1)
+          "
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ ! -z "$BACKEND_PID" ]; then kill $BACKEND_PID || true; fi
+          if [ ! -z "$FRONTEND_PID" ]; then kill $FRONTEND_PID || true; fi
+          pkill -f "python src/main.py" || true
+          pkill -f "npm run dev" || true
+
+  generate-final-report:
+    name: 📊 Generate Final Report
+    runs-on: ubuntu-latest
+    needs: [api-smoke-tests, ui-automation-tests, performance-validation, error-injection-tests]
+    if: always()
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: all-test-artifacts
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Generate comprehensive report
+        run: |
+          python -c "
+          import json
+          import os
+          import glob
+          from datetime import datetime
+          
+          # Collect all test results
+          all_reports = []
+          artifact_dirs = ['all-test-artifacts']
+          
+          for artifact_dir in artifact_dirs:
+              if os.path.exists(artifact_dir):
+                  for root, dirs, files in os.walk(artifact_dir):
+                      for file in files:
+                          if file.endswith('.json') and ('report' in file or 'results' in file):
+                              file_path = os.path.join(root, file)
+                              try:
+                                  with open(file_path, 'r') as f:
+                                      report = json.load(f)
+                                  all_reports.append({
+                                      'file': file_path,
+                                      'data': report
+                                  })
+                              except Exception as e:
+                                  print(f'Error reading {file_path}: {e}')
+          
+          # Aggregate results
+          total_tests = 0
+          passed_tests = 0
+          failed_tests = 0
+          total_latency = 0
+          max_latency = 0
+          performance_violations = 0
+          threshold_ms = int('${{ env.PERFORMANCE_THRESHOLD_MS }}')
+          
+          test_categories = {
+              'api_tests': 0,
+              'ui_tests': 0,
+              'performance_tests': 0,
+              'error_tests': 0
+          }
+          
+          for report_entry in all_reports:
+              report = report_entry['data']
+              
+              # Process different report formats
+              if 'summary' in report:
+                  summary = report['summary']
+                  total_tests += summary.get('total_tests', 0)
+                  passed_tests += summary.get('passed', 0)
+                  failed_tests += summary.get('failed', 0)
+                  
+                  if 'avg_latency_ms' in summary:
+                      total_latency += summary['avg_latency_ms']
+                  if 'max_latency_ms' in summary:
+                      max_latency = max(max_latency, summary['max_latency_ms'])
+                  
+                  performance_violations += summary.get('performance_violations', 0)
+              
+              elif 'tests' in report:
+                  for test in report['tests']:
+                      total_tests += 1
+                      if test.get('outcome') == 'passed':
+                          passed_tests += 1
+                      else:
+                          failed_tests += 1
+                      
+                      if 'duration' in test:
+                          latency = int(test['duration'] * 1000)
+                          total_latency += latency
+                          max_latency = max(max_latency, latency)
+                          if latency > threshold_ms:
+                              performance_violations += 1
+              
+              # Categorize tests
+              file_path = report_entry['file'].lower()
+              if 'api' in file_path:
+                  test_categories['api_tests'] += 1
+              elif 'ui' in file_path or 'playwright' in file_path:
+                  test_categories['ui_tests'] += 1
+              elif 'performance' in file_path:
+                  test_categories['performance_tests'] += 1
+              elif 'error' in file_path:
+                  test_categories['error_tests'] += 1
+          
+          # Calculate metrics
+          pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+          avg_latency = total_latency / total_tests if total_tests > 0 else 0
+          violation_rate = (performance_violations / total_tests * 100) if total_tests > 0 else 0
+          
+          # Determine overall status
+          build_should_pass = (
+              failed_tests == 0 and
+              violation_rate <= 20.0 and  # Max 20% performance violations
+              passed_tests > 0
+          )
+          
+          # Generate final report
+          final_report = {
+              'e2e_validation_summary': {
+                  'timestamp': datetime.now().isoformat(),
+                  'environment': '${{ env.TEST_ENVIRONMENT }}',
+                  'performance_threshold_ms': threshold_ms,
+                  'total_tests': total_tests,
+                  'passed_tests': passed_tests,
+                  'failed_tests': failed_tests,
+                  'pass_rate': f'{pass_rate:.1f}%',
+                  'avg_latency_ms': f'{avg_latency:.1f}',
+                  'max_latency_ms': max_latency,
+                  'performance_violations': performance_violations,
+                  'violation_rate': f'{violation_rate:.1f}%',
+                  'build_should_pass': build_should_pass
+              },
+              'test_categories': test_categories,
+              'job_results': {
+                  'api_smoke_tests': '${{ needs.api-smoke-tests.result }}',
+                  'ui_automation_tests': '${{ needs.ui-automation-tests.result }}',
+                  'performance_validation': '${{ needs.performance-validation.result }}',
+                  'error_injection_tests': '${{ needs.error-injection-tests.result }}'
+              },
+              'recommendations': []
+          }
+          
+          # Add recommendations
+          if failed_tests > 0:
+              final_report['recommendations'].append(f'❌ {failed_tests} test failures require investigation')
+          
+          if violation_rate > 20:
+              final_report['recommendations'].append(f'⚡ {violation_rate:.1f}% performance violation rate exceeds 20% threshold')
+          elif violation_rate > 10:
+              final_report['recommendations'].append(f'⚠️ {violation_rate:.1f}% performance violation rate - monitor closely')
+          
+          if build_should_pass:
+              final_report['recommendations'].append('✅ All validation gates passed - ready for deployment')
+          else:
+              final_report['recommendations'].append('❌ Validation gates failed - address issues before deployment')
+          
+          # Save report
+          with open('e2e-validation-final-report.json', 'w') as f:
+              json.dump(final_report, f, indent=2)
+          
+          # Print summary
+          print('\\n' + '='*80)
+          print('🎯 E2E CONTEXT RETRIEVAL VALIDATION - FINAL REPORT')
+          print('='*80)
+          print(f'📊 Tests: {total_tests} total, {passed_tests} passed, {failed_tests} failed')
+          print(f'📈 Pass Rate: {pass_rate:.1f}%')
+          print(f'⏱️  Average Latency: {avg_latency:.1f}ms')
+          print(f'🚀 Max Latency: {max_latency}ms')
+          print(f'⚡ Performance Violations: {performance_violations}/{total_tests} ({violation_rate:.1f}%)')
+          print(f'🎛️  Performance Threshold: {threshold_ms}ms')
+          
+          print(f'\\n📋 Test Categories:')
+          for category, count in test_categories.items():
+              print(f'   {category.replace(\"_\", \" \").title()}: {count}')
+          
+          print(f'\\n🏗️  Build Status: {\"✅ PASS\" if build_should_pass else \"❌ FAIL\"}')
+          
+          if final_report['recommendations']:
+              print(f'\\n📝 Recommendations:')
+              for rec in final_report['recommendations']:
+                  print(f'   {rec}')
+          
+          print('='*80)
+          
+          # Set GitHub output
+          print(f'build_should_pass={str(build_should_pass).lower()}')
+          
+          # Exit with appropriate code
+          if not build_should_pass:
+              exit(1)
+          "
+
+      - name: Upload final report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-validation-final-report
+          path: e2e-validation-final-report.json
+          retention-days: 90
+
+      - name: Comment on PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const reportData = fs.readFileSync('e2e-validation-final-report.json', 'utf8');
+              const report = JSON.parse(reportData);
+              const summary = report.e2e_validation_summary;
+              
+              const status = summary.build_should_pass ? '✅ PASSED' : '❌ FAILED';
+              const emoji = summary.build_should_pass ? '🎉' : '🚨';
+              
+              const comment = `## ${emoji} E2E Context Retrieval Validation ${status}
+              
+              ### 📊 Test Summary
+              - **Total Tests:** ${summary.total_tests}
+              - **Pass Rate:** ${summary.pass_rate}
+              - **Average Latency:** ${summary.avg_latency_ms}ms
+              - **Performance Violations:** ${summary.performance_violations} (${summary.violation_rate})
+              
+              ### 🎛️ Test Categories
+              ${Object.entries(report.test_categories).map(([category, count]) => 
+                `- **${category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}:** ${count}`
+              ).join('\n')}
+              
+              ### 📝 Recommendations
+              ${report.recommendations.map(rec => `- ${rec}`).join('\n')}
+              
+              ### 🔗 Artifacts
+              - [Final Report](../actions/runs/${{ github.run_id }})
+              - [API Test Reports](../actions/runs/${{ github.run_id }})
+              - [UI Test Reports](../actions/runs/${{ github.run_id }})
+              
+              *Performance threshold: ${summary.performance_threshold_ms}ms*`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.log('Could not post PR comment:', error);
+            }
+
+      - name: Fail build if validation failed
+        run: |
+          if [ -f "e2e-validation-final-report.json" ]; then
+            build_status=$(python -c "
+            import json
+            with open('e2e-validation-final-report.json', 'r') as f:
+                report = json.load(f)
+            print(str(report['e2e_validation_summary']['build_should_pass']).lower())
+            ")
+            
+            if [ "$build_status" = "false" ]; then
+              echo "❌ E2E validation failed - failing build"
+              exit 1
+            else
+              echo "✅ E2E validation passed - build can proceed"
+            fi
+          else
+            echo "❌ No final report generated - failing build"
+            exit 1
+          fi

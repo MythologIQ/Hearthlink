@@ -1,0 +1,47 @@
+#!/bin/bash
+"""
+Hearthlink CLI Wrapper
+Provides `hl` command for various Hearthlink operations
+"""
+
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Python executable detection
+if command -v python3 &> /dev/null; then
+    PYTHON_CMD="python3"
+elif command -v python &> /dev/null; then
+    PYTHON_CMD="python"
+else
+    echo "❌ Error: Python not found. Please install Python 3.7 or later."
+    exit 1
+fi
+
+# Main command dispatcher
+case "${1:-}" in
+    "bug")
+        shift
+        exec "$PYTHON_CMD" "$SCRIPT_DIR/bug_cli.py" "$@"
+        ;;
+    "")
+        echo "Hearthlink CLI Tool"
+        echo ""
+        echo "Usage: hl <command> [options]"
+        echo ""
+        echo "Available commands:"
+        echo "  bug     Submit bug report or feedback"
+        echo ""
+        echo "Examples:"
+        echo "  hl bug --interactive"
+        echo "  hl bug --title 'Issue' --desc 'Description'"
+        echo ""
+        echo "For help with specific commands:"
+        echo "  hl bug --help"
+        ;;
+    *)
+        echo "❌ Unknown command: $1"
+        echo "Run 'hl' for usage information."
+        exit 1
+        ;;
+esac

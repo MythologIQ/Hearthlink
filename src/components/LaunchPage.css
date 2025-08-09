@@ -5,7 +5,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-image: url('../assets/Hearthlink-launcher-bg.png');
+  background-image: url('../../public/assets/Hearthlink-launcher-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

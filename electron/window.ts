@@ -1,3 +1,4 @@
+﻿export {}
 const { BrowserWindow } = require('electron');
 const path = require('path');
 const http = require('http');
@@ -33,7 +34,7 @@ async function createWindow() {
   
   try {
     await mainWindow.loadURL(startUrl);
-    console.log(`✅ Application loaded from: ${startUrl}`);
+    console.log(`âœ… Application loaded from: ${startUrl}`);
   } catch (error) {
     console.error('Failed to load application:', error);
     throw error;
@@ -75,14 +76,14 @@ async function determineStartUrl() {
         });
       });
       
-      if (response.statusCode === 200) {
+      if ((response as any).statusCode === 200) {
         devServerReady = true;
-        console.log(`✅ React dev server detected on port 3005`);
+        console.log(`âœ… React dev server detected on port 3005`);
         break;
       }
     } catch (error) {
       if (attempt === 10) {
-        console.log(`❌ React dev server not found after ${attempt} attempts`);
+        console.log(`âŒ React dev server not found after ${attempt} attempts`);
       }
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
@@ -93,12 +94,12 @@ async function determineStartUrl() {
     try {
       const staticPort = await startStaticServer();
       startUrl = `http://127.0.0.1:${staticPort}`;
-      console.log(`✅ Using static server on port ${staticPort}`);
+      console.log(`âœ… Using static server on port ${staticPort}`);
     } catch (error) {
       console.error('Failed to start static server:', error);
       // Final fallback to protocol handler
       startUrl = 'app://./index.html';
-      console.log('✅ Using app:// protocol handler');
+      console.log('âœ… Using app:// protocol handler');
     }
   }
   
@@ -112,4 +113,4 @@ function getMainWindow() {
 module.exports = {
   createWindow,
   getMainWindow
-};
+};export {}

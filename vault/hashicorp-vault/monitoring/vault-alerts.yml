@@ -1,0 +1,210 @@
+# Prometheus Vault Alerting Rules
+# Comprehensive monitoring for HashiCorp Vault health and security
+
+groups:
+  - name: vault_health
+    interval: 30s
+    rules:
+      - alert: VaultDown
+        expr: up{job="vault"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: vault
+          component: server
+        annotations:
+          summary: "Vault server is down"
+          description: "Vault server {{ $labels.instance }} has been down for more than 1 minute"
+          runbook_url: "https://docs.hearthlink.local/runbooks/vault-down"
+
+      - alert: VaultSealed
+        expr: vault_core_unsealed == 0
+        for: 0s
+        labels:
+          severity: critical
+          service: vault
+          component: seal
+        annotations:
+          summary: "Vault is sealed"
+          description: "Vault instance {{ $labels.instance }} is sealed and cannot serve requests"
+          runbook_url: "https://docs.hearthlink.local/runbooks/vault-sealed"
+
+      - alert: VaultStandby
+        expr: vault_core_standby == 1
+        for: 5m
+        labels:
+          severity: warning
+          service: vault
+          component: ha
+        annotations:
+          summary: "Vault is in standby mode"
+          description: "Vault instance {{ $labels.instance }} has been in standby mode for more than 5 minutes"
+
+      - alert: VaultHighMemoryUsage
+        expr: (vault_runtime_sys_bytes / vault_runtime_total_gc_pause_ns) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: vault
+          component: performance
+        annotations:
+          summary: "Vault high memory usage"
+          description: "Vault instance {{ $labels.instance }} is using more than 80% of available memory"
+
+      - alert: VaultResponseTimeSlow
+        expr: histogram_quantile(0.95, rate(vault_core_handle_request_duration_seconds_bucket[5m])) > 2
+        for: 3m
+        labels:
+          severity: warning
+          service: vault
+          component: performance
+        annotations:
+          summary: "Vault slow response times"
+          description: "95th percentile response time for Vault {{ $labels.instance }} is above 2 seconds"
+
+  - name: vault_security
+    interval: 30s
+    rules:
+      - alert: VaultTokenLeakage
+        expr: increase(vault_token_create_count[1h]) > 1000
+        labels:
+          severity: high
+          service: vault
+          component: security
+        annotations:
+          summary: "Potential token leakage detected"
+          description: "Vault {{ $labels.instance }} has created {{ $value }} tokens in the last hour, which may indicate a leak"
+          runbook_url: "https://docs.hearthlink.local/runbooks/vault-token-leak"
+
+      - alert: VaultFailedAuth
+        expr: increase(vault_core_handle_request_count{path=~"auth/.*"}[10m]) > 100 and on() (increase(vault_core_handle_request_count{path=~"auth/.*",code!="200"}[10m]) / increase(vault_core_handle_request_count{path=~"auth/.*"}[10m])) > 0.5
+        labels:
+          severity: high
+          service: vault
+          component: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Vault {{ $labels.instance }} has a high authentication failure rate (>50%) over the last 10 minutes"
+
+      - alert: VaultRootTokenUsage
+        expr: increase(vault_token_lookup_count{creation_ttl="0"}[5m]) > 0
+        labels:
+          severity: critical
+          service: vault
+          component: security
+        annotations:
+          summary: "Root token usage detected"
+          description: "Root token has been used on Vault {{ $labels.instance }} within the last 5 minutes"
+          runbook_url: "https://docs.hearthlink.local/runbooks/vault-root-token-usage"
+
+      - alert: VaultAuditLogFailure
+        expr: increase(vault_audit_log_request_failure[5m]) > 0
+        labels:
+          severity: critical
+          service: vault
+          component: audit
+        annotations:
+          summary: "Vault audit log failure"
+          description: "Vault {{ $labels.instance }} failed to write to audit log {{ $value }} times in the last 5 minutes"
+
+  - name: vault_operations
+    interval: 60s
+    rules:
+      - alert: VaultKeyRotationOverdue
+        expr: time() - vault_core_encryption_keys_install_time > 86400 * 2
+        labels:
+          severity: warning
+          service: vault
+          component: encryption
+        annotations:
+          summary: "Vault encryption key rotation overdue"
+          description: "Vault {{ $labels.instance }} encryption key has not been rotated in over 2 days"
+          runbook_url: "https://docs.hearthlink.local/runbooks/vault-key-rotation"
+
+      - alert: VaultStorageUsageHigh
+        expr: vault_storage_size_bytes / vault_storage_max_size_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: vault
+          component: storage
+        annotations:
+          summary: "Vault storage usage high"
+          description: "Vault {{ $labels.instance }} storage usage is above 80%"
+
+      - alert: VaultCertificateExpiringSoon
+        expr: (vault_pki_certificate_expiry_time - time()) / 86400 < 30
+        labels:
+          severity: warning
+          service: vault
+          component: pki
+        annotations:
+          summary: "Vault certificate expiring soon"
+          description: "Certificate {{ $labels.certificate }} will expire in less than 30 days"
+
+      - alert: VaultLeaseExpirySurge
+        expr: increase(vault_expire_num_leases[1h]) > increase(vault_expire_num_leases[1h] offset 1h) * 1.5
+        labels:
+          severity: warning
+          service: vault
+          component: leases
+        annotations:
+          summary: "Vault lease expiry surge"
+          description: "Vault {{ $labels.instance }} is experiencing a 50% increase in lease expirations"
+
+  - name: vault_replication
+    interval: 60s
+    rules:
+      - alert: VaultReplicationLag
+        expr: vault_replication_merkle_diff_count > 1000
+        for: 2m
+        labels:
+          severity: warning
+          service: vault
+          component: replication
+        annotations:
+          summary: "Vault replication lag detected"
+          description: "Vault {{ $labels.instance }} has {{ $value }} items in replication lag"
+
+      - alert: VaultReplicationFailure
+        expr: vault_replication_wal_last_wal > vault_replication_wal_last_dr_wal + 100
+        labels:
+          severity: high
+          service: vault
+          component: replication
+        annotations:
+          summary: "Vault disaster recovery replication failure"
+          description: "Vault {{ $labels.instance }} DR replication is failing with WAL lag of {{ $value }}"
+
+  - name: vault_custom_metrics
+    interval: 30s
+    rules:
+      - alert: HearthlinkAgentVaultErrors
+        expr: increase(hearthlink_vault_errors_total[5m]) > 0
+        labels:
+          severity: high
+          service: vault
+          component: hearthlink_integration
+        annotations:
+          summary: "Hearthlink agent Vault errors"
+          description: "Hearthlink agents experienced {{ $value }} Vault errors in the last 5 minutes"
+
+      - alert: HearthlinkMemorySyncVaultFailure
+        expr: increase(hearthlink_memory_sync_vault_failures_total[5m]) > 0
+        labels:
+          severity: high
+          service: vault
+          component: memory_sync
+        annotations:
+          summary: "Memory sync Vault failures"
+          description: "Memory sync service failed to connect to Vault {{ $value }} times in the last 5 minutes"
+
+      - alert: HearthlinkVaultConnectionPool
+        expr: hearthlink_vault_connection_pool_active / hearthlink_vault_connection_pool_max > 0.9
+        labels:
+          severity: warning
+          service: vault
+          component: connection_pool
+        annotations:
+          summary: "Vault connection pool nearly exhausted"
+          description: "Vault connection pool is {{ $value | humanizePercentage }} full"

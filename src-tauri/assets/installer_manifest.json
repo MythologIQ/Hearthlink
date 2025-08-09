@@ -1,0 +1,98 @@
+{
+  "installer_manifest": {
+    "product_info": {
+      "name": "Hearthlink SPEC-2 Native",
+      "version": "1.3.0-spec2",
+      "description": "Advanced AI Orchestration System with Enhanced Memory Integration",
+      "publisher": "Hearthlink Development Team",
+      "identifier": "com.hearthlink.native.spec2"
+    },
+    "spec2_features": {
+      "task_management": {
+        "enhanced_ui": true,
+        "proprietary_templates": true,
+        "fallback_templates": true,
+        "mission_statements": true,
+        "core_values_tracking": true,
+        "habit_tracking": true,
+        "decision_support": true
+      },
+      "vault_integration": {
+        "encrypted_persistence": true,
+        "memory_tagging": true,
+        "cross_agent_sync": true,
+        "audit_logging": true,
+        "real_time_updates": true
+      },
+      "memory_debug_tools": {
+        "slice_inspection": true,
+        "sync_status_monitoring": true,
+        "real_time_websocket": true,
+        "performance_metrics": true,
+        "consistency_tracking": true
+      }
+    },
+    "bundled_assets": [
+      {
+        "type": "validation",
+        "path": "assets/validation.json",
+        "description": "SPEC-2 compliance validation results"
+      },
+      {
+        "type": "ci_badges",
+        "path": "assets/ci_badges.json", 
+        "description": "CI/CD pipeline badges and status"
+      },
+      {
+        "type": "components",
+        "files": [
+          "src/components/TaskCreator.js",
+          "src/components/TaskCreator.css",
+          "src/components/MemoryDebugPanel.js",
+          "src/components/MemoryDebugPanel.css"
+        ],
+        "description": "Enhanced SPEC-2 UI components"
+      },
+      {
+        "type": "api_endpoints",
+        "files": [
+          "src/api/task_templates.py",
+          "src/api/vault_tasks.py"
+        ],
+        "description": "SPEC-2 API endpoints with Vault integration"
+      }
+    ],
+    "system_requirements": {
+      "minimum": {
+        "os": "Windows 10 / macOS 10.15 / Ubuntu 18.04",
+        "ram": "4GB",
+        "storage": "2GB",
+        "cpu": "Intel Core i3 / AMD Ryzen 3"
+      },
+      "recommended": {
+        "os": "Windows 11 / macOS 12+ / Ubuntu 20.04+",
+        "ram": "8GB",
+        "storage": "4GB",
+        "cpu": "Intel Core i5 / AMD Ryzen 5"
+      }
+    },
+    "installation_options": {
+      "install_types": ["full", "minimal", "custom"],
+      "shortcuts": {
+        "desktop": true,
+        "start_menu": true,
+        "quick_launch": false
+      },
+      "services": {
+        "auto_start": false,
+        "background_service": true,
+        "memory_debug_service": true
+      }
+    },
+    "validation_checksums": {
+      "installer_hash": "sha256:to_be_calculated",
+      "components_hash": "sha256:to_be_calculated",
+      "manifest_version": "1.0.0"
+    }
+  }
+}

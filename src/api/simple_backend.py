@@ -86,17 +86,11 @@ def delegate_task():
             return jsonify({'success': False, 'error': str(e)})
     
     # For other task types, return simulated response
-    simulated_response = {
-        'success': True,
-        'task_type': task_type,
-        'description': task_description,
-        'service_used': 'simulated',
-        'response': f"Task '{task_description}' would be handled by appropriate service.",
-        'timestamp': f"{len(task_history) + 1}"
-    }
+    # Simulation removed - implement proper error handling
+    raise NotImplementedError("This feature requires proper implementation")
     
-    task_history.append(simulated_response)
-    return jsonify(simulated_response)
+    task_history.append(# Simulation removed - implement proper error handling)
+    return jsonify(# Simulation removed - implement proper error handling)
 
 @app.route('/api/project/stats', methods=['GET'])
 def get_stats():

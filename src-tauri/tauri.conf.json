@@ -1,23 +1,149 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "productName": "Hearthlink SPEC-2 Native",
+  "version": "1.3.0-spec2",
+  "identifier": "com.hearthlink.native.spec2",
   "build": {
     "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
-    "devPath": "wrapper.html",
-    "distDir": "../dist"
+    "beforeDevCommand": "npm run compile:ts",
+    "devUrl": "http://localhost:3016",
+    "frontendDist": "../build",
+    "withGlobalTauri": true
   },
-  "package": {
-    "productName": "Hearthlink Native Wrapper",
-    "version": "1.3.0"
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "identifier": "com.hearthlink.native.spec2",
+    "publisher": "Hearthlink Development Team",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "assets/validation.json",
+      "assets/ci_badges.json", 
+      "assets/installer_manifest.json",
+      "../src/components/TaskCreator.js",
+      "../src/components/TaskCreator.css",
+      "../src/components/MemoryDebugPanel.js",
+      "../src/components/MemoryDebugPanel.css",
+      "../src/api/task_templates.py",
+      "../src/api/vault_tasks.py"
+    ],
+    "externalBin": [],
+    "copyright": "Copyright © 2025 Hearthlink Development Team. All rights reserved.",
+    "category": "Productivity",
+    "shortDescription": "AI Orchestration System with SPEC-2 Memory Integration",
+    "longDescription": "Advanced AI Orchestration System featuring enhanced task management, Vault-backed memory persistence, cross-agent synchronization, and comprehensive debugging tools. SPEC-2 compliance with Llama 3.5 micro integration.",
+    "appimage": {
+      "bundleMediaFramework": false
+    },
+    "deb": {
+      "depends": ["python3", "python3-pip", "nodejs"],
+      "priority": "optional",
+      "section": "utils"
+    },
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.15",
+      "exceptionDomain": "localhost",
+      "signingIdentity": null,
+      "providerShortName": null,
+      "entitlements": null
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "tsp": false,
+      "wix": {
+        "language": "en-US",
+        "template": "main.wxs",
+        "fragmentPaths": [],
+        "componentGroupRefs": [],
+        "componentRefs": [],
+        "featureGroupRefs": [],
+        "featureRefs": [],
+        "mergeRefs": [],
+        "skipWebviewInstall": false,
+        "bannerPath": "assets/banner.bmp",
+        "dialogImagePath": "assets/dialog.bmp"
+      },
+      "nsis": {
+        "template": "installer.nsi",
+        "languages": ["English"],
+        "customLanguageFiles": {},
+        "displayLanguageSelector": false,
+        "installerIcon": "icons/icon.ico",
+        "installMode": "both",
+        "allowDowngrades": true,
+        "allowToChangeInstallationDirectory": true,
+        "installerHooks": "assets/installer-hooks",
+        "compressionLevel": "high",
+        "packagingFormat": "oneClick"
+      }
+    }
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Hearthlink SPEC-2 Native - Memory Integration Suite",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1000,
+        "minHeight": 700,
+        "center": true,
+        "resizable": true,
+        "decorations": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "fullscreen": false,
+        "transparent": false,
+        "maximized": false,
+        "visible": true,
+        "focus": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: ws: wss: http://localhost:* https://localhost:*; connect-src 'self' ws: wss: http://localhost:* https://localhost:* https://api.openai.com https://api.anthropic.com"
+    },
+    "systemTray": {
+      "iconPath": "icons/tray-icon.png",
+      "iconAsTemplate": true
+    }
   },
   "tauri": {
     "allowlist": {
       "all": false,
       "shell": {
         "all": false,
-        "execute": true,
-        "sidecar": true,
         "open": true
+      },
+      "path": {
+        "all": true
+      },
+      "fs": {
+        "all": true,
+        "scope": ["$APPDATA/*", "$LOCALDATA/*", "$DOCUMENT/*", "$DOWNLOAD/*", "$CACHE/*"]
+      },
+      "protocol": {
+        "all": false,
+        "asset": true,
+        "assetScope": ["$APPDATA/*", "$LOCALDATA/*", "$RESOURCE/*"]
+      },
+      "http": {
+        "all": false,
+        "request": true,
+        "scope": ["http://localhost:*", "https://localhost:*", "ws://localhost:*", "wss://localhost:*"]
+      },
+      "notification": {
+        "all": true
+      },
+      "globalShortcut": {
+        "all": true
       },
       "dialog": {
         "all": false,
@@ -26,101 +152,16 @@
         "message": true,
         "open": true,
         "save": true
-      },
-      "notification": {
-        "all": true
-      },
-      "window": {
-        "all": false,
-        "close": true,
-        "hide": true,
-        "show": true,
-        "maximize": true,
-        "minimize": true,
-        "unmaximize": true,
-        "unminimize": true,
-        "startDragging": true,
-        "setResizable": true,
-        "setTitle": true,
-        "setSize": true,
-        "setMinSize": true,
-        "setMaxSize": true,
-        "setPosition": true,
-        "setFullscreen": true,
-        "setFocus": true,
-        "setIcon": true,
-        "setSkipTaskbar": true,
-        "setAlwaysOnTop": true,
-        "center": true,
-        "requestUserAttention": true
-      },
-      "globalShortcut": {
-        "all": true
       }
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.tauri.dev",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "security": {
-      "csp": null
     },
     "updater": {
-      "active": false
+      "active": false,
+      "endpoints": [],
+      "dialog": false,
+      "pubkey": ""
     },
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 800,
-        "width": 1200,
-        "resizable": true,
-        "title": "Hearthlink Native Frame",
-        "center": true,
-        "skipTaskbar": false,
-        "alwaysOnTop": false,
-        "decorations": false,
-        "transparent": false,
-        "visible": true,
-        "minimizable": true,
-        "maximizable": true,
-        "closable": true,
-        "label": "main",
-        "minWidth": 800,
-        "minHeight": 600
-      }
-    ],
     "systemTray": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": true
+      "iconPath": "icons/tray-icon.png"
     }
   }
 }

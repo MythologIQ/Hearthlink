@@ -135,14 +135,14 @@ class OfflineLLMManager:
         default_config = {
             "models": [
                 {
-                    "name": "llama3.2-1b",
+                    "name": "llama3.2:1b",
                     "size_gb": 0.7,
                     "priority": 3,
                     "endpoint": "http://localhost:11434",
                     "capabilities": ["chat", "completion", "emergency"]
                 },
                 {
-                    "name": "llama3.2-3b",
+                    "name": "llama3.2:3b",
                     "size_gb": 2.0,
                     "priority": 2,
                     "endpoint": "http://localhost:11434",
@@ -168,7 +168,7 @@ class OfflineLLMManager:
                 "cleanup_threshold": 0.9
             },
             "redundancy_settings": {
-                "min_models_available": 2,
+                "min_models_available": 1,
                 "health_check_interval": 30,
                 "max_failure_rate": 0.3,
                 "circuit_breaker_threshold": 5

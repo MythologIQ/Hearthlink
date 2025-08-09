@@ -7,8 +7,16 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Eye, Shield, AlertTriangle, Activity, CheckCircle, XCircle } from 'lucide-react';
+// import { Eye, Shield, AlertTriangle, Activity, CheckCircle, XCircle } from 'lucide-react';
 // import { getSentryPersona, SentryPersona } from '../personas/sentry/sentry';
+
+// Simple icon replacements for lucide-react
+const Eye = () => <span>👁️</span>;
+const Shield = () => <span>🛡️</span>;
+const AlertTriangle = () => <span>⚠️</span>;
+const Activity = () => <span>📊</span>;
+const CheckCircle = () => <span>✅</span>;
+const XCircle = () => <span>❌</span>;
 
 interface MonitoringEvent {
   timestamp: string;

@@ -18,6 +18,7 @@ from .permissions import PermissionManager, PermissionStatus
 from .sandbox import SandboxManager, SandboxConfig, SandboxResult
 from .benchmark import BenchmarkManager, BenchmarkConfig, PerformanceTier
 from .traffic_logger import TrafficLogger, TrafficType, TrafficSeverity
+from .mcp_executor import MCPExecutor
 
 @dataclass
 class PluginExecutionRequest:
@@ -90,6 +91,9 @@ class PluginManager:
             retention_days=config.get("traffic", {}).get("retention_days", 30),
             logger=self.logger
         )
+        
+        # Initialize MCP executor
+        self.mcp_executor = MCPExecutor()
         
         # Plugin registry
         self.plugins: Dict[str, PluginManifest] = {}
@@ -331,23 +335,28 @@ class PluginManager:
         error = None
         
         try:
-            # Create sandbox
-            sandbox_path = self.sandbox_manager.create_sandbox(plugin_id, request_id)
-            
-            # Execute in sandbox
-            command = self._build_execution_command(manifest, payload)
-            sandbox_result = self.sandbox_manager.execute_in_sandbox(
-                plugin_id, request_id, command, 
-                input_data=json.dumps(payload),
-                timeout=timeout
-            )
-            
-            # Process result
-            if sandbox_result.success:
-                output = self._parse_plugin_output(sandbox_result.output)
+            # Handle MCP plugins specially
+            if manifest.plugin_id.endswith('-mcp'):
+                output, error = self._execute_mcp_plugin(manifest.plugin_id, payload)
+                sandbox_result = None  # MCP plugins don't use sandbox
             else:
-                output = None
-                error = sandbox_result.error
+                # Create sandbox for external plugins
+                sandbox_path = self.sandbox_manager.create_sandbox(plugin_id, request_id)
+                
+                # Execute in sandbox
+                command = self._build_execution_command(manifest, payload)
+                sandbox_result = self.sandbox_manager.execute_in_sandbox(
+                    plugin_id, request_id, command, 
+                    input_data=json.dumps(payload),
+                    timeout=timeout
+                )
+                
+                # Process result
+                if sandbox_result.success:
+                    output = self._parse_plugin_output(sandbox_result.output)
+                else:
+                    output = None
+                    error = sandbox_result.error
             
             execution_time = time.time() - start_time
             
@@ -471,10 +480,40 @@ class PluginManager:
         # In a real system, you'd analyze the payload and check specific permissions
         return True
     
+    def _execute_mcp_plugin(self, plugin_id: str, payload: Dict[str, Any]) -> tuple:
+        """Execute MCP plugin using the MCP executor."""
+        try:
+            tool = payload.get('tool')
+            parameters = payload.get('parameters', {})
+            
+            if not tool:
+                return None, "Missing 'tool' parameter in payload"
+            
+            if plugin_id == 'filesystem-mcp':
+                result = self.mcp_executor.execute_filesystem_mcp(tool, parameters)
+            elif plugin_id == 'github-mcp':
+                result = self.mcp_executor.execute_github_mcp(tool, parameters)
+            elif plugin_id == 'gmail-calendar-mcp':
+                result = self.mcp_executor.execute_gmail_calendar_mcp(tool, parameters)
+            else:
+                return None, f"Unknown MCP plugin: {plugin_id}"
+            
+            if result.get('success'):
+                return result, None
+            else:
+                return None, result.get('error', 'Unknown MCP execution error')
+                
+        except Exception as e:
+            return None, f"MCP execution error: {str(e)}"
+    
     def _build_execution_command(self, manifest: PluginManifest, payload: Dict[str, Any]) -> List[str]:
         """Build execution command for plugin."""
-        # This is a simplified implementation
-        # In a real system, you'd build the actual command based on the plugin type
+        # For MCP plugins, we use the MCP executor instead of external commands
+        if manifest.plugin_id.endswith('-mcp'):
+            # This will be handled by MCP executor, not as external command
+            return ["internal", "mcp", manifest.plugin_id, json.dumps(payload)]
+        
+        # For external plugins, build actual command
         return ["python", "-c", "print('Plugin execution')"]
     
     def _parse_plugin_output(self, output: str) -> Any:
@@ -529,4 +568,214 @@ class PluginManager:
                 executions_to_remove.append(request_id)
         
         for request_id in executions_to_remove:
-            del self.active_executions[request_id] 
+            del self.active_executions[request_id]
+    
+    # Dynamic Plugin Management Methods
+    
+    def add_plugin(self, plugin_path: str, user_id: str, auto_activate: bool = False) -> str:
+        """
+        Add a new plugin from file path with runtime registration.
+        
+        Args:
+            plugin_path: Path to plugin manifest or directory
+            user_id: User adding the plugin
+            auto_activate: Whether to automatically activate the plugin
+            
+        Returns:
+            Plugin ID
+        """
+        try:
+            import os
+            from pathlib import Path
+            
+            plugin_path_obj = Path(plugin_path)
+            
+            # Find manifest file
+            if plugin_path_obj.is_file() and plugin_path_obj.name == "manifest.json":
+                manifest_file = plugin_path_obj
+            elif plugin_path_obj.is_dir():
+                manifest_file = plugin_path_obj / "manifest.json"
+                if not manifest_file.exists():
+                    raise ValueError(f"No manifest.json found in {plugin_path}")
+            else:
+                raise ValueError(f"Invalid plugin path: {plugin_path}")
+            
+            # Load manifest
+            with open(manifest_file, 'r') as f:
+                manifest_data = json.load(f)
+            
+            # Plugin directory will be tracked separately (don't add to manifest as it's not part of the schema)
+            
+            # Register the plugin
+            plugin_id = self.register_plugin(manifest_data, user_id)
+            
+            # Auto-activate if requested
+            if auto_activate:
+                self.activate_plugin(plugin_id, user_id)
+            
+            # Log successful addition
+            self.traffic_logger.log_traffic(
+                traffic_type=TrafficType.PLUGIN_REGISTER,
+                source="filesystem",
+                target=plugin_id,
+                user_id=user_id,
+                payload={"action": "add_plugin", "path": plugin_path, "auto_activate": auto_activate},
+                severity=TrafficSeverity.INFO
+            )
+            
+            logging.info(f"Plugin {plugin_id} added successfully from {plugin_path}")
+            return plugin_id
+            
+        except Exception as e:
+            logging.error(f"Failed to add plugin from {plugin_path}: {e}")
+            raise ValueError(f"Failed to add plugin: {e}")
+    
+    def remove_plugin(self, plugin_id: str, user_id: str, force: bool = False) -> bool:
+        """
+        Remove a plugin with runtime unregistration.
+        
+        Args:
+            plugin_id: ID of plugin to remove
+            user_id: User removing the plugin
+            force: Force removal even if plugin is active
+            
+        Returns:
+            Success status
+        """
+        try:
+            # Check if plugin exists
+            if plugin_id not in self.plugins:
+                raise ValueError(f"Plugin {plugin_id} not found")
+            
+            plugin_status = self.plugin_status.get(plugin_id)
+            
+            # Check if plugin is active (unless forced)
+            if not force and plugin_status and plugin_status.status == "active":
+                raise ValueError(f"Plugin {plugin_id} is active. Use force=True to remove active plugins")
+            
+            # Stop any active executions
+            self._cleanup_plugin_executions(plugin_id)
+            
+            # Deactivate plugin if active
+            if plugin_status and plugin_status.status == "active":
+                self.deactivate_plugin(plugin_id, user_id)
+            
+            # Remove from registries
+            del self.plugins[plugin_id]
+            if plugin_id in self.plugin_status:
+                del self.plugin_status[plugin_id]
+            
+            # Log removal
+            self.traffic_logger.log_traffic(
+                traffic_type=TrafficType.PLUGIN_UNREGISTER,
+                source="user",
+                target=plugin_id,
+                user_id=user_id,
+                payload={"action": "remove_plugin", "force": force},
+                severity=TrafficSeverity.INFO
+            )
+            
+            logging.info(f"Plugin {plugin_id} removed successfully")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Failed to remove plugin {plugin_id}: {e}")
+            return False
+    
+    def activate_plugin(self, plugin_id: str, user_id: str) -> bool:
+        """
+        Activate a registered plugin for runtime use.
+        
+        Args:
+            plugin_id: Plugin to activate
+            user_id: User activating the plugin
+            
+        Returns:
+            Success status
+        """
+        try:
+            if plugin_id not in self.plugins:
+                raise ValueError(f"Plugin {plugin_id} not registered")
+            
+            plugin_status = self.plugin_status.get(plugin_id)
+            if not plugin_status:
+                raise ValueError(f"Plugin {plugin_id} status not found")
+            
+            # Check permissions
+            manifest = self.plugins[plugin_id]
+            if not self.permission_manager.check_permissions(user_id, manifest):
+                raise ValueError(f"User {user_id} lacks permissions for plugin {plugin_id}")
+            
+            # Update status
+            plugin_status.status = "active"
+            plugin_status.approved_by_user = True
+            plugin_status.last_execution = datetime.now()
+            
+            logging.info(f"Plugin {plugin_id} activated successfully")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Failed to activate plugin {plugin_id}: {e}")
+            return False
+    
+    def deactivate_plugin(self, plugin_id: str, user_id: str) -> bool:
+        """
+        Deactivate an active plugin.
+        
+        Args:
+            plugin_id: Plugin to deactivate
+            user_id: User deactivating the plugin
+            
+        Returns:
+            Success status
+        """
+        try:
+            if plugin_id not in self.plugins:
+                raise ValueError(f"Plugin {plugin_id} not registered")
+            
+            # Stop active executions
+            self._cleanup_plugin_executions(plugin_id)
+            
+            # Update status
+            plugin_status = self.plugin_status.get(plugin_id)
+            if plugin_status:
+                plugin_status.status = "inactive"
+            
+            logging.info(f"Plugin {plugin_id} deactivated successfully")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Failed to deactivate plugin {plugin_id}: {e}")
+            return False
+    
+    def list_plugins(self, status_filter: str = None) -> List[Dict[str, Any]]:
+        """
+        List all registered plugins with optional status filtering.
+        
+        Args:
+            status_filter: Optional status to filter by ('active', 'inactive', 'registered')
+            
+        Returns:
+            List of plugin information
+        """
+        plugin_list = []
+        
+        for plugin_id, manifest in self.plugins.items():
+            plugin_status = self.plugin_status.get(plugin_id)
+            
+            plugin_info = {
+                "plugin_id": plugin_id,
+                "name": manifest.name,
+                "version": manifest.version,
+                "description": getattr(manifest, 'description', ''),
+                "status": plugin_status.status if plugin_status else "unknown",
+                "risk_tier": manifest.risk_tier.value if hasattr(manifest.risk_tier, 'value') else str(manifest.risk_tier),
+                "last_execution": plugin_status.last_execution.isoformat() if plugin_status and plugin_status.last_execution else None,
+                "execution_count": plugin_status.execution_count if plugin_status else 0
+            }
+            
+            # Apply status filter
+            if status_filter is None or plugin_info["status"] == status_filter:
+                plugin_list.append(plugin_info)
+        
+        return plugin_list 

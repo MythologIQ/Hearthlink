@@ -1,8 +1,14 @@
+﻿export {}
 const fs = require('fs').promises;
 const path = require('path');
 
 // Token bucket rate limiter (better than O(n) array filtering)
 class TokenBucketRateLimiter {
+  maxTokens: number;
+  tokens: number;
+  refillRate: number;
+  lastRefill: number;
+  
   constructor(maxTokens = 60, refillRate = 1, refillInterval = 1000) {
     this.maxTokens = maxTokens;
     this.tokens = maxTokens;
@@ -48,6 +54,11 @@ class TokenBucketRateLimiter {
 
 // Delegation Metrics Tracking with async persistence
 class DelegationMetricsTracker {
+  sessions: Map<string, any>;
+  globalMetrics: any;
+  persistenceQueue: any[];
+  isProcessingQueue: boolean;
+  
   constructor() {
     this.sessions = new Map();
     this.globalMetrics = {
@@ -162,7 +173,11 @@ class DelegationMetricsTracker {
     
     try {
       // Read existing data
-      let existingData = { sessions: {}, globalMetrics: this.globalMetrics };
+      let existingData: {
+        sessions: Record<string, any>;
+        globalMetrics: any;
+        lastUpdated?: number;
+      } = { sessions: {}, globalMetrics: this.globalMetrics };
       try {
         const content = await fs.readFile(metricsPath, 'utf8');
         existingData = JSON.parse(content);
@@ -214,7 +229,8 @@ class DelegationMetricsTracker {
         const oldSessions = {};
         
         for (const [sessionId, session] of Object.entries(data.sessions)) {
-          if (session.startTime > oneWeekAgo) {
+          const typedSession = session as { startTime?: number };
+          if (typedSession.startTime && typedSession.startTime > oneWeekAgo) {
             recentSessions[sessionId] = session;
           } else {
             oldSessions[sessionId] = session;
@@ -259,4 +275,4 @@ module.exports = {
   DelegationMetricsTracker,
   googleRateLimiter,
   delegationTracker
-};
+};export {}

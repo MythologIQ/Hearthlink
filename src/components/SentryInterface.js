@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './SentryInterface.css';
+import './ui-controls.css';
 
 /**
  * Sentry Security Monitoring Interface
@@ -467,6 +468,116 @@ const SentryInterface = ({ accessibilitySettings, onVoiceCommand, currentAgent }
     );
   };
 
+  // Handle vulnerability auto-fix
+  const handleVulnerabilityFix = async (vulnerability) => {
+    try {
+      logSecurityEvent('vulnerability_fix_initiated', 
+        `Initiating auto-fix for ${vulnerability.type}: ${vulnerability.description}`, 
+        'info'
+      );
+
+      const response = await fetch(`/api/sentry/remediate/${vulnerability.type}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          vulnerability_id: vulnerability.id || `${vulnerability.type}_${Date.now()}`,
+          severity: vulnerability.severity,
+          location: vulnerability.location,
+          auto_fix: true
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        logSecurityEvent('vulnerability_fix_success', 
+          `Successfully remediated ${vulnerability.type}. ${result.message || 'No additional details'}`, 
+          'info'
+        );
+        
+        // Trigger security scan to update vulnerabilities
+        await performSecurityScan();
+        
+        if (window.accessibility) {
+          window.accessibility.speak(`Vulnerability ${vulnerability.type} has been successfully fixed.`);
+        }
+      } else {
+        throw new Error(`Fix failed with status ${response.status}`);
+      }
+    } catch (error) {
+      logSecurityEvent('vulnerability_fix_failed', 
+        `Failed to fix ${vulnerability.type}: ${error.message}`, 
+        'error'
+      );
+      
+      if (window.accessibility) {
+        window.accessibility.speak(`Failed to fix vulnerability: ${error.message}`);
+      }
+    }
+  };
+
+  // Handle MCP server update
+  const handleMcpServerUpdate = async (serverName) => {
+    try {
+      logSecurityEvent('mcp_server_update_initiated', 
+        `Initiating update for MCP server: ${serverName}`, 
+        'info'
+      );
+
+      const response = await fetch(`/api/mcp/servers/${serverName}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          server_name: serverName,
+          target_version: 'latest',
+          security_update: true
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        logSecurityEvent('mcp_server_update_success', 
+          `Successfully updated ${serverName} to version ${result.new_version || 'latest'}`, 
+          'info'
+        );
+        
+        // Update MCP server status
+        setMcpServerStatus(prev => ({
+          ...prev,
+          [serverName]: {
+            ...prev[serverName],
+            version: result.new_version || 'updated',
+            status: 'secure',
+            last_updated: Date.now()
+          }
+        }));
+        
+        // Trigger security scan to refresh
+        await performSecurityScan();
+        
+        if (window.accessibility) {
+          window.accessibility.speak(`MCP server ${serverName} has been successfully updated to secure version.`);
+        }
+      } else {
+        throw new Error(`Update failed with status ${response.status}`);
+      }
+    } catch (error) {
+      logSecurityEvent('mcp_server_update_failed', 
+        `Failed to update ${serverName}: ${error.message}`, 
+        'error'
+      );
+      
+      if (window.accessibility) {
+        window.accessibility.speak(`Failed to update MCP server: ${error.message}`);
+      }
+    }
+  };
+
   // Get threat level color
   const getThreatLevelColor = (level) => {
     switch (level) {
@@ -629,7 +740,19 @@ const SentryInterface = ({ accessibilitySettings, onVoiceCommand, currentAgent }
                 </div>
                 {server === 'claude-code' && (
                   <div className="server-warning">
-                    CVE-2025-49596: Critical RCE vulnerability
+                    <div className="cve-details">
+                      CVE-2025-49596: Critical RCE vulnerability
+                    </div>
+                    <button 
+                      className="update-btn vulnerable"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMcpServerUpdate(server);
+                      }}
+                      title="Update to secure version"
+                    >
+                      🔄 Update Server
+                    </button>
                   </div>
                 )}
               </div>
@@ -741,8 +864,24 @@ const SentryInterface = ({ accessibilitySettings, onVoiceCommand, currentAgent }
                   <div className="scan-details">
                     {scan.vulnerabilities.map((vuln, vulnIndex) => (
                       <div key={vulnIndex} className={`vulnerability ${vuln.severity}`}>
-                        <span className="vuln-type">{vuln.type}</span>
-                        <span className="vuln-description">{vuln.description}</span>
+                        <div className="vuln-content">
+                          <span className="vuln-type">{vuln.type}</span>
+                          <span className="vuln-description">{vuln.description}</span>
+                        </div>
+                        <div className="vuln-actions">
+                          {vuln.severity === 'critical' && (
+                            <button 
+                              className="fix-btn critical"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleVulnerabilityFix(vuln);
+                              }}
+                              title="Auto-remediate critical vulnerability"
+                            >
+                              🔧 Fix
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -7,6 +7,7 @@ Phase 1 implementation focused on local-first functionality
 
 import sqlite3
 import json
+import os
 import uuid
 import logging
 import threading
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DatabaseConfig:
     """Database configuration"""
-    db_path: str = "hearthlink_data/hearthlink.db"
+    db_path: str = os.environ.get('HEARTHLINK_DB_PATH', os.environ.get('DATABASE_PATH', "hearthlink_data/hearthlink.db"))
     backup_path: str = "hearthlink_data/backups"
     pool_size: int = 10
     timeout: float = 30.0
@@ -268,9 +269,10 @@ class DatabaseManager:
                 raise
     
     # User Management
-    def create_user(self, username: str, email: str = None, preferences: Dict = None) -> str:
+    def create_user(self, username: str, email: str = None, preferences: Dict = None, user_id: str = None) -> str:
         """Create a new user"""
-        user_id = str(uuid.uuid4())
+        if user_id is None:
+            user_id = str(uuid.uuid4())
         preferences = preferences or {}
         
         with self.transaction() as conn:
@@ -322,6 +324,15 @@ class DatabaseManager:
             cursor.execute("""
                 UPDATE users SET preferences = ? WHERE id = ?
             """, (json.dumps(preferences), user_id))
+    
+    def update_username(self, user_id: str, username: str):
+        """Update user's username"""
+        with self.transaction() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE users SET username = ? WHERE id = ?
+            """, (username, user_id))
+        logger.info(f"Updated username for user {user_id} to: {username}")
     
     # Agent Management
     def create_agent(self, user_id: str, name: str, persona_type: str, 

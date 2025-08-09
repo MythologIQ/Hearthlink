@@ -1,0 +1,440 @@
+/* UI Controls CSS - Justified Controls Implementation */
+/* Created for Targeted UI Functionality Sprint */
+
+/* === SENTRY INTERFACE CONTROLS === */
+
+/* Vulnerability Fix Buttons */
+.vuln-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.vuln-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.fix-btn {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fix-btn:hover {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+}
+
+.fix-btn:active {
+  transform: translateY(0);
+}
+
+.fix-btn.critical {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* MCP Server Update Buttons */
+.server-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cve-details {
+  font-size: 11px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.update-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+}
+
+.update-btn:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+}
+
+.update-btn.vulnerable {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* === OBSERVATORY PANEL CONTROLS === */
+
+/* Anomaly Details Buttons */
+.anomaly-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.anomaly-message {
+  flex: 1;
+}
+
+.anomaly-actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.details-btn {
+  background: linear-gradient(135deg, #22d3ee, #0891b2);
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.details-btn:hover {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(34, 211, 238, 0.3);
+}
+
+/* === DIAGNOSTICS PANEL CONTROLS === */
+
+/* System Action Buttons */
+.restart-button, .maintenance-button {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 4px;
+}
+
+.maintenance-button {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.restart-button:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(239, 68, 68, 0.4);
+}
+
+.maintenance-button:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* Failure Resolution Buttons */
+.event-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.resolve-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Orbitron', monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.resolve-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(16, 185, 129, 0.3);
+}
+
+/* === EMBEDDED GRAFANA CONTROLS === */
+
+/* Alert Dismiss Buttons */
+.alert-dismiss-btn {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+  border: none;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.alert-dismiss-btn:hover {
+  background: linear-gradient(135deg, #4b5563, #374151);
+  transform: translateY(-1px);
+}
+
+/* Dashboard Details Icon Button */
+.dashboard-details-icon {
+  background: rgba(34, 211, 238, 0.1);
+  color: #22d3ee;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard-details-icon:hover {
+  background: rgba(34, 211, 238, 0.2);
+  border-color: rgba(34, 211, 238, 0.5);
+  transform: scale(1.05);
+}
+
+/* === SHARED INTERACTIVE STATES === */
+
+/* Loading state for buttons */
+.btn-loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success feedback state */
+.btn-success {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  animation: success-flash 0.6s ease;
+}
+
+@keyframes success-flash {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Error feedback state */
+.btn-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  animation: error-shake 0.5s ease;
+}
+
+@keyframes error-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+/* === ACCESSIBILITY ENHANCEMENTS === */
+
+/* Focus indicators */
+.fix-btn:focus,
+.update-btn:focus,
+.details-btn:focus,
+.resolve-btn:focus,
+.restart-button:focus,
+.maintenance-button:focus,
+.alert-dismiss-btn:focus,
+.dashboard-details-icon:focus {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .fix-btn, .update-btn, .details-btn, .resolve-btn,
+  .restart-button, .maintenance-button, .alert-dismiss-btn {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .fix-btn, .update-btn, .details-btn, .resolve-btn,
+  .restart-button, .maintenance-button, .alert-dismiss-btn,
+  .dashboard-details-icon {
+    transition: none;
+    animation: none;
+  }
+  
+  .fix-btn:hover, .update-btn:hover, .details-btn:hover,
+  .resolve-btn:hover, .restart-button:hover, .maintenance-button:hover {
+    transform: none;
+  }
+}
+
+/* === LAYOUT ADJUSTMENTS === */
+
+/* Ensure vulnerability items have proper spacing */
+.vulnerability {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+}
+
+.vulnerability.critical {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.vulnerability.high {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+/* Ensure anomaly items have proper spacing */
+.anomaly-item {
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 6px;
+  border-left: 4px solid transparent;
+}
+
+.anomaly-item.critical {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.anomaly-item.warning {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+/* Ensure failure events have proper spacing */
+.failure-event {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 5px;
+  border-left: 3px solid transparent;
+}
+
+.failure-event.critical {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.03);
+}
+
+.failure-event.high {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.03);
+}
+
+/* === RESPONSIVE DESIGN === */
+
+@media (max-width: 768px) {
+  .anomaly-content {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .anomaly-actions {
+    align-self: flex-end;
+  }
+  
+  .vuln-actions {
+    margin-top: 12px;
+  }
+  
+  .event-actions {
+    margin-top: 8px;
+  }
+}
+
+/* Tooltip-style titles for better UX */
+[title] {
+  position: relative;
+}
+
+[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  font-size: 11px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* === END OF UI CONTROLS CSS === */

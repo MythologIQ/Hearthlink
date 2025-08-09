@@ -1,3 +1,4 @@
+﻿export {}
 const http = require('http');
 const path = require('path');
 const fs = require('fs').promises;
@@ -152,4 +153,4 @@ function stopStaticServer() {
 module.exports = {
   startStaticServer,
   stopStaticServer
-};
+};export {}

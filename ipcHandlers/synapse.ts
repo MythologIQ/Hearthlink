@@ -1,3 +1,4 @@
+﻿export {}
 const { ipcMain } = require('electron');
 
 // Import Python bridge when available
@@ -48,4 +49,4 @@ function setupSynapseHandlers() {
 
 module.exports = {
   setupSynapseHandlers
-};
+};export {}

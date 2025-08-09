@@ -1,0 +1,59 @@
+[Unit]
+Description=Hearthlink Vault Health Monitor
+Documentation=https://docs.hearthlink.local/vault/monitoring
+Requires=hearthlink-vault.service
+After=hearthlink-vault.service
+PartOf=hearthlink-vault.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=30
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Service configuration
+User=vault
+Group=vault
+WorkingDirectory=/opt/hearthlink/vault
+Environment=VAULT_ADDR=https://localhost:8200
+Environment=VAULT_CACERT=/opt/hearthlink/vault/config/certs/server.crt
+Environment=VAULT_CLIENT_TIMEOUT=60s
+EnvironmentFile=-/opt/hearthlink/vault/.env.vault
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/hearthlink/vault/logs /var/log/hearthlink
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+PrivateDevices=true
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+TasksMax=2048
+
+# Monitoring script
+ExecStart=/opt/hearthlink/vault/scripts/vault-health-monitor.sh
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vault-monitor
+
+# Process management
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
+RequiredBy=hearthlink-vault.service

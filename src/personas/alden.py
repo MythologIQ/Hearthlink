@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from main import HearthlinkLogger, HearthlinkError
 from llm.local_llm_client import LocalLLMClient, LLMRequest, LLMResponse, LLMError
 from log_handling.agent_token_tracker import log_agent_token_usage, AgentType
-from vault.vault import Vault
+from vault.lightweight_rag_cag_vault import LightweightRAGCAGVault
 from vault.schema import PersonaMemory as VaultPersonaMemory
 from utils.performance_optimizer import performance_optimizer
 from utils.memory_optimizer import MemoryOptimizer
@@ -259,14 +259,20 @@ class AldenPersona:
             # Determine project root directory (go up from src/personas/)
             project_root = Path(__file__).parent.parent.parent
             
-            # Load Vault configuration with absolute paths
+            # Load Vault configuration with absolute paths and RAG/CAG settings
             vault_config = {
                 "encryption": {
                     "key_env_var": "HEARTHLINK_VAULT_KEY",
                     "key_file": str(project_root / "config" / "vault_key.bin")
                 },
                 "storage": {
-                    "file_path": str(project_root / "hearthlink_data" / "vault_storage")
+                    "file_path": str(project_root / "hearthlink_data" / "vault_storage"),
+                    "vector_db_path": str(project_root / "hearthlink_data" / "rag_vectors.db")
+                },
+                "rag_config": {
+                    "max_results": 10,
+                    "similarity_threshold": 0.05,
+                    "keyword_boost": 1.5
                 },
                 "schema_version": "1.0.0"
             }
@@ -275,8 +281,8 @@ class AldenPersona:
             (project_root / "config").mkdir(parents=True, exist_ok=True)
             (project_root / "hearthlink_data").mkdir(parents=True, exist_ok=True)
             
-            # Initialize Vault with logger
-            self.vault = Vault(vault_config, self.logger)
+            # Initialize enhanced RAG/CAG Vault with logger
+            self.vault = LightweightRAGCAGVault(vault_config, self.logger)
             
             self.logger.logger.info("Vault connection initialized", 
                                   extra={"extra_fields": {
@@ -1419,6 +1425,238 @@ Reply in 1-2 sentences max."""
                 assessment["adjustments"] = f"Trust level increased from {old_trust:.2f} to {self.memory.trust_level:.2f}"
         
         return assessment
+    
+    # Enhanced RAG/CAG Memory Methods
+    def store_conversation_memory(self, user_input: str, response: str, context: Optional[Dict[str, Any]] = None) -> Optional[str]:
+        """
+        Store conversation exchange as a memory slice for future retrieval.
+        
+        Args:
+            user_input: User's input/question
+            response: Alden's response
+            context: Optional context metadata
+            
+        Returns:
+            str: Memory slice ID if successful, None if failed
+        """
+        if not self.vault or not hasattr(self.vault, 'store_memory_slice'):
+            return None
+        
+        try:
+            # Create memory content from conversation
+            memory_content = f"User: {user_input}\nAlden: {response}"
+            
+            # Determine memory type based on content
+            memory_type = "episodic"  # Default to episodic for conversations
+            if any(word in user_input.lower() for word in ["what", "how", "define", "explain"]):
+                memory_type = "semantic"
+            elif any(word in user_input.lower() for word in ["do", "create", "make", "build"]):
+                memory_type = "procedural"
+            
+            # Prepare metadata
+            metadata = {
+                "conversation_id": context.get("conversation_id") if context else None,
+                "user_input_length": len(user_input),
+                "response_length": len(response),
+                "timestamp": datetime.now().isoformat(),
+                "trust_level": self.memory.trust_level,
+                "mood": context.get("mood", "neutral") if context else "neutral"
+            }
+            
+            # Store in RAG/CAG vault
+            slice_id = self.vault.store_memory_slice(
+                persona_id="alden",
+                user_id=self.memory.user_id,
+                content=memory_content,
+                memory_type=memory_type,
+                metadata=metadata
+            )
+            
+            self.logger.logger.info("Conversation memory stored", 
+                                  extra={"extra_fields": {
+                                      "event_type": "memory_slice_stored",
+                                      "slice_id": slice_id,
+                                      "memory_type": memory_type,
+                                      "content_length": len(memory_content)
+                                  }})
+            
+            return slice_id
+            
+        except Exception as e:
+            self.logger.logger.warning(f"Failed to store conversation memory: {str(e)}")
+            return None
+    
+    def retrieve_similar_memories(self, query: str, max_results: int = 5, memory_types: Optional[List[str]] = None) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve memories similar to the given query using RAG.
+        
+        Args:
+            query: Query to search for similar memories
+            max_results: Maximum number of results to return
+            memory_types: Optional list of memory types to filter by
+            
+        Returns:
+            Dict containing retrieval results or None if failed
+        """
+        if not self.vault or not hasattr(self.vault, 'retrieve_similar_memories'):
+            return None
+        
+        try:
+            # Retrieve similar memories using RAG
+            retrieval_result = self.vault.retrieve_similar_memories(
+                query=query,
+                persona_id="alden",
+                user_id=self.memory.user_id,
+                memory_types=memory_types,
+                max_results=max_results
+            )
+            
+            # Format results for consumption
+            results = {
+                "query": query,
+                "memories": [],
+                "total_relevance": retrieval_result.total_relevance,
+                "retrieval_time_ms": retrieval_result.retrieval_time_ms,
+                "query_keywords": getattr(retrieval_result, 'query_keywords', [])
+            }
+            
+            for memory, similarity in zip(retrieval_result.memories, retrieval_result.similarity_scores):
+                results["memories"].append({
+                    "slice_id": memory.slice_id,
+                    "content": memory.content,
+                    "memory_type": memory.memory_type,
+                    "similarity_score": similarity,
+                    "relevance_score": memory.relevance_score,
+                    "created_at": memory.created_at,
+                    "retrieval_count": memory.retrieval_count,
+                    "metadata": memory.metadata
+                })
+            
+            self.logger.logger.info("Similar memories retrieved", 
+                                  extra={"extra_fields": {
+                                      "event_type": "memory_retrieval",
+                                      "query_length": len(query),
+                                      "results_count": len(results["memories"]),
+                                      "retrieval_time_ms": results["retrieval_time_ms"]
+                                  }})
+            
+            return results
+            
+        except Exception as e:
+            self.logger.logger.warning(f"Failed to retrieve similar memories: {str(e)}")
+            return None
+    
+    def generate_reasoning_chain(self, query: str, context_memories: Optional[List] = None) -> Optional[Dict[str, Any]]:
+        """
+        Generate a chain-of-thought reasoning for the given query using CAG.
+        
+        Args:
+            query: Query to generate reasoning for
+            context_memories: Optional pre-retrieved memories to use as context
+            
+        Returns:
+            Dict containing reasoning chain or None if failed
+        """
+        if not self.vault or not hasattr(self.vault, 'generate_reasoning_chain'):
+            return None
+        
+        try:
+            # Convert context memories if provided
+            memory_slices = None
+            if context_memories:
+                from vault.lightweight_rag_cag_vault import MemorySlice
+                memory_slices = []
+                for mem in context_memories:
+                    if isinstance(mem, dict):
+                        memory_slices.append(MemorySlice(
+                            slice_id=mem.get("slice_id", ""),
+                            content=mem.get("content", ""),
+                            memory_type=mem.get("memory_type", "episodic"),
+                            created_at=mem.get("created_at", datetime.now().isoformat()),
+                            last_accessed=mem.get("last_accessed", datetime.now().isoformat()),
+                            keywords=mem.get("keywords", []),
+                            relevance_score=mem.get("relevance_score", 0.5),
+                            metadata=mem.get("metadata", {}),
+                            retrieval_count=mem.get("retrieval_count", 0)
+                        ))
+            
+            # Generate reasoning chain using CAG
+            reasoning_chain = self.vault.generate_reasoning_chain(
+                query=query,
+                persona_id="alden",
+                user_id=self.memory.user_id,
+                context_memories=memory_slices
+            )
+            
+            # Format results
+            results = {
+                "chain_id": reasoning_chain.chain_id,
+                "initial_query": reasoning_chain.initial_query,
+                "reasoning_steps": reasoning_chain.reasoning_steps,
+                "final_conclusion": reasoning_chain.final_conclusion,
+                "confidence_score": reasoning_chain.confidence_score,
+                "supporting_memories": reasoning_chain.supporting_memories,
+                "created_at": reasoning_chain.created_at
+            }
+            
+            self.logger.logger.info("Reasoning chain generated", 
+                                  extra={"extra_fields": {
+                                      "event_type": "reasoning_chain_generated",
+                                      "chain_id": reasoning_chain.chain_id,
+                                      "confidence_score": reasoning_chain.confidence_score,
+                                      "reasoning_steps": len(reasoning_chain.reasoning_steps)
+                                  }})
+            
+            return results
+            
+        except Exception as e:
+            self.logger.logger.warning(f"Failed to generate reasoning chain: {str(e)}")
+            return None
+    
+    def get_enhanced_memory_statistics(self) -> Optional[Dict[str, Any]]:
+        """
+        Get comprehensive memory statistics including RAG/CAG metrics.
+        
+        Returns:
+            Dict containing memory statistics or None if failed
+        """
+        if not self.vault or not hasattr(self.vault, 'get_memory_statistics'):
+            return None
+        
+        try:
+            # Get RAG/CAG statistics
+            rag_stats = self.vault.get_memory_statistics("alden", self.memory.user_id)
+            
+            # Combine with traditional Alden memory stats
+            enhanced_stats = {
+                "rag_cag_stats": rag_stats,
+                "traditional_memory": {
+                    "trust_level": self.memory.trust_level,
+                    "learning_agility": self.memory.learning_agility,
+                    "reflective_capacity": self.memory.reflective_capacity,
+                    "correction_events": len(self.memory.correction_events),
+                    "session_moods": len(self.memory.session_mood),
+                    "relationship_events": len(self.memory.relationship_log),
+                    "audit_events": len(self.memory.audit_log),
+                    "engagement_score": self.memory.engagement,
+                    "habit_consistency": self.memory.habit_consistency
+                },
+                "personality_traits": self.memory.traits,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            self.logger.logger.info("Enhanced memory statistics retrieved", 
+                                  extra={"extra_fields": {
+                                      "event_type": "memory_stats_retrieved",
+                                      "total_memory_slices": rag_stats.get("totals", {}).get("total_slices", 0),
+                                      "reasoning_chains": rag_stats.get("reasoning_chains", {}).get("total_chains", 0)
+                                  }})
+            
+            return enhanced_stats
+            
+        except Exception as e:
+            self.logger.logger.warning(f"Failed to get enhanced memory statistics: {str(e)}")
+            return None
 
 def create_alden_persona(llm_config: Dict[str, Any], logger: Optional[HearthlinkLogger] = None) -> AldenPersona:
     """

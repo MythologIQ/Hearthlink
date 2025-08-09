@@ -1,3 +1,4 @@
+﻿export {}
 const { ipcMain, app, shell } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
@@ -87,4 +88,4 @@ function setupGeneralHandlers() {
 
 module.exports = {
   setupGeneralHandlers
-};
+};export {}

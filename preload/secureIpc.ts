@@ -1,3 +1,4 @@
+﻿export {}
 const { contextBridge, ipcRenderer } = require('electron');
 const { IPC_CHANNELS, validateChannel } = require('./channels');
 const { 
@@ -256,4 +257,4 @@ module.exports = {
   electronAPI,
   secureIpcInvoke,
   secureIpcOn
-};
+};export {}

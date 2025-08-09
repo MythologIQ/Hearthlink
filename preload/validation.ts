@@ -1,3 +1,4 @@
+﻿export {}
 // Comprehensive input validation for IPC security
 
 function validateString(input, fieldName, maxLength = 1000) {
@@ -174,4 +175,4 @@ module.exports = {
   validateUrl,
   validatePath,
   checkRateLimit
-};
+};export {}

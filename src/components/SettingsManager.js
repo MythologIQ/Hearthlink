@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './SettingsManager.css';
+import { Vault } from '../vault/vault.js';
 
 const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
   const [activeTab, setActiveTab] = useState('general');
@@ -27,34 +28,49 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
         enabled: false,
         provider: 'ollama',
         endpoint: 'http://localhost:11434',
-        dualLLMMode: true,
+        spriteMode: true, // Sprite Light Architecture
         profiles: {
-          low: {
+          micro: {
             enabled: true,
             model: 'llama3.2:3b',
             parameterRange: '2-3B',
-            roles: ['routing', 'simple_tasks'],
+            type: 'micro',
+            roles: ['sprite_routing', 'quick_responses', 'simple_tasks', 'voice_commands'],
             temperature: 0.7,
             contextLength: 16384,
-            priority: 1
+            priority: 1,
+            alwaysLoaded: true,
+            description: 'Always-loaded lightweight model for Sprite Light assistants'
           },
-          mid: {
+          heavy: {
             enabled: true,
-            model: 'llama3.1:8b',
-            parameterRange: '7-9B',
-            roles: ['reasoning', 'coding', 'complex_tasks'],
+            model: 'llama3:latest',
+            parameterRange: '7-8B',
+            type: 'heavy',
+            roles: ['reasoning', 'coding', 'complex_tasks', 'analysis'],
             temperature: 0.7,
             contextLength: 32768,
-            priority: 2
+            priority: 2,
+            hotSwappable: true,
+            description: 'Hot-swappable reasoning engine for complex tasks'
           }
         },
         roleAssignments: {
-          routing: 'low',
-          reasoning: 'mid',
-          coding: 'mid',
-          multimodal: 'mid',
-          simple_tasks: 'low',
-          complex_tasks: 'mid'
+          sprite_routing: 'micro',
+          voice_commands: 'micro',
+          quick_responses: 'micro',
+          simple_tasks: 'micro',
+          reasoning: 'heavy',
+          coding: 'heavy',
+          complex_tasks: 'heavy',
+          analysis: 'heavy'
+        },
+        spriteConfig: {
+          confidenceThreshold: 0.75,
+          escalationEnabled: true,
+          maxRetries: 2,
+          swapTimeout: 10000,
+          memoryIsolation: true
         },
         streaming: true,
         autoStart: false,
@@ -124,6 +140,84 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [fetchingModels, setFetchingModels] = useState(false);
+  
+  // Sprite Management state variables (moved from renderSpriteManagementSettings)
+  const [spriteStatus, setSpriteStatus] = useState(null);
+  const [powerMetrics, setPowerMetrics] = useState(null);
+  const [spriteLoading, setSpriteLoading] = useState(false);
+
+  // Move sprite loading functions to top level to avoid hook order issues
+  const loadSpriteStatus = async () => {
+    setSpriteLoading(true);
+    try {
+      // Import sprite service dynamically to avoid circular dependencies
+      const { default: spriteService } = await import('../services/SpriteService.js');
+      
+      const results = await Promise.allSettled([
+        spriteService.getStatus(),
+        spriteService.getPowerStatus(),
+        spriteService.getTelemetryReport()
+      ]);
+      
+      // Handle partial failures gracefully
+      const [statusResult, powerResult, telemetryResult] = results;
+      
+      const status = statusResult.status === 'fulfilled' ? statusResult.value : {
+        error: statusResult.reason?.message || 'Service unavailable',
+        initialized: false
+      };
+      
+      const power = powerResult.status === 'fulfilled' ? powerResult.value : {
+        error: powerResult.reason?.message || 'Power monitoring unavailable',
+        currentState: { 
+          memoryPressure: 'unknown',
+          isThrottling: false,
+          thermalMonitoringAvailable: false
+        }
+      };
+      
+      const telemetry = telemetryResult.status === 'fulfilled' ? telemetryResult.value : {
+        error: telemetryResult.reason?.message || 'Telemetry unavailable'
+      };
+      
+      setSpriteStatus(status);
+      setPowerMetrics({ ...power, telemetry });
+      
+      // Show implementation warnings to user
+      if (statusResult.status === 'rejected' || powerResult.status === 'rejected' || telemetryResult.status === 'rejected') {
+        setError('Some Sprite Engine features are not fully implemented and may show limited functionality.');
+      }
+      
+    } catch (error) {
+      console.error('Failed to load sprite status:', error);
+      setSpriteStatus({ 
+        error: `Feature not implemented: Sprite Engine not available - ${error.message}`,
+        initialized: false
+      });
+    }
+    setSpriteLoading(false);
+  };
+
+  const handlePowerBudgetUpdate = async (field, value) => {
+    try {
+      const { default: spriteService } = await import('../services/SpriteService.js');
+      await spriteService.updatePowerBudget({ [field]: value });
+      await loadSpriteStatus(); // Refresh
+      setSuccessMessage('Power budget updated successfully');
+    } catch (error) {
+      setError(`Failed to update power budget: ${error.message}`);
+    }
+  };
+
+  // Use effect for sprite management only when on sprites tab
+  useEffect(() => {
+    if (activeTab === 'sprites') {
+      loadSpriteStatus();
+      // Auto-refresh every 10 seconds when tab is active
+      const interval = setInterval(loadSpriteStatus, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     loadSettings();
@@ -140,25 +234,29 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch('http://localhost:8001/api/settings');
-      if (response.ok) {
-        const loadedSettings = await response.json();
-        // Properly merge with defaults to ensure new structure is preserved
+      const vault = new Vault();
+      const savedSettings = await vault.retrieve('settings');
+      
+      if (savedSettings) {
+        // Merge saved settings with defaults to ensure new structure is preserved
         setSettings(prev => {
           const merged = { ...prev };
-          Object.keys(loadedSettings).forEach(key => {
-            if (typeof prev[key] === 'object' && typeof loadedSettings[key] === 'object') {
-              merged[key] = { ...prev[key], ...loadedSettings[key] };
+          Object.keys(savedSettings).forEach(key => {
+            if (typeof prev[key] === 'object' && typeof savedSettings[key] === 'object') {
+              merged[key] = { ...prev[key], ...savedSettings[key] };
             } else {
-              merged[key] = loadedSettings[key];
+              merged[key] = savedSettings[key];
             }
           });
           return merged;
         });
+        console.log('Settings loaded from Vault:', savedSettings);
+      } else {
+        console.log('No saved settings found, using defaults');
       }
     } catch (err) {
-      console.warn('Failed to load settings:', err);
-      // Use defaults
+      console.error('Failed to load settings from Vault:', err);
+      setError('Failed to load settings');
     }
   };
 
@@ -168,29 +266,15 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
     setSuccessMessage('');
     
     try {
-      console.log('SettingsManager - Saving settings:', settings);
+      console.log('SettingsManager - Saving settings to Vault:', settings);
       
-      // Always save to localStorage first
+      const vault = new Vault();
+      await vault.store('settings', settings);
+      
+      // Also save to localStorage as a backup
       localStorage.setItem('hearthlinkSettings', JSON.stringify(settings));
       
-      // Try to save to server if available
-      try {
-        const response = await fetch('http://localhost:8001/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ settings: settings })
-        });
-        
-        if (response.ok) {
-          console.log('SettingsManager - Server save successful');
-        } else {
-          console.warn('SettingsManager - Server save failed, using localStorage only');
-        }
-      } catch (serverError) {
-        console.warn('SettingsManager - Server unavailable, using localStorage only:', serverError);
-      }
-      
-      // Always complete the save process
+      // Notify parent component
       onSettingsChange(settings);
       setSuccessMessage('✅ Settings saved successfully!');
       setSaving(false);
@@ -869,7 +953,7 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
 
   const renderLocalLLMSettings = () => {
     // Safety check for profiles structure
-    if (!settings.localLLM.profiles || !settings.localLLM.profiles.low || !settings.localLLM.profiles.mid) {
+    if (!settings.localLLM.profiles || !settings.localLLM.profiles.micro || !settings.localLLM.profiles.heavy) {
       return (
         <div className="settings-section">
           <h3>Local LLM Configuration</h3>
@@ -945,40 +1029,43 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
         <label className="checkbox-label">
           <input 
             type="checkbox" 
-            checked={settings.localLLM.dualLLMMode}
-            onChange={(e) => updateSetting('localLLM', 'dualLLMMode', e.target.checked)}
+            checked={settings.localLLM.spriteMode}
+            onChange={(e) => updateSetting('localLLM', 'spriteMode', e.target.checked)}
             disabled={!settings.localLLM.enabled}
           />
-          Enable Dual LLM Mode
+          Enable Sprite Light Architecture
         </label>
         <div className="setting-description">
-          Use two different models for different complexity levels and roles
+          Intelligent resource utilization with Micro-LLM sprites and hot-swappable Heavy-LLM reasoning engines
         </div>
       </div>
 
-      {settings.localLLM.dualLLMMode && (
+      {settings.localLLM.spriteMode && (
         <>
-          {/* Low Profile LLM */}
+          {/* Micro-LLM Profile */}
           <div className="llm-profile-section">
-            <h4>Low Profile LLM (2-3B Parameters)</h4>
-            <div className="profile-badge low">Fast • Efficient • Routing</div>
+            <h4>Micro-LLM - Sprite Light Assistants (2-3B Parameters)</h4>
+            <div className="profile-badge micro">Always Loaded • Fast • Voice Commands • Routing</div>
             
             <div className="setting-group">
               <label className="checkbox-label">
                 <input 
                   type="checkbox" 
-                  checked={settings.localLLM.profiles.low.enabled}
+                  checked={settings.localLLM.profiles.micro.enabled}
                   onChange={(e) => updateSetting('localLLM', 'profiles', {
                     ...settings.localLLM.profiles,
-                    low: { ...settings.localLLM.profiles.low, enabled: e.target.checked }
+                    micro: { ...settings.localLLM.profiles.micro, enabled: e.target.checked }
                   })}
                   disabled={!settings.localLLM.enabled}
                 />
-                Enable Low Profile Model
+                Enable Micro-LLM Sprites
               </label>
+              <div className="setting-description">
+                Always-loaded lightweight models for voice commands and simple tasks
+              </div>
             </div>
 
-            {renderModelDropdown(settings.localLLM.profiles.low, 'low')}
+            {renderModelDropdown(settings.localLLM.profiles.micro, 'micro')}
 
             <div className="setting-group">
               <label>Temperature</label>
@@ -987,65 +1074,68 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
                 min="0" 
                 max="1" 
                 step="0.1"
-                value={settings.localLLM.profiles.low.temperature}
+                value={settings.localLLM.profiles.micro.temperature}
                 onChange={(e) => updateSetting('localLLM', 'profiles', {
                   ...settings.localLLM.profiles,
-                  low: { ...settings.localLLM.profiles.low, temperature: parseFloat(e.target.value) }
+                  micro: { ...settings.localLLM.profiles.micro, temperature: parseFloat(e.target.value) }
                 })}
-                disabled={!settings.localLLM.enabled || !settings.localLLM.profiles.low.enabled}
+                disabled={!settings.localLLM.enabled || !settings.localLLM.profiles.micro.enabled}
               />
-              <span className="slider-value">{settings.localLLM.profiles.low.temperature}</span>
+              <span className="slider-value">{settings.localLLM.profiles.micro.temperature}</span>
             </div>
 
             <div className="setting-group">
               <label>Context Length</label>
               <input 
                 type="number" 
-                value={settings.localLLM.profiles.low.contextLength}
+                value={settings.localLLM.profiles.micro.contextLength}
                 onChange={(e) => updateSetting('localLLM', 'profiles', {
                   ...settings.localLLM.profiles,
-                  low: { ...settings.localLLM.profiles.low, contextLength: parseInt(e.target.value) }
+                  micro: { ...settings.localLLM.profiles.micro, contextLength: parseInt(e.target.value) }
                 })}
                 min="1024" 
                 max="32768"
-                disabled={!settings.localLLM.enabled || !settings.localLLM.profiles.low.enabled}
+                disabled={!settings.localLLM.enabled || !settings.localLLM.profiles.micro.enabled}
               />
               <div className="setting-description">
-                Smaller context window for efficiency
+                Optimized for fast sprite responses and voice commands
               </div>
             </div>
 
             <div className="setting-group">
               <label>Assigned Roles</label>
               <div className="role-tags">
-                {settings.localLLM.profiles.low.roles.map(role => (
-                  <span key={role} className="role-tag low">{role}</span>
+                {settings.localLLM.profiles.micro.roles.map(role => (
+                  <span key={role} className="role-tag micro">{role.replace('_', ' ')}</span>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Mid Profile LLM */}
+          {/* Heavy-LLM Profile */}
           <div className="llm-profile-section">
-            <h4>Mid Profile LLM (7-9B Parameters)</h4>
-            <div className="profile-badge mid">Balanced • Capable • Reasoning</div>
+            <h4>Heavy-LLM - Reasoning Engine (7-13B Parameters)</h4>
+            <div className="profile-badge heavy">Hot-Swappable • Reasoning • Complex Tasks • Analysis</div>
             
             <div className="setting-group">
               <label className="checkbox-label">
                 <input 
                   type="checkbox" 
-                  checked={settings.localLLM.profiles.mid.enabled}
+                  checked={settings.localLLM.profiles.heavy.enabled}
                   onChange={(e) => updateSetting('localLLM', 'profiles', {
                     ...settings.localLLM.profiles,
-                    mid: { ...settings.localLLM.profiles.mid, enabled: e.target.checked }
+                    heavy: { ...settings.localLLM.profiles.heavy, enabled: e.target.checked }
                   })}
                   disabled={!settings.localLLM.enabled}
                 />
-                Enable Mid Profile Model
+                Enable Heavy-LLM Reasoning Engine
               </label>
+              <div className="setting-description">
+                Hot-swappable models for complex reasoning, coding, and analysis tasks
+              </div>
             </div>
 
-            {renderModelDropdown(settings.localLLM.profiles.mid, 'mid')}
+            {renderModelDropdown(settings.localLLM.profiles.heavy, 'heavy')}
 
             <div className="setting-group">
               <label>Temperature</label>
@@ -1054,39 +1144,39 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
                 min="0" 
                 max="1" 
                 step="0.1"
-                value={settings.localLLM.profiles.mid.temperature}
+                value={settings.localLLM.profiles.heavy.temperature}
                 onChange={(e) => updateSetting('localLLM', 'profiles', {
                   ...settings.localLLM.profiles,
-                  mid: { ...settings.localLLM.profiles.mid, temperature: parseFloat(e.target.value) }
+                  heavy: { ...settings.localLLM.profiles.heavy, temperature: parseFloat(e.target.value) }
                 })}
-                disabled={!settings.localLLM.enabled || !settings.localLLM.profiles.mid.enabled}
+                disabled={!settings.localLLM.enabled || !settings.localLLM.profiles.heavy.enabled}
               />
-              <span className="slider-value">{settings.localLLM.profiles.mid.temperature}</span>
+              <span className="slider-value">{settings.localLLM.profiles.heavy.temperature}</span>
             </div>
 
             <div className="setting-group">
               <label>Context Length</label>
               <input 
                 type="number" 
-                value={settings.localLLM.profiles.mid.contextLength}
+                value={settings.localLLM.profiles.heavy.contextLength}
                 onChange={(e) => updateSetting('localLLM', 'profiles', {
                   ...settings.localLLM.profiles,
-                  mid: { ...settings.localLLM.profiles.mid, contextLength: parseInt(e.target.value) }
+                  heavy: { ...settings.localLLM.profiles.heavy, contextLength: parseInt(e.target.value) }
                 })}
                 min="1024" 
                 max="131072"
-                disabled={!settings.localLLM.enabled || !settings.localLLM.profiles.mid.enabled}
+                disabled={!settings.localLLM.enabled || !settings.localLLM.profiles.heavy.enabled}
               />
               <div className="setting-description">
-                Larger context window for complex reasoning
+                Extended context for complex reasoning and analysis
               </div>
             </div>
 
             <div className="setting-group">
               <label>Assigned Roles</label>
               <div className="role-tags">
-                {settings.localLLM.profiles.mid.roles.map(role => (
-                  <span key={role} className="role-tag mid">{role}</span>
+                {settings.localLLM.profiles.heavy.roles.map(role => (
+                  <span key={role} className="role-tag heavy">{role.replace('_', ' ')}</span>
                 ))}
               </div>
             </div>
@@ -1094,9 +1184,9 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
 
           {/* Role Assignment Section */}
           <div className="role-assignment-section">
-            <h4>Role Assignment</h4>
+            <h4>Sprite Light Role Assignment</h4>
             <div className="setting-description">
-              Assign specific roles to different LLM profiles for optimal performance
+              Assign specific roles to Micro-LLM sprites or Heavy-LLM reasoning engines
             </div>
             
             {Object.entries(settings.localLLM.roleAssignments).map(([role, assignedProfile]) => (
@@ -1111,11 +1201,94 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
                   disabled={!settings.localLLM.enabled}
                   className="role-select"
                 >
-                  <option value="low">Low Profile</option>
-                  <option value="mid">Mid Profile</option>
+                  <option value="micro">Micro-LLM (Sprites)</option>
+                  <option value="heavy">Heavy-LLM (Reasoning)</option>
                 </select>
               </div>
             ))}
+          </div>
+
+          {/* Sprite Light Configuration */}
+          <div className="sprite-config-section">
+            <h4>Sprite Light Configuration</h4>
+            <div className="setting-description">
+              Advanced settings for model orchestration and hot-swapping
+            </div>
+
+            <div className="setting-group">
+              <label>Confidence Threshold</label>
+              <input 
+                type="range" 
+                min="0.5" 
+                max="1.0" 
+                step="0.05"
+                value={settings.localLLM.spriteConfig.confidenceThreshold}
+                onChange={(e) => updateSetting('localLLM', 'spriteConfig', {
+                  ...settings.localLLM.spriteConfig,
+                  confidenceThreshold: parseFloat(e.target.value)
+                })}
+                disabled={!settings.localLLM.enabled}
+              />
+              <span className="slider-value">{settings.localLLM.spriteConfig.confidenceThreshold}</span>
+              <div className="setting-description">
+                Escalate to Heavy-LLM when Sprite confidence drops below this threshold
+              </div>
+            </div>
+
+            <div className="setting-group">
+              <label className="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  checked={settings.localLLM.spriteConfig.escalationEnabled}
+                  onChange={(e) => updateSetting('localLLM', 'spriteConfig', {
+                    ...settings.localLLM.spriteConfig,
+                    escalationEnabled: e.target.checked
+                  })}
+                  disabled={!settings.localLLM.enabled}
+                />
+                Enable Automatic Escalation
+              </label>
+              <div className="setting-description">
+                Automatically escalate tasks from Sprites to Heavy-LLM when needed
+              </div>
+            </div>
+
+            <div className="setting-group">
+              <label className="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  checked={settings.localLLM.spriteConfig.memoryIsolation}
+                  onChange={(e) => updateSetting('localLLM', 'spriteConfig', {
+                    ...settings.localLLM.spriteConfig,
+                    memoryIsolation: e.target.checked
+                  })}
+                  disabled={!settings.localLLM.enabled}
+                />
+                Memory Isolation
+              </label>
+              <div className="setting-description">
+                Clear memory and GPU context between model swaps (recommended for security)
+              </div>
+            </div>
+
+            <div className="setting-group">
+              <label>Swap Timeout (ms)</label>
+              <input 
+                type="number" 
+                value={settings.localLLM.spriteConfig.swapTimeout}
+                onChange={(e) => updateSetting('localLLM', 'spriteConfig', {
+                  ...settings.localLLM.spriteConfig,
+                  swapTimeout: parseInt(e.target.value)
+                })}
+                min="1000" 
+                max="30000"
+                step="1000"
+                disabled={!settings.localLLM.enabled}
+              />
+              <div className="setting-description">
+                Maximum time allowed for model hot-swapping
+              </div>
+            </div>
           </div>
         </>
       )}
@@ -1287,6 +1460,280 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
     </div>
   );
 
+  const renderSpriteManagementSettings = () => {
+
+    return (
+      <div className="settings-section">
+        <div className="settings-header">
+          <h3>🎯 Sprite Light Architecture Management</h3>
+          <button 
+            onClick={loadSpriteStatus} 
+            disabled={spriteLoading}
+            className="refresh-btn"
+          >
+            {spriteLoading ? '⟳ Loading...' : '🔄 Refresh'}
+          </button>
+        </div>
+
+        {/* System Status Overview */}
+        <div className="setting-group">
+          <h4>📊 System Status</h4>
+          {spriteStatus ? (
+            spriteStatus.error ? (
+              <div className="status-error">
+                ❌ Error: {spriteStatus.error}
+              </div>
+            ) : (
+              <div className="status-grid">
+                <div className="status-card">
+                  <div className="status-label">Initialization</div>
+                  <div className={`status-value ${spriteStatus.initialized ? 'success' : 'error'}`}>
+                    {spriteStatus.initialized ? '✅ Active' : '❌ Not Initialized'}
+                  </div>
+                </div>
+                
+                <div className="status-card">
+                  <div className="status-label">Active Sprites</div>
+                  <div className="status-value">
+                    🎯 {spriteStatus.activeSprites?.length || 0} sprites
+                  </div>
+                </div>
+                
+                <div className="status-card">
+                  <div className="status-label">Loaded Engines</div>
+                  <div className="status-value">
+                    🔧 {spriteStatus.loadedEngines?.length || 0} engines
+                  </div>
+                </div>
+                
+                {powerMetrics && (
+                  <div className="status-card">
+                    <div className="status-label">Memory Usage</div>
+                    <div className="status-value">
+                      💾 {Math.round(powerMetrics.memoryUsage)}MB
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          ) : (
+            <div className="status-loading">Loading system status...</div>
+          )}
+        </div>
+
+        {/* Power Management */}
+        {powerMetrics && (
+          <div className="setting-group">
+            <h4>⚡ Power Budget Management</h4>
+            
+            <div className="power-metrics-grid">
+              <div className="metric-card">
+                <div className="metric-label">System Temperature</div>
+                <div className={`metric-value ${powerMetrics.systemTemperature > 80 ? 'warning' : 'normal'}`}>
+                  🌡️ {Math.round(powerMetrics.systemTemperature)}°C
+                </div>
+              </div>
+              
+              <div className="metric-card">
+                <div className="metric-label">GPU Temperature</div>
+                <div className={`metric-value ${powerMetrics.gpuTemperature > 85 ? 'critical' : powerMetrics.gpuTemperature > 80 ? 'warning' : 'normal'}`}>
+                  🎮 {Math.round(powerMetrics.gpuTemperature)}°C
+                </div>
+              </div>
+              
+              <div className="metric-card">
+                <div className="metric-label">Memory Pressure</div>
+                <div className={`metric-value ${powerMetrics.currentState.memoryPressure === 'critical' ? 'critical' : powerMetrics.currentState.memoryPressure === 'elevated' ? 'warning' : 'normal'}`}>
+                  📊 {powerMetrics.currentState.memoryPressure}
+                </div>
+              </div>
+              
+              <div className="metric-card">
+                <div className="metric-label">Thermal State</div>
+                <div className={`metric-value ${powerMetrics.currentState.isThrottling ? 'warning' : 'normal'}`}>
+                  {powerMetrics.currentState.isThrottling ? '🔥 Throttling' : 
+                   powerMetrics.currentState.powerSaveMode ? '⚡ Power Save' : '✅ Normal'}
+                </div>
+              </div>
+            </div>
+
+            {/* Power Budget Controls */}
+            <div className="power-controls">
+              <div className="control-row">
+                <label>Max Concurrent Models:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="4"
+                  value={powerMetrics.budget?.maxConcurrentModels || 2}
+                  onChange={(e) => handlePowerBudgetUpdate('maxConcurrentModels', parseInt(e.target.value))}
+                  className="power-input"
+                />
+              </div>
+              
+              <div className="control-row">
+                <label>Max Memory (MB):</label>
+                <input
+                  type="number"
+                  min="8000"
+                  max="32000"
+                  step="1000"
+                  value={powerMetrics.budget?.maxMemoryUsage || 16000}
+                  onChange={(e) => handlePowerBudgetUpdate('maxMemoryUsage', parseInt(e.target.value))}
+                  className="power-input"
+                />
+              </div>
+              
+              <div className="control-row">
+                <label>Max Thermal Threshold (°C):</label>
+                <input
+                  type="number"
+                  min="70"
+                  max="95"
+                  value={powerMetrics.budget?.maxThermalThreshold || 85}
+                  onChange={(e) => handlePowerBudgetUpdate('maxThermalThreshold', parseInt(e.target.value))}
+                  className="power-input"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Active Sprites */}
+        {spriteStatus?.activeSprites && spriteStatus.activeSprites.length > 0 && (
+          <div className="setting-group">
+            <h4>🎯 Active Sprites</h4>
+            <div className="sprites-list">
+              {spriteStatus.activeSprites.map((sprite, index) => (
+                <div key={index} className="sprite-card">
+                  <div className="sprite-header">
+                    <span className="sprite-name">{sprite.name}</span>
+                    <span className={`sprite-status ${sprite.status}`}>
+                      {sprite.status === 'active' ? '✅' : '⏸️'} {sprite.status}
+                    </span>
+                  </div>
+                  <div className="sprite-details">
+                    <div>ID: {sprite.id}</div>
+                    <div>Loaded: {new Date(sprite.loadedAt).toLocaleTimeString()}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Loaded Engines */}
+        {spriteStatus?.loadedEngines && spriteStatus.loadedEngines.length > 0 && (
+          <div className="setting-group">
+            <h4>🔧 Heavy-LLM Engines</h4>
+            <div className="engines-list">
+              {spriteStatus.loadedEngines.map((engine, index) => (
+                <div key={index} className="engine-card">
+                  <div className="engine-header">
+                    <span className="engine-name">{engine.name}</span>
+                    <span className={`engine-status ${engine.status}`}>
+                      {engine.status === 'active' ? '🟢' : 
+                       engine.status === 'loading' ? '🟡' : 
+                       engine.status === 'unhealthy' ? '🔴' : '⚫'} {engine.status}
+                    </span>
+                  </div>
+                  <div className="engine-details">
+                    <div>Model: {engine.model}</div>
+                    <div>Loaded: {new Date(engine.loadedAt).toLocaleTimeString()}</div>
+                    {engine.loadDuration && (
+                      <div>Load Time: {Math.round(engine.loadDuration)}ms</div>
+                    )}
+                    {engine.capabilities && (
+                      <div>Capabilities: {engine.capabilities.join(', ')}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Telemetry Summary */}
+        {powerMetrics?.telemetry && (
+          <div className="setting-group">
+            <h4>📈 Performance Telemetry</h4>
+            <div className="telemetry-summary">
+              <div className="telemetry-row">
+                <span>Total Model Loads:</span>
+                <span>{powerMetrics.telemetry.powerMetrics?.totalModelLoads || 0}</span>
+              </div>
+              <div className="telemetry-row">
+                <span>Total Model Swaps:</span>
+                <span>{powerMetrics.telemetry.powerMetrics?.totalModelSwaps || 0}</span>
+              </div>
+              <div className="telemetry-row">
+                <span>Average Load Time:</span>
+                <span>{Math.round(powerMetrics.telemetry.powerMetrics?.averageLoadTime || 0)}ms</span>
+              </div>
+              <div className="telemetry-row">
+                <span>Peak Memory Usage:</span>
+                <span>{Math.round(powerMetrics.telemetry.powerMetrics?.peakMemoryUsage || 0)}MB</span>
+              </div>
+              <div className="telemetry-row">
+                <span>Session Uptime:</span>
+                <span>{Math.round((powerMetrics.telemetry.powerMetrics?.sessionUptime || 0) / 1000)}s</span>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="sprite-management-note">
+          <p>
+            <strong>📝 Note:</strong> The Sprite Light Architecture provides intelligent model routing 
+            with automatic hot-swapping based on task complexity and power constraints. 
+            Monitor thermal and memory metrics to optimize performance.
+          </p>
+        </div>
+
+        {/* Implementation Status Warning */}
+        <div className="implementation-status-warning">
+          <h4>⚠️ Implementation Status</h4>
+          <div className="status-items">
+            <div className="status-item">
+              <span className="status-icon">🔧</span>
+              <div className="status-text">
+                <strong>Model Loading:</strong> Requires Local LLM API at localhost:8001 with model load/unload endpoints
+              </div>
+            </div>
+            <div className="status-item">
+              <span className="status-icon">🌡️</span>
+              <div className="status-text">
+                <strong>Thermal Monitoring:</strong> Requires platform-specific system integration (not implemented)
+              </div>
+            </div>
+            <div className="status-item">
+              <span className="status-icon">💾</span>
+              <div className="status-text">
+                <strong>Memory Monitoring:</strong> Basic JavaScript heap monitoring only (platform APIs not implemented)
+              </div>
+            </div>
+            <div className="status-item">
+              <span className="status-icon">📊</span>
+              <div className="status-text">
+                <strong>Sentry Telemetry:</strong> Falls back to localStorage if Sentry SDK not available
+              </div>
+            </div>
+            <div className="status-item">
+              <span className="status-icon">🔐</span>
+              <div className="status-text">
+                <strong>Authentication:</strong> Secure mode authentication system not implemented
+              </div>
+            </div>
+          </div>
+          <p className="implementation-note">
+            <strong>For Production:</strong> Replace these implementations with real system integrations 
+            for full functionality. Current state provides UI and service layer structure.
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const renderSecuritySettings = () => (
     <div className="settings-section">
       <h3>Security Settings</h3>
@@ -1424,6 +1871,7 @@ const SettingsManager = ({ isVisible, onClose, onSettingsChange }) => {
   const tabs = [
     { id: 'general', label: 'General', component: renderGeneralSettings },
     { id: 'localLLM', label: 'Local LLM', component: renderLocalLLMSettings },
+    { id: 'sprites', label: 'Sprite Management', component: renderSpriteManagementSettings },
     { id: 'agents', label: 'Agent Personas', component: renderAgentPersonaSettings },
     { id: 'voice', label: 'Voice', component: renderVoiceSettings },
     { id: 'security', label: 'Security', component: renderSecuritySettings }

@@ -1,3 +1,4 @@
+﻿export {}
 const { ipcMain } = require('electron');
 
 // Import Python bridge when available
@@ -96,4 +97,4 @@ function setupCoreHandlers() {
 
 module.exports = {
   setupCoreHandlers
-};
+};export {}

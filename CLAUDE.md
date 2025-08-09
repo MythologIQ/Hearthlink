@@ -36,6 +36,13 @@ npm run test:launcher
 npm run build:exe
 npm run build:exe-portable
 npm run create-executable
+
+# Start Alden backend service (for real AI functionality)
+python start_alden_direct.py
+
+# Performance optimization testing
+python src/utils/performance_optimizer.py
+python src/utils/memory_optimizer.py
 ```
 
 ### Python Backend Commands
@@ -75,7 +82,7 @@ hearthlink.bat
 
 ### Frontend Stack
 - **Framework**: React 18.2.0 + Electron 28.0.0
-- **UI**: Custom StarCraft-themed interface with Tailwind CSS
+- **UI**: Custom MythologIQ-themed interface with Tailwind CSS
 - **Routing**: React Router DOM for navigation
 - **Icons**: Lucide React for UI elements
 - **Build**: React Scripts with custom Electron integration
@@ -136,7 +143,7 @@ hearthlink.bat
 - `main.js`: Electron main process entry point
 - `launcher.js`: Electron launcher with asset loading
 - `preload.js`: Electron preload script
-- `tailwind.config.js`: Tailwind CSS configuration with StarCraft theme
+- `tailwind.config.js`: Tailwind CSS configuration with MythologIQ theme
 
 ### Application Configuration
 - `config/`: Module-specific configuration files
@@ -158,14 +165,14 @@ hearthlink.bat
 ### Coding Standards
 - **React**: Functional components with hooks
 - **Python**: Type hints and comprehensive error handling
-- **Styling**: Tailwind CSS with StarCraft theme colors
+- **Styling**: Tailwind CSS with MythologIQ theme colors
 - **API**: RESTful endpoints with FastAPI
 - **Logging**: Structured JSON logging for all modules
 
 ### Asset Management
 - **Icons/Images**: `src/assets/` and `public/assets/`
 - **Fonts**: Inter and Orbitron font families
-- **Theme**: StarCraft-inspired blue/gold color scheme
+- **Theme**: MythologIQ blue/gold color scheme
 - **Protocol**: Custom `app://` protocol for secure asset serving
 
 ## Common Development Tasks
@@ -270,9 +277,18 @@ hearthlink.bat
 
 ### Performance Optimization
 - Monitor memory usage in long sessions
-- Implement caching for frequently accessed data
+- Implement caching for frequently accessed data (now automated via performance optimizer)
 - Optimize database queries
 - Use connection pooling for external services
+- Run memory consolidation: `python src/utils/memory_optimizer.py`
+- Enable response caching: Performance optimizer provides 20%+ cache hit rates
+- Use prompt optimization for faster LLM responses
+
+### Alden Integration Issues
+- Ensure Alden backend is running on port 8888: `python start_alden_direct.py`
+- Check time awareness functionality works correctly
+- Verify voice interface integrates with real backend (fallback to Sprite Service)
+- Confirm memory persistence is working with consolidated database
 
 ## Voice Interaction System
 

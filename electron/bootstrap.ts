@@ -1,3 +1,4 @@
+﻿export {}
 import { app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -64,4 +65,4 @@ export {
   setupAppPaths,
   checkDevServer,
   type BootstrapConfig
-};
+};export {}

@@ -3,8 +3,63 @@ import './CognitionMemoryPanel.css';
 
 const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
   const [memoryVisualization, setMemoryVisualization] = useState('donut');
+  const [realMemoryData, setRealMemoryData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const canvasRef = useRef(null);
   const embeddingCanvasRef = useRef(null);
+
+  useEffect(() => {
+    // Fetch real memory data from Alden API
+    const fetchMemoryData = async () => {
+      setLoading(true);
+      try {
+        const memoryEndpoints = [
+          'http://localhost:8080/memory', // Current Alden backend
+          'http://localhost:8080/api/memory', // Alternative Alden API path
+          'http://localhost:8002/api/alden/memory', // Core API proxy
+        ];
+
+        let memoryData = null;
+        
+        for (const endpoint of memoryEndpoints) {
+          try {
+            const response = await fetch(endpoint);
+            if (response.ok) {
+              const data = await response.json();
+              memoryData = data;
+              break;
+            }
+          } catch (endpointError) {
+            console.log(`Memory endpoint ${endpoint} not available:`, endpointError.message);
+            continue;
+          }
+        }
+
+        if (memoryData) {
+          setRealMemoryData(memoryData);
+          setError(null);
+        } else {
+          throw new Error('No memory API endpoints available');
+        }
+
+      } catch (error) {
+        console.error('Failed to fetch real memory data:', error);
+        setError(error.message);
+        // Use fallback - no simulated data, just indicate real data unavailable
+        setRealMemoryData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMemoryData();
+    
+    // Refresh memory data every 15 seconds
+    const interval = setInterval(fetchMemoryData, 15000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -13,7 +68,7 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
     if (embeddingCanvasRef.current && isExpanded) {
       drawEmbeddingMap();
     }
-  }, [data, memoryVisualization, isExpanded]);
+  }, [realMemoryData, memoryVisualization, isExpanded]);
 
   const drawMemoryVisualization = () => {
     const canvas = canvasRef.current;
@@ -31,13 +86,18 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Use real data or fallback values
+    const currentData = realMemoryData || {
+      usage: { shortTerm: 0, longTerm: 0, embedded: 0, total: 0 }
+    };
+
     if (memoryVisualization === 'donut') {
       // Draw donut chart for memory usage
-      const total = data.usage.shortTerm + data.usage.longTerm + data.usage.embedded;
+      const total = currentData.usage.shortTerm + currentData.usage.longTerm + currentData.usage.embedded;
       let currentAngle = -Math.PI / 2;
 
       // Short-term memory
-      const shortTermAngle = (data.usage.shortTerm / 100) * 2 * Math.PI;
+      const shortTermAngle = (currentData.usage.shortTerm / 100) * 2 * Math.PI;
       ctx.fillStyle = 'rgba(34, 211, 238, 0.8)';
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + shortTermAngle);
@@ -46,7 +106,7 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
       currentAngle += shortTermAngle;
 
       // Long-term memory
-      const longTermAngle = (data.usage.longTerm / 100) * 2 * Math.PI;
+      const longTermAngle = (currentData.usage.longTerm / 100) * 2 * Math.PI;
       ctx.fillStyle = 'rgba(16, 185, 129, 0.8)';
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + longTermAngle);
@@ -55,7 +115,7 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
       currentAngle += longTermAngle;
 
       // Embedded memory
-      const embeddedAngle = (data.usage.embedded / 100) * 2 * Math.PI;
+      const embeddedAngle = (currentData.usage.embedded / 100) * 2 * Math.PI;
       ctx.fillStyle = 'rgba(251, 191, 36, 0.8)';
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + embeddedAngle);
@@ -67,9 +127,9 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
       ctx.font = 'bold 16px Orbitron';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`${data.usage.total}%`, centerX, centerY - 5);
+      ctx.fillText(`${currentData.usage.total}%`, centerX, centerY - 5);
       ctx.font = '10px Orbitron';
-      ctx.fillText('TOTAL', centerX, centerY + 10);
+      ctx.fillText(realMemoryData ? 'REAL' : 'LOADING', centerX, centerY + 10);
     }
   };
 
@@ -102,8 +162,16 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
       ctx.stroke();
     }
 
+    // Use real data or fallback values
+    const currentData = realMemoryData || {
+      embeddingClusters: [
+        { x: 30, y: 40, label: "Loading" },
+        { x: 70, y: 60, label: "System" }
+      ]
+    };
+
     // Draw embedding clusters
-    data.embeddingClusters.forEach((cluster, index) => {
+    currentData.embeddingClusters.forEach((cluster, index) => {
       const x = (cluster.x / 100) * canvas.width;
       const y = (cluster.y / 100) * canvas.height;
       
@@ -161,12 +229,26 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
     return '#10b981';
   };
 
+  // Use real data instead of simulated props data
+  const displayData = realMemoryData || {
+    usage: { shortTerm: 0, longTerm: 0, embedded: 0, total: 0 },
+    workingSet: [],
+    cognitiveLoad: { current: 0, queueSize: 0, processingRate: 0 },
+    embeddingClusters: []
+  };
+
   if (isExpanded) {
     return (
       <div className="cognition-memory-panel expanded">
         <div className="panel-header">
           <h2>Cognition & Memory Systems</h2>
-          <div className="panel-subtitle">Knowledge integration, memory loading, and cognitive throughput</div>
+          <div className="panel-subtitle">
+            {realMemoryData ? 
+              `Real-time data from ${realMemoryData.source || 'Alden Memory System'}` : 
+              'Connecting to memory monitoring system...'}
+          </div>
+          {loading && <div className="loading-indicator">Fetching real memory data...</div>}
+          {error && <div className="error-indicator">Real API unavailable: {error}</div>}
         </div>
 
         <div className="cognition-expanded-content">
@@ -196,15 +278,15 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
               <div className="memory-legend">
                 <div className="legend-item">
                   <span className="legend-color short-term"></span>
-                  <span>Short-term: {data.usage.shortTerm}%</span>
+                  <span>Short-term: {displayData.usage.shortTerm}%</span>
                 </div>
                 <div className="legend-item">
                   <span className="legend-color long-term"></span>
-                  <span>Long-term: {data.usage.longTerm}%</span>
+                  <span>Long-term: {displayData.usage.longTerm}%</span>
                 </div>
                 <div className="legend-item">
                   <span className="legend-color embedded"></span>
-                  <span>Embedded: {data.usage.embedded}%</span>
+                  <span>Embedded: {displayData.usage.embedded}%</span>
                 </div>
               </div>
             </div>
@@ -213,31 +295,50 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
           <div className="working-set-section">
             <h3>Current Working Set</h3>
             <div className="working-set-list expanded">
-              {data.workingSet.map((memory, index) => (
-                <div key={memory.id} className="memory-item expanded">
-                  <div className="memory-header">
-                    <span className="memory-type-icon">
-                      {getMemoryTypeIcon(memory.type)}
-                    </span>
-                    <span className={`memory-type ${memory.type}`}>
-                      {memory.type.toUpperCase()}
-                    </span>
-                    <div
-                      className="memory-importance"
-                      style={{ backgroundColor: getImportanceColor(memory.importance) }}
-                    >
-                      {Math.round(memory.importance * 100)}%
+              {displayData.workingSet && displayData.workingSet.length > 0 ? (
+                displayData.workingSet.map((memory, index) => (
+                  <div key={memory.id} className="memory-item expanded">
+                    <div className="memory-header">
+                      <span className="memory-type-icon">
+                        {getMemoryTypeIcon(memory.type)}
+                      </span>
+                      <span className={`memory-type ${memory.type}`}>
+                        {memory.type.toUpperCase()}
+                      </span>
+                      <div
+                        className="memory-importance"
+                        style={{ backgroundColor: getImportanceColor(memory.importance) }}
+                      >
+                        {Math.round(memory.importance * 100)}%
+                      </div>
+                    </div>
+                    <div className="memory-content">{memory.content}</div>
+                    <div className="memory-meta">
+                      <span className="memory-timestamp">
+                        {getTimeDelta(memory.timestamp)}
+                      </span>
+                      <span className="memory-id">ID: {memory.id}</span>
                     </div>
                   </div>
-                  <div className="memory-content">{memory.content}</div>
+                ))
+              ) : (
+                <div className="memory-item expanded">
+                  <div className="memory-header">
+                    <span className="memory-type-icon">🧠</span>
+                    <span className="memory-type system">REAL-TIME MONITORING</span>
+                    <div className="memory-importance" style={{ backgroundColor: '#22d3ee' }}>
+                      {realMemoryData ? 'Active' : 'Connecting'}
+                    </div>
+                  </div>
+                  <div className="memory-content">
+                    {realMemoryData ? 'No memory items in working set' : 'Waiting for memory data...'}
+                  </div>
                   <div className="memory-meta">
-                    <span className="memory-timestamp">
-                      {getTimeDelta(memory.timestamp)}
-                    </span>
-                    <span className="memory-id">ID: {memory.id}</span>
+                    <span className="memory-timestamp">Now</span>
+                    <span className="memory-id">Source: Real memory system</span>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -249,37 +350,39 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
                   <div 
                     className="load-fill" 
                     style={{
-                      width: `${data.cognitiveLoad.current}%`,
-                      backgroundColor: getCognitiveLoadColor(data.cognitiveLoad.current)
+                      width: `${displayData.cognitiveLoad.current}%`,
+                      backgroundColor: getCognitiveLoadColor(displayData.cognitiveLoad.current)
                     }}
                   ></div>
                   <div className="load-burst" style={{
-                    left: `${data.cognitiveLoad.current}%`,
-                    opacity: data.cognitiveLoad.current > 70 ? 1 : 0
+                    left: `${displayData.cognitiveLoad.current}%`,
+                    opacity: displayData.cognitiveLoad.current > 70 ? 1 : 0
                   }}></div>
                 </div>
                 <div className="load-labels">
-                  <span className="load-current">{data.cognitiveLoad.current}%</span>
+                  <span className="load-current">{displayData.cognitiveLoad.current}%</span>
                   <span className="load-status">
-                    {data.cognitiveLoad.current > 80 ? 'HIGH STRAIN' :
-                     data.cognitiveLoad.current > 60 ? 'MODERATE' :
-                     data.cognitiveLoad.current > 40 ? 'NORMAL' : 'LOW USAGE'}
+                    {displayData.cognitiveLoad.current > 80 ? 'HIGH STRAIN' :
+                     displayData.cognitiveLoad.current > 60 ? 'MODERATE' :
+                     displayData.cognitiveLoad.current > 40 ? 'NORMAL' : 'LOW USAGE'}
                   </span>
                 </div>
               </div>
               <div className="load-metrics">
                 <div className="metric-item">
                   <span className="metric-label">Queue Size:</span>
-                  <span className="metric-value">{data.cognitiveLoad.queueSize}</span>
+                  <span className="metric-value">{displayData.cognitiveLoad.queueSize}</span>
                 </div>
                 <div className="metric-item">
                   <span className="metric-label">Processing Rate:</span>
-                  <span className="metric-value">{(data.cognitiveLoad.processingRate * 100).toFixed(1)}%</span>
+                  <span className="metric-value">{(displayData.cognitiveLoad.processingRate * 100).toFixed(1)}%</span>
                 </div>
                 <div className="metric-item">
                   <span className="metric-label">Efficiency:</span>
                   <span className="metric-value">
-                    {Math.round((data.cognitiveLoad.processingRate / (data.cognitiveLoad.current / 100)) * 100)}%
+                    {displayData.cognitiveLoad.current > 0 ? 
+                      Math.round((displayData.cognitiveLoad.processingRate / (displayData.cognitiveLoad.current / 100)) * 100) : 0
+                    }%
                   </span>
                 </div>
               </div>
@@ -299,7 +402,7 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
                 <div className="embedding-stats">
                   <div className="stat-item">
                     <span className="stat-label">Active Clusters:</span>
-                    <span className="stat-value">{data.embeddingClusters.length}</span>
+                    <span className="stat-value">{displayData.embeddingClusters.length}</span>
                   </div>
                   <div className="stat-item">
                     <span className="stat-label">Dimensionality:</span>
@@ -340,28 +443,30 @@ const CognitionMemoryPanel = ({ data, isExpanded, onExpand }) => {
             <span className="metric-label">Cognitive Load:</span>
             <span 
               className="metric-value"
-              style={{ color: getCognitiveLoadColor(data.cognitiveLoad.current) }}
+              style={{ color: getCognitiveLoadColor(displayData.cognitiveLoad.current) }}
             >
-              {data.cognitiveLoad.current}%
+              {displayData.cognitiveLoad.current}%
             </span>
           </div>
           <div className="metric-row">
             <span className="metric-label">Working Set:</span>
-            <span className="metric-value">{data.workingSet.length} items</span>
+            <span className="metric-value">{displayData.workingSet.length} items</span>
           </div>
           <div className="metric-row">
             <span className="metric-label">Queue Size:</span>
-            <span className="metric-value">{data.cognitiveLoad.queueSize}</span>
+            <span className="metric-value">{displayData.cognitiveLoad.queueSize}</span>
           </div>
         </div>
 
         <div className="compact-recent-memory">
           <div className="recent-memory-item">
             <span className="memory-type-indicator">
-              {getMemoryTypeIcon(data.workingSet[0]?.type)}
+              {displayData.workingSet[0] ? getMemoryTypeIcon(displayData.workingSet[0].type) : '🧠'}
             </span>
             <span className="memory-preview">
-              {data.workingSet[0]?.content.substring(0, 30)}...
+              {displayData.workingSet[0] ? 
+                `${displayData.workingSet[0].content.substring(0, 30)}...` : 
+                realMemoryData ? 'No active memories' : 'Loading...'}
             </span>
           </div>
         </div>

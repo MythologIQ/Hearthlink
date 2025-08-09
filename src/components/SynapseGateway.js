@@ -376,13 +376,33 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
   };
 
   const testGenericMcpConnection = async (connection) => {
-    // Generic MCP server test
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setPluginConnections(prev => prev.map(c => 
-      c.id === connection.id ? { ...c, status: 'active' } : c
-    ));
-    addSecurityLog('MCP_CONNECTION_SUCCESS', `${connection.name} connected successfully`, 'info');
+    // Real MCP server test - try to connect to actual Synapse API
+    try {
+      addSecurityLog('MCP_CONNECTION_TEST', `Testing ${connection.name} connection...`, 'info');
+      
+      // Test connection to Synapse API on port 8003
+      const response = await fetch('http://localhost:8003/api/synapse/status', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 5000
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPluginConnections(prev => prev.map(c => 
+          c.id === connection.id ? { ...c, status: 'active', last_test: new Date().toISOString() } : c
+        ));
+        addSecurityLog('MCP_CONNECTION_SUCCESS', `${connection.name} connected successfully to Synapse API`, 'info');
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      setPluginConnections(prev => prev.map(c => 
+        c.id === connection.id ? { ...c, status: 'error', last_test: new Date().toISOString() } : c
+      ));
+      addSecurityLog('MCP_CONNECTION_FAILED', `${connection.name} test failed: ${error.message}`, 'error');
+      throw error;
+    }
   };
 
   const saveApi = () => {
@@ -433,7 +453,14 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
           capabilities: [],
           endpoint: '',
           api_key: '',
-          rate_limit: '100/minute',
+          rate_limits: {
+            requests_per_minute: 100,
+            requests_per_day: 5000,
+            tokens_per_minute: 100000,
+            tokens_per_day: 1000000,
+            concurrent_requests: 5,
+            reset_period: '24h'
+          },
           timeout: 30,
           status: 'inactive',
           last_test: null
@@ -447,7 +474,14 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
         capabilities: '',
         endpoint: '',
         api_key: '',
-        rate_limit: '100/minute',
+        rate_limits: {
+          requests_per_minute: 100,
+          requests_per_day: 5000,
+          tokens_per_minute: 100000,
+          tokens_per_day: 1000000,
+          concurrent_requests: 5,
+          reset_period: '24h'
+        },
         timeout: 30
       });
     }
@@ -1070,7 +1104,7 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
                               <label>Requests/Minute:</label>
                               <input 
                                 type="number" 
-                                value={apiForm.rate_limits.requests_per_minute}
+                                value={apiForm.rate_limits?.requests_per_minute || 100}
                                 onChange={(e) => handleApiFormChange('rate_limits.requests_per_minute', parseInt(e.target.value) || 0)}
                                 placeholder="100" 
                               />
@@ -1079,7 +1113,7 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
                               <label>Requests/Day:</label>
                               <input 
                                 type="number" 
-                                value={apiForm.rate_limits.requests_per_day}
+                                value={apiForm.rate_limits?.requests_per_day || 5000}
                                 onChange={(e) => handleApiFormChange('rate_limits.requests_per_day', parseInt(e.target.value) || 0)}
                                 placeholder="5000" 
                               />
@@ -1088,7 +1122,7 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
                               <label>Tokens/Minute:</label>
                               <input 
                                 type="number" 
-                                value={apiForm.rate_limits.tokens_per_minute}
+                                value={apiForm.rate_limits?.tokens_per_minute || 100000}
                                 onChange={(e) => handleApiFormChange('rate_limits.tokens_per_minute', parseInt(e.target.value) || 0)}
                                 placeholder="100000" 
                               />
@@ -1097,7 +1131,7 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
                               <label>Tokens/Day:</label>
                               <input 
                                 type="number" 
-                                value={apiForm.rate_limits.tokens_per_day}
+                                value={apiForm.rate_limits?.tokens_per_day || 1000000}
                                 onChange={(e) => handleApiFormChange('rate_limits.tokens_per_day', parseInt(e.target.value) || 0)}
                                 placeholder="1000000" 
                               />
@@ -1106,7 +1140,7 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
                               <label>Concurrent Requests:</label>
                               <input 
                                 type="number" 
-                                value={apiForm.rate_limits.concurrent_requests}
+                                value={apiForm.rate_limits?.concurrent_requests || 5}
                                 onChange={(e) => handleApiFormChange('rate_limits.concurrent_requests', parseInt(e.target.value) || 1)}
                                 placeholder="5" 
                               />
@@ -1114,7 +1148,7 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
                             <div className="rate-limit-field">
                               <label>Reset Period:</label>
                               <select 
-                                value={apiForm.rate_limits.reset_period}
+                                value={apiForm.rate_limits?.reset_period || '24h'}
                                 onChange={(e) => handleApiFormChange('rate_limits.reset_period', e.target.value)}
                               >
                                 <option value="1h">1 Hour</option>
@@ -1176,11 +1210,11 @@ const SynapseGateway = ({ accessibilitySettings, onVoiceCommand }) => {
                             </div>
                             <div className="rate-limit-item">
                               <span className="limit-type">TPM:</span>
-                              <span className="limit-value">{config.rate_limits?.tokens_per_minute ? config.rate_limits.tokens_per_minute.toLocaleString() : 'N/A'}</span>
+                              <span className="limit-value">{config.rate_limits?.tokens_per_minute ? config.rate_limits?.tokens_per_minute.toLocaleString() : 'N/A'}</span>
                             </div>
                             <div className="rate-limit-item">
                               <span className="limit-type">TPD:</span>
-                              <span className="limit-value">{config.rate_limits?.tokens_per_day ? config.rate_limits.tokens_per_day.toLocaleString() : 'N/A'}</span>
+                              <span className="limit-value">{config.rate_limits?.tokens_per_day ? config.rate_limits?.tokens_per_day.toLocaleString() : 'N/A'}</span>
                             </div>
                             <div className="rate-limit-item">
                               <span className="limit-type">Concurrent:</span>

@@ -1,5 +1,7 @@
 import { LLMRequest, LLMResponse } from './LLMBackendManager';
 
+export { LLMRequest, LLMResponse };
+
 export interface LLMBackend {
   /**
    * Process an LLM request and return a response

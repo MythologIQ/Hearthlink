@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './DiagnosticsRepairPanel.css';
+import '../ui-controls.css';
 
 const DiagnosticsRepairPanel = ({ data, isExpanded, onExpand }) => {
   const [realtimeLatency, setRealtimeLatency] = useState(data.latency.current);
@@ -177,6 +178,157 @@ const DiagnosticsRepairPanel = ({ data, isExpanded, onExpand }) => {
     return colors[severity] || '#6b7280';
   };
 
+  // Handle system restart
+  const handleSystemRestart = async () => {
+    const confirmed = confirm(
+      'CRITICAL ACTION: System Restart\n\n' +
+      'This will restart the entire Hearthlink system, including all agents and services.\n' +
+      'All active sessions will be terminated.\n\n' +
+      'Are you sure you want to proceed?'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch('/api/core/restart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          restart_type: 'full_system',
+          reason: 'manual_restart_via_diagnostics',
+          timestamp: Date.now()
+        })
+      });
+
+      if (response.ok) {
+        alert('System restart initiated successfully. The application will restart in 5 seconds.');
+        
+        // Show countdown
+        let countdown = 5;
+        const countdownInterval = setInterval(() => {
+          if (countdown > 0) {
+            document.title = `Restarting in ${countdown}s...`;
+            countdown--;
+          } else {
+            clearInterval(countdownInterval);
+            window.location.reload();
+          }
+        }, 1000);
+      } else {
+        throw new Error(`Restart failed with status ${response.status}`);
+      }
+    } catch (error) {
+      alert(`Failed to restart system: ${error.message}`);
+    }
+  };
+
+  // Handle maintenance mode toggle
+  const handleMaintenanceMode = async () => {
+    const isEntering = !window.maintenanceMode;
+    const action = isEntering ? 'ENTER' : 'EXIT';
+    
+    const confirmed = confirm(
+      `${action} MAINTENANCE MODE\n\n` +
+      (isEntering 
+        ? 'This will put the system in maintenance mode:\n• All user operations will be disabled\n• Only critical system functions will remain active\n• Diagnostic tools will remain available'
+        : 'This will exit maintenance mode and return to normal operation.'
+      ) +
+      '\n\nProceed?'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch('/api/core/maintenance-mode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          enable: isEntering,
+          reason: `manual_${isEntering ? 'enable' : 'disable'}_via_diagnostics`,
+          timestamp: Date.now()
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        window.maintenanceMode = isEntering;
+        
+        alert(
+          `Maintenance mode ${isEntering ? 'enabled' : 'disabled'} successfully.\n` +
+          (result.message || 'System state updated.')
+        );
+        
+        // Visual feedback
+        document.body.classList.toggle('maintenance-mode', isEntering);
+      } else {
+        throw new Error(`Maintenance mode toggle failed with status ${response.status}`);
+      }
+    } catch (error) {
+      alert(`Failed to toggle maintenance mode: ${error.message}`);
+    }
+  };
+
+  // Handle failure resolution
+  const handleFailureResolve = async (event, index) => {
+    const confirmed = confirm(
+      `Mark Failure as Resolved\n\n` +
+      `Event: ${event.type.toUpperCase()}\n` +
+      `Message: ${event.message}\n` +
+      `Severity: ${event.severity.toUpperCase()}\n\n` +
+      'This will mark the failure as resolved and add a resolution log entry.\n\n' +
+      'Proceed?'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/diagnostics/failures/${event.id || index}/resolve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          failure_id: event.id || `failure_${index}_${Date.now()}`,
+          resolution_type: 'manual',
+          resolved_by: 'user',
+          resolution_notes: 'Manually resolved via Diagnostics Panel',
+          timestamp: Date.now()
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update local state to remove resolved failure
+        data.failureEvents = data.failureEvents.filter((_, i) => i !== index);
+        
+        // Add success repair operation
+        data.selfRepairOps.unshift({
+          timestamp: Date.now(),
+          action: 'failure_resolution',
+          details: `Resolved ${event.type} failure: ${event.message}`,
+          success: true
+        });
+
+        alert(`Failure resolved successfully.\n${result.message || 'Resolution recorded in system logs.'}`);
+        
+        // Force re-render
+        window.location.reload();
+      } else {
+        throw new Error(`Resolution failed with status ${response.status}`);
+      }
+    } catch (error) {
+      alert(`Failed to resolve failure: ${error.message}`);
+    }
+  };
+
   if (isExpanded) {
     return (
       <div className="diagnostics-repair-panel expanded">
@@ -209,8 +361,20 @@ const DiagnosticsRepairPanel = ({ data, isExpanded, onExpand }) => {
                 </div>
               </div>
               <div className="system-actions">
-                <button className="restart-button">RESTART SYSTEM</button>
-                <button className="maintenance-button">MAINTENANCE MODE</button>
+                <button 
+                  className="restart-button"
+                  onClick={handleSystemRestart}
+                  title="Restart the entire system"
+                >
+                  RESTART SYSTEM
+                </button>
+                <button 
+                  className="maintenance-button"
+                  onClick={handleMaintenanceMode}
+                  title="Enter maintenance mode"
+                >
+                  MAINTENANCE MODE
+                </button>
               </div>
             </div>
           </div>
@@ -298,6 +462,18 @@ const DiagnosticsRepairPanel = ({ data, isExpanded, onExpand }) => {
                       </span>
                     </div>
                     <div className="event-message">{event.message}</div>
+                    <div className="event-actions">
+                      <button 
+                        className="resolve-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFailureResolve(event, index);
+                        }}
+                        title="Mark failure as resolved"
+                      >
+                        ✓ Resolve
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -186,7 +186,7 @@ class Core:
     and context switching between personas and external agents.
     """
     
-    def __init__(self, config: Dict[str, Any], vault: Vault, logger=None):
+    def __init__(self, config: Dict[str, Any], vault: Vault = None, logger=None):
         """
         Initialize Core module.
         
@@ -196,7 +196,13 @@ class Core:
             logger: Optional logger instance
         """
         self.config = config
-        self.vault = vault
+        # Initialize vault if not provided
+        if vault is None:
+            from vault.vault import VaultManager
+            vault_manager = VaultManager()
+            self.vault = vault_manager.vault
+        else:
+            self.vault = vault
         self.logger = logger or logging.getLogger(__name__)
         
         # Session registry
@@ -1513,4 +1519,285 @@ class Core:
             
         except Exception as e:
             self.logger.error(f"Failed to get performance trends: {e}")
-            return [] 
+            return []
+    
+    # RAG/CAG Pipeline Implementation
+    async def process_query_with_rag(self, session_id: str, query: str, 
+                                   agent_id: str = None) -> Dict[str, Any]:
+        """
+        Production RAG/CAG pipeline: retrieve → reason → persist with proper error handling
+        
+        Args:
+            session_id: Session for context
+            query: User query to process
+            agent_id: Agent processing the query
+            
+        Returns:
+            Processing result with context, reasoning, and memory updates
+        """
+        pipeline_start = time.time()
+        agent_id = agent_id or "core"
+        
+        try:
+            self.logger.info(f"RAG/CAG pipeline started for session {session_id}")
+            
+            # Step 1: Fetch context from existing session memory
+            context_chunks = await self._fetch_context_chunks(session_id, query)
+            self.logger.debug(f"Retrieved {len(context_chunks)} context chunks")
+            
+            # Step 2: Perform reasoning with retrieved context
+            reasoning_result = await self._perform_reasoning(query, context_chunks)
+            self.logger.debug(f"Reasoning completed with confidence {reasoning_result.get('confidence', 0)}")
+            
+            # Step 3: Persist new memory slice to Vault with proper tags
+            memory_slice_id = await self._persist_memory_slice(
+                session_id, query, reasoning_result, agent_id
+            )
+            
+            # Step 4: Update session memory references
+            if memory_slice_id:
+                await self._update_session_memory_references(session_id, memory_slice_id)
+            
+            pipeline_duration = time.time() - pipeline_start
+            
+            result = {
+                "query": query,
+                "context_chunks": context_chunks,
+                "reasoning": reasoning_result,
+                "memory_slice_id": memory_slice_id,
+                "timestamp": datetime.now().isoformat(),
+                "agent_id": agent_id,
+                "pipeline_duration": pipeline_duration,
+                "success": memory_slice_id is not None
+            }
+            
+            self.logger.info(f"RAG/CAG pipeline completed in {pipeline_duration:.3f}s")
+            return result
+            
+        except Exception as e:
+            pipeline_duration = time.time() - pipeline_start
+            error_msg = f"RAG/CAG pipeline failed after {pipeline_duration:.3f}s: {e}"
+            self.logger.error(error_msg)
+            
+            return {
+                "query": query,
+                "context_chunks": [],
+                "reasoning": {"error": str(e)},
+                "memory_slice_id": None,
+                "timestamp": datetime.now().isoformat(),
+                "agent_id": agent_id,
+                "pipeline_duration": pipeline_duration,
+                "success": False,
+                "error": error_msg
+            }
+    
+    async def _fetch_context_chunks(self, session_id: str, query: str) -> List[Dict[str, Any]]:
+        """Fetch relevant context chunks from session memory"""
+        try:
+            session = self.sessions.get(session_id)
+            if not session:
+                return []
+            
+            # Simple keyword-based context retrieval
+            context_chunks = []
+            query_lower = query.lower()
+            
+            # Search through session events for relevant context
+            for event in session.session_log[-10:]:  # Last 10 events
+                if any(word in event.event_type.lower() for word in query_lower.split()):
+                    context_chunks.append({
+                        "type": "session_event",
+                        "content": f"{event.event_type}: {getattr(event, 'data', {})}",
+                        "timestamp": event.timestamp,
+                        "relevance_score": 0.8
+                    })
+            
+            # Search through communal memory
+            communal_memory = self.communal_memory.get(session_id, {})
+            for key, value in communal_memory.items():
+                if any(word in key.lower() for word in query_lower.split()):
+                    context_chunks.append({
+                        "type": "communal_memory",
+                        "content": f"{key}: {value}",
+                        "timestamp": datetime.now().isoformat(),
+                        "relevance_score": 0.6
+                    })
+            
+            # Sort by relevance score
+            context_chunks.sort(key=lambda x: x["relevance_score"], reverse=True)
+            
+            return context_chunks[:5]  # Return top 5 chunks
+            
+        except Exception as e:
+            self.logger.error(f"Context fetching failed: {e}")
+            return []
+    
+    async def _perform_reasoning(self, query: str, context_chunks: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Perform simple reasoning step on query and context"""
+        try:
+            # Simple rule-based reasoning
+            reasoning_steps = []
+            
+            # Step 1: Analyze query type
+            query_lower = query.lower()
+            if any(word in query_lower for word in ["what", "how", "why", "when", "where"]):
+                query_type = "question"
+                reasoning_steps.append("Identified as information request")
+            elif any(word in query_lower for word in ["create", "make", "generate", "build"]):
+                query_type = "creation"
+                reasoning_steps.append("Identified as creation request")
+            else:
+                query_type = "general"
+                reasoning_steps.append("Identified as general interaction")
+            
+            # Step 2: Analyze available context
+            context_summary = f"Found {len(context_chunks)} relevant context chunks"
+            reasoning_steps.append(context_summary)
+            
+            # Step 3: Generate simple response
+            if context_chunks:
+                most_relevant = context_chunks[0]
+                response_basis = f"Based on {most_relevant['type']}: {most_relevant['content'][:100]}..."
+                reasoning_steps.append(f"Using context: {response_basis}")
+            else:
+                reasoning_steps.append("No specific context found, using general knowledge")
+            
+            return {
+                "query_type": query_type,
+                "reasoning_steps": reasoning_steps,
+                "context_used": len(context_chunks),
+                "confidence": 0.7 if context_chunks else 0.4,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Reasoning step failed: {e}")
+            return {
+                "query_type": "unknown",
+                "reasoning_steps": [f"Reasoning failed: {e}"],
+                "context_used": 0,
+                "confidence": 0.1,
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    async def _persist_memory_slice(self, session_id: str, query: str, 
+                                  reasoning_result: Dict[str, Any], 
+                                  agent_id: str = None) -> Optional[str]:
+        """
+        Persist new memory slice to Vault with comprehensive tagging and metadata
+        
+        Returns:
+            Memory slice ID if successful, None if failed
+        """
+        try:
+            # Initialize VaultManager with proper error handling
+            if not hasattr(self, '_vault_manager'):
+                from vault.vault import VaultManager
+                self._vault_manager = VaultManager(logger=self.logger)
+            
+            # Check vault health before proceeding
+            if not self._vault_manager.ready():
+                self.logger.error("VaultManager not ready for memory persistence")
+                return None
+            
+            # Generate unique slice ID
+            slice_id = str(uuid.uuid4())
+            timestamp = datetime.now().isoformat()
+            
+            # Create comprehensive memory slice with proper structure
+            memory_slice = {
+                "slice_id": slice_id,
+                "type": "rag_reasoning", 
+                "origin": "rag" if reasoning_result.get("context_used", 0) > 0 else "cag",
+                "session_id": session_id,
+                "agent_id": agent_id or "core",
+                "query": {
+                    "text": query,
+                    "type": reasoning_result.get("query_type", "question"),
+                    "processed_at": timestamp
+                },
+                "reasoning": reasoning_result,
+                "context": {
+                    "chunks_used": reasoning_result.get("context_used", 0),
+                    "confidence": reasoning_result.get("confidence", 0.5),
+                    "reasoning_steps": reasoning_result.get("reasoning_steps", [])
+                },
+                "tags": [
+                    session_id,
+                    f"agent:{agent_id or 'core'}", 
+                    f"type:{reasoning_result.get('query_type', 'question')}",
+                    f"origin:{'rag' if reasoning_result.get('context_used', 0) > 0 else 'cag'}",
+                    "reasoning_slice"
+                ],
+                "importance": min(max(reasoning_result.get("confidence", 0.5), 0.0), 1.0),
+                "created_at": timestamp,
+                "encrypted_at_rest": True
+            }
+            
+            # Generate hierarchical vault path for organization
+            vault_path = f"sessions/{session_id}/rag_slices/{slice_id}"
+            
+            # Prepare metadata for vault storage
+            storage_metadata = {
+                "type": "reasoning_slice",
+                "session_id": session_id,
+                "agent_id": agent_id or "core",
+                "query_type": reasoning_result.get("query_type", "unknown"),
+                "importance": memory_slice["importance"],
+                "tags": memory_slice["tags"],
+                "created_at": timestamp
+            }
+            
+            # Store in vault with retry logic built into VaultManager
+            success = await self._vault_manager.store_memory(
+                content=memory_slice,
+                path=vault_path,
+                encrypt=True,
+                metadata=storage_metadata
+            )
+            
+            if success:
+                # Verify storage by attempting retrieval
+                verification = await self._vault_manager.retrieve_memory(vault_path)
+                if verification and verification.get("slice_id") == slice_id:
+                    self.logger.info(f"Memory slice successfully persisted and verified: {slice_id}")
+                    
+                    # Log the action for audit
+                    self.logger.info(f"Core action: memory_slice_persisted", extra={
+                        "slice_id": slice_id,
+                        "session_id": session_id,
+                        "agent_id": agent_id,
+                        "vault_path": vault_path,
+                        "importance": memory_slice["importance"]
+                    })
+                    
+                    return slice_id
+                else:
+                    self.logger.error(f"Memory slice storage verification failed for {slice_id}")
+                    return None
+            else:
+                self.logger.error(f"Failed to persist memory slice {slice_id} to vault")
+                return None
+                
+        except Exception as e:
+            self.logger.error(f"Memory persistence failed for session {session_id}: {e}")
+            # Don't re-raise - return None to indicate failure
+            return None
+    
+    async def _update_session_memory_references(self, session_id: str, memory_slice_id: str):
+        """Update session with reference to new memory slice"""
+        try:
+            session = self.sessions.get(session_id)
+            if session:
+                # Add memory reference to session audit log
+                audit_entry = {
+                    "timestamp": datetime.now().isoformat(),
+                    "action": "memory_reference_added",
+                    "memory_slice_id": memory_slice_id,
+                    "type": "rag_reasoning"
+                }
+                session.audit_log.append(audit_entry)
+                self.logger.debug(f"Added memory reference {memory_slice_id} to session {session_id}")
+        except Exception as e:
+            self.logger.warning(f"Failed to update session memory references: {e}")
+            # Non-critical error - don't propagate 

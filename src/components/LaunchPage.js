@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './LaunchPage.css';
 
-const LaunchPage = ({ onModuleSelect }) => {
+const LaunchPage = ({ onModuleSelect, onShowAccessibility, onShowHelp }) => {
   // console.log('LaunchPage: Component rendering with props:', { onModuleSelect: !!onModuleSelect });
   
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // Removed for Tauri native app
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [currentStatus, setCurrentStatus] = useState('Initializing Hearthlink...');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -130,21 +129,21 @@ const LaunchPage = ({ onModuleSelect }) => {
     <div className="launch-page">
       {/* Header Logo - Top Center */}
       <div className="header-logo">
-        <img src="./assets/header-logo.png" alt="Header Logo" />
+        <img src="/assets/header-logo.png" alt="Header Logo" />
       </div>
       
       {/* System Controls - Top Right */}
       <div className="system-controls">
         <div className="system-control" title="Voice Interface">
-          <img src="./assets/Voice.png" alt="Voice" className="system-control-icon" />
+          <img src="/assets/Voice.png" alt="Voice" className="system-control-icon" />
           <div className="system-control-label">Voice</div>
         </div>
-        <div className="system-control" title="Help & Support">
-          <img src="./assets/Help.png" alt="Help" className="system-control-icon" />
+        <div className="system-control" title="Help & Support" onClick={onShowHelp}>
+          <img src="/assets/Help.png" alt="Help" className="system-control-icon" />
           <div className="system-control-label">Help</div>
         </div>
-        <div className="system-control" title="Accessibility Options">
-          <img src="./assets/Accessibility.png" alt="Accessibility" className="system-control-icon" />
+        <div className="system-control" title="Accessibility Options" onClick={onShowAccessibility}>
+          <img src="/assets/Accessibility.png" alt="Accessibility" className="system-control-icon" />
           <div className="system-control-label">Accessibility</div>
         </div>
       </div>
@@ -172,7 +171,7 @@ const LaunchPage = ({ onModuleSelect }) => {
             <div className="pulse-ring ring-3"></div>
           </div>
           <img 
-            src="./assets/Loading.png" 
+            src="/assets/Loading.png" 
             alt="Loading" 
             className={`loading-icon ${isLoaded ? 'loaded' : ''}`}
           />
@@ -203,7 +202,7 @@ const LaunchPage = ({ onModuleSelect }) => {
                 <div className="icon-glow"></div>
                 <div className="module-icon-wrapper">
                   <img 
-                    src={`./assets/${module.name}.png`} 
+                    src={`/assets/${module.name}.png`} 
                     alt={module.name}
                     className="persona-icon"
                   />

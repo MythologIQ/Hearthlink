@@ -181,6 +181,33 @@
       "security_level": "medium",
       "auto_start": false,
       "oauth_required": true
+    },
+
+    {
+      "server_id": "serena",
+      "plugin_id": "serena-mcp",
+      "name": "Serena IDE Assistant MCP Server",
+      "version": "1.0.0",
+      "status": "active",
+      "description": "Serena IDE Assistant integration for enhanced development workflow",
+      "package": "serena-mcp-server",
+      "tools_provided": [
+        "analyze_code",
+        "suggest_improvements",
+        "generate_documentation",
+        "refactor_code",
+        "find_bugs",
+        "optimize_performance",
+        "ide_integration",
+        "project_analysis",
+        "code_completion",
+        "syntax_checking"
+      ],
+      "connection_type": "stdio",
+      "security_level": "medium",
+      "auto_start": true,
+      "context": "ide-assistant",
+      "project_root": "$(pwd)"
     }
   ],
   
@@ -258,6 +285,7 @@
       "github",
       "context7",
       "magic-ui",
+      "serena",
       "gmail-calendar",
       "puppeteer"
     ],

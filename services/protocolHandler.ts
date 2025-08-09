@@ -1,3 +1,4 @@
+export {}
 const { protocol } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
@@ -36,38 +37,39 @@ async function checkFileExists(filePath) {
 }
 
 // Protocol handler for serving static files
-function setupProtocolHandler() {
-  protocol.registerFileProtocol('app', async (request, callback) => {
-    try {
-      const url = request.url.substr(6); // Remove 'app://' prefix
-      const filePath = path.normalize(path.join(__dirname, '..', 'build', url));
-      
-      // Security: Ensure the file is within the build directory
-      const buildPath = path.resolve(path.join(__dirname, '..', 'build'));
-      const resolvedPath = path.resolve(filePath);
-      
-      if (!resolvedPath.startsWith(buildPath)) {
-        console.error('Security violation: Attempted to access file outside build directory:', filePath);
-        callback({ error: 403 });
-        return;
+export function registerProtocolHandler(): void {
+  try {
+    protocol.registerFileProtocol('app', async (request, callback) => {
+      try {
+        const url = request.url.substr(6); // Remove 'app://' prefix
+        const filePath = path.normalize(path.join(__dirname, '..', 'build', url));
+        
+        // Security: Ensure the file is within the build directory
+        const buildPath = path.resolve(path.join(__dirname, '..', 'build'));
+        const resolvedPath = path.resolve(filePath);
+        
+        if (!resolvedPath.startsWith(buildPath)) {
+          console.error('Security violation: Attempted to access file outside build directory:', filePath);
+          callback({ error: 403 });
+          return;
+        }
+        
+        // Check if file exists with caching
+        const exists = await checkFileExists(filePath);
+        if (!exists) {
+          console.error('File not found:', filePath);
+          callback({ error: 404 });
+          return;
+        }
+        
+        callback({ path: filePath });
+      } catch (error) {
+        console.error('Protocol handler error:', error);
+        callback({ error: 500 });
       }
-      
-      // Check if file exists with caching
-      const exists = await checkFileExists(filePath);
-      if (!exists) {
-        console.error('File not found:', filePath);
-        callback({ error: 404 });
-        return;
-      }
-      
-      callback({ path: filePath });
-    } catch (error) {
-      console.error('Protocol handler error:', error);
-      callback({ error: 500 });
-    }
-  });
+    });
+    console.log('✅ Protocol handler registered successfully');
+  } catch (error) {
+    console.error('Failed to register protocol handler:', error);
+  }
 }
-
-module.exports = {
-  setupProtocolHandler
-};

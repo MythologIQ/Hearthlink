@@ -9,18 +9,24 @@ default-run = "app"
 edition = "2021"
 rust-version = "1.60"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [build-dependencies]
-tauri-build = { version = "1.5.5", features = [] }
+tauri-build = { version = "2.0", features = [] }
+
+[target.'cfg(windows)'.build-dependencies]
+embed-resource = "3.0"
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.8.1", features = [ "window-unminimize", "window-set-position", "dialog-ask", "window-set-always-on-top", "window-set-focus", "window-set-title", "global-shortcut-all", "window-set-skip-taskbar", "window-set-min-size", "window-maximize", "window-hide", "shell-open", "dialog-open", "window-unmaximize", "window-show", "window-request-user-attention", "shell-execute", "window-close", "window-minimize", "dialog-save", "notification-all", "shell-sidecar", "window-set-fullscreen", "window-set-max-size", "system-tray", "window-set-resizable", "dialog-confirm", "window-center", "window-set-size", "window-start-dragging", "dialog-message", "window-set-icon"] }
+tauri = { version = "2.0", features = [] }
+tokio = { version = "1.0", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
+aes-gcm = "0.10"
+rand = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+rusqlite = { version = "0.30", features = ["bundled"] }
+prometheus = "0.13"
+base64 = "0.21"
 
 [features]
-# this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
-# If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
-# DO NOT REMOVE!!
 custom-protocol = [ "tauri/custom-protocol" ]

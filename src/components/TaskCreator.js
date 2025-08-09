@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './TaskCreator.css';
+import SteveAugustTemplate from './SteveAugustTemplate';
 
-const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents = [] }) => {
+const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents = [], userId = 'default-user' }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isAIAssisting, setIsAIAssisting] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [showSteveAugustTemplate, setShowSteveAugustTemplate] = useState(false);
   
-  // Task form data
+  // Enhanced task form data with SPEC-2 fields
   const [taskData, setTaskData] = useState({
     title: '',
     description: '',
@@ -17,7 +19,21 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
     assignedAgent: 'alden',
     dependencies: [],
     subtasks: [],
-    category: 'general'
+    category: 'general',
+    // SPEC-2 Enhanced fields
+    mission: '',
+    values: [],
+    habitTracker: {
+      frequency: 'daily',
+      target: 1,
+      streak: 0,
+      lastCompleted: null
+    },
+    decisions: [],
+    template: null,
+    projectContext: null,
+    memoryTags: [],
+    vaultPath: null
   });
   
   // AI analysis state
@@ -37,7 +53,63 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
   const predefinedTags = [
     'development', 'design', 'research', 'testing', 'documentation', 
     'bug-fix', 'feature', 'optimization', 'security', 'maintenance',
-    'ui', 'api', 'database', 'performance', 'integration'
+    'ui', 'api', 'database', 'performance', 'integration',
+    // SPEC-2 Enhanced tags
+    'memory-integration', 'vault-backed', 'persistent', 'llm-enhanced',
+    'alden-memory', 'habit-tracking', 'decision-support', 'template-based'
+  ];
+
+  const coreValues = [
+    'efficiency', 'innovation', 'quality', 'collaboration', 'learning',
+    'sustainability', 'user-focus', 'reliability', 'scalability', 'security'
+  ];
+
+  const taskTemplates = [
+    {
+      id: 'alden-productivity',
+      name: 'Alden Productivity Task',
+      description: 'Vault-backed task with memory integration',
+      fields: {
+        mission: 'Enhance productivity through AI-assisted task management',
+        values: ['efficiency', 'innovation'],
+        habitTracker: { frequency: 'daily', target: 1 },
+        category: 'productivity'
+      }
+    },
+    {
+      id: 'development-sprint',
+      name: 'Development Sprint Task',
+      description: 'Code development with performance tracking',
+      fields: {
+        mission: 'Deliver high-quality code solutions',
+        values: ['quality', 'innovation'],
+        habitTracker: { frequency: 'daily', target: 2 },
+        category: 'development'
+      }
+    },
+    {
+      id: 'memory-research',
+      name: 'Memory Research Task',
+      description: 'Research task with Vault integration',
+      fields: {
+        mission: 'Advance memory integration capabilities',
+        values: ['learning', 'innovation'],
+        habitTracker: { frequency: 'weekly', target: 1 },
+        category: 'research'
+      }
+    },
+    {
+      id: 'steve-august-focus-formula',
+      name: '🧠 Steve August Focus Formula',
+      description: 'Licensed ADHD coaching worksheet (Professional)',
+      licensed: true,
+      fields: {
+        mission: 'ADHD-focused weekly productivity planning',
+        values: ['focus', 'self-care', 'executive-function'],
+        habitTracker: { frequency: 'weekly', target: 1 },
+        category: 'adhd-coaching'
+      }
+    }
   ];
 
   const categories = [
@@ -72,7 +144,21 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
         assignedAgent: 'alden',
         dependencies: [],
         subtasks: [],
-        category: 'general'
+        category: 'general',
+        // SPEC-2 Enhanced fields
+        mission: '',
+        values: [],
+        habitTracker: {
+          frequency: 'daily',
+          target: 1,
+          streak: 0,
+          lastCompleted: null
+        },
+        decisions: [],
+        template: null,
+        projectContext: null,
+        memoryTags: [],
+        vaultPath: null
       });
       setAiSuggestions([]);
       setAiAnalysis({
@@ -288,7 +374,7 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
     setAiSuggestions(prev => prev.filter(s => s.title !== suggestion.title));
   };
 
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     const newTask = {
       id: `task_${Date.now()}`,
       ...taskData,
@@ -298,8 +384,146 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
       aiAnalysis: aiAnalysis
     };
     
-    onTaskCreate(newTask);
-    onClose();
+    try {
+      // SPEC-2: Store in Vault with audit logging
+      await persistTaskToVault(newTask);
+      
+      // SPEC-2: Log creation via Alden's CRUD interface
+      await logTaskCRUD('CREATE', newTask);
+      
+      onTaskCreate(newTask);
+      onClose();
+    } catch (error) {
+      console.error('Failed to create task:', error);
+      // Show error to user
+      alert('Failed to create task. Please try again.');
+    }
+  };
+
+  // SPEC-2: Vault persistence function
+  const persistTaskToVault = async (task) => {
+    try {
+      const response = await fetch('/api/vault/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('hearthlink_token')}`
+        },
+        body: JSON.stringify({
+          task: task,
+          vaultPath: task.vaultPath || `tasks/${task.assignedAgent}/${task.id}`,
+          encrypted: true,
+          memoryTags: task.memoryTags
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Vault storage failed: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Vault persistence error:', error);
+      throw error;
+    }
+  };
+
+  // SPEC-2: CRUD audit logging
+  const logTaskCRUD = async (operation, task) => {
+    try {
+      const auditEntry = {
+        operation,
+        entityType: 'task',
+        entityId: task.id,
+        timestamp: new Date().toISOString(),
+        agent: task.assignedAgent,
+        metadata: {
+          title: task.title,
+          category: task.category,
+          template: task.template
+        }
+      };
+      
+      const response = await fetch('/api/task-templates/audit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('hearthlink_token')}`
+        },
+        body: JSON.stringify(auditEntry)
+      });
+      
+      if (!response.ok) {
+        console.warn('Audit logging failed:', response.statusText);
+      }
+    } catch (error) {
+      console.warn('Audit logging error:', error);
+    }
+  };
+
+  // SPEC-2: Apply task template
+  const applyTemplate = (templateId) => {
+    const template = taskTemplates.find(t => t.id === templateId);
+    if (template) {
+      // Handle licensed templates specially
+      if (template.licensed && templateId === 'steve-august-focus-formula') {
+        setShowSteveAugustTemplate(true);
+        return;
+      }
+      
+      setTaskData(prev => ({
+        ...prev,
+        ...template.fields,
+        template: templateId,
+        memoryTags: [...prev.memoryTags, `template:${templateId}`]
+      }));
+    }
+  };
+
+  // SPEC-2: Handle values selection
+  const handleValueToggle = (value) => {
+    setTaskData(prev => ({
+      ...prev,
+      values: prev.values.includes(value)
+        ? prev.values.filter(v => v !== value)
+        : [...prev.values, value]
+    }));
+  };
+
+  // SPEC-2: Add decision entry
+  const addDecision = () => {
+    const newDecision = {
+      id: `decision_${Date.now()}`,
+      title: '',
+      options: ['', ''],
+      selected: null,
+      reasoning: '',
+      timestamp: new Date().toISOString()
+    };
+    
+    setTaskData(prev => ({
+      ...prev,
+      decisions: [...prev.decisions, newDecision]
+    }));
+  };
+
+  // SPEC-2: Update decision
+  const updateDecision = (decisionId, field, value) => {
+    setTaskData(prev => ({
+      ...prev,
+      decisions: prev.decisions.map(d => 
+        d.id === decisionId ? { ...d, [field]: value } : d
+      )
+    }));
+  };
+
+  // SPEC-2: Remove decision
+  const removeDecision = (decisionId) => {
+    setTaskData(prev => ({
+      ...prev,
+      decisions: prev.decisions.filter(d => d.id !== decisionId)
+    }));
   };
 
   const canProceedToNextStep = () => {
@@ -332,10 +556,10 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
         <div className="creator-header">
           <h2>Create New Task</h2>
           <div className="step-indicator">
-            <div className={`step ${currentStep >= 1 ? 'active' : ''}`}>1</div>
-            <div className={`step ${currentStep >= 2 ? 'active' : ''}`}>2</div>
-            <div className={`step ${currentStep >= 3 ? 'active' : ''}`}>3</div>
-            <div className={`step ${currentStep >= 4 ? 'active' : ''}`}>4</div>
+            <div className={`step ${currentStep >= 1 ? 'active' : ''}`} title="Templates & Basic Info">1</div>
+            <div className={`step ${currentStep >= 2 ? 'active' : ''}`} title="Categories & Values">2</div>
+            <div className={`step ${currentStep >= 3 ? 'active' : ''}`} title="Tags & Advanced Options">3</div>
+            <div className={`step ${currentStep >= 4 ? 'active' : ''}`} title="AI Analysis & Review">4</div>
           </div>
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
@@ -343,7 +567,27 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
         <div className="creator-content">
           {currentStep === 1 && (
             <div className="step-content">
-              <h3>📝 Basic Information</h3>
+              <h3>📝 Basic Information & Templates</h3>
+              
+              {/* SPEC-2: Template Selection */}
+              <div className="form-group">
+                <label>Task Template (Optional)</label>
+                <div className="template-selection">
+                  {taskTemplates.map(template => (
+                    <button
+                      key={template.id}
+                      className={`template-btn ${taskData.template === template.id ? 'selected' : ''} ${template.licensed ? 'licensed' : ''}`}
+                      onClick={() => applyTemplate(template.id)}
+                    >
+                      <div className="template-name">
+                        {template.name}
+                        {template.licensed && <span className="license-badge">🔐 Licensed</span>}
+                      </div>
+                      <div className="template-desc">{template.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
               
               <div className="form-group">
                 <label>Task Title *</label>
@@ -373,12 +617,40 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
                   )}
                 </div>
               </div>
+
+              {/* SPEC-2: Mission Field */}
+              <div className="form-group">
+                <label>Mission Statement</label>
+                <textarea
+                  value={taskData.mission}
+                  onChange={(e) => handleInputChange('mission', e.target.value)}
+                  placeholder="Define the broader mission this task serves..."
+                  className="mission-textarea"
+                  rows={2}
+                />
+              </div>
             </div>
           )}
 
           {currentStep === 2 && (
             <div className="step-content">
-              <h3>🎯 Categorization & Priority</h3>
+              <h3>🎯 Categorization, Priority & Values</h3>
+              
+              {/* SPEC-2: Values Selection */}
+              <div className="form-group">
+                <label>Core Values</label>
+                <div className="values-grid">
+                  {coreValues.map(value => (
+                    <button
+                      key={value}
+                      className={`value-btn ${taskData.values.includes(value) ? 'selected' : ''}`}
+                      onClick={() => handleValueToggle(value)}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+              </div>
               
               <div className="form-grid">
                 <div className="form-group">
@@ -526,6 +798,73 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
 
               {showAdvanced && (
                 <div className="advanced-options">
+                  {/* SPEC-2: Habit Tracker Configuration */}
+                  <div className="form-group">
+                    <label>Habit Tracker</label>
+                    <div className="habit-config">
+                      <div className="habit-row">
+                        <label>Frequency:</label>
+                        <select
+                          value={taskData.habitTracker.frequency}
+                          onChange={(e) => handleInputChange('habitTracker', {
+                            ...taskData.habitTracker,
+                            frequency: e.target.value
+                          })}
+                        >
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                      </div>
+                      <div className="habit-row">
+                        <label>Target:</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={taskData.habitTracker.target}
+                          onChange={(e) => handleInputChange('habitTracker', {
+                            ...taskData.habitTracker,
+                            target: parseInt(e.target.value) || 1
+                          })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SPEC-2: Decision Support */}
+                  <div className="form-group">
+                    <label>Decisions to Track</label>
+                    <div className="decisions-section">
+                      {taskData.decisions.map(decision => (
+                        <div key={decision.id} className="decision-item">
+                          <input
+                            type="text"
+                            value={decision.title}
+                            onChange={(e) => updateDecision(decision.id, 'title', e.target.value)}
+                            placeholder="Decision title..."
+                            className="decision-title"
+                          />
+                          <textarea
+                            value={decision.reasoning}
+                            onChange={(e) => updateDecision(decision.id, 'reasoning', e.target.value)}
+                            placeholder="Decision reasoning..."
+                            className="decision-reasoning"
+                            rows={2}
+                          />
+                          <button
+                            className="decision-remove"
+                            onClick={() => removeDecision(decision.id)}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                      <button className="add-decision-btn" onClick={addDecision}>
+                        + Add Decision
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="form-group">
                     <label>Subtasks</label>
                     <div className="subtasks-section">
@@ -663,11 +1002,34 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
                   <div className="summary-row">
                     <strong>Assigned to:</strong> {availableAgents.find(a => a.id === taskData.assignedAgent)?.name}
                   </div>
+                  {taskData.template && (
+                    <div className="summary-row">
+                      <strong>Template:</strong> {taskTemplates.find(t => t.id === taskData.template)?.name}
+                    </div>
+                  )}
+                  {taskData.mission && (
+                    <div className="summary-row">
+                      <strong>Mission:</strong> {taskData.mission.substring(0, 60)}...
+                    </div>
+                  )}
+                  {taskData.values.length > 0 && (
+                    <div className="summary-row">
+                      <strong>Values:</strong> {taskData.values.join(', ')}
+                    </div>
+                  )}
                   {taskData.tags.length > 0 && (
                     <div className="summary-row">
                       <strong>Tags:</strong> {taskData.tags.join(', ')}
                     </div>
                   )}
+                  {taskData.decisions.length > 0 && (
+                    <div className="summary-row">
+                      <strong>Decisions:</strong> {taskData.decisions.length} tracked
+                    </div>
+                  )}
+                  <div className="summary-row">
+                    <strong>Habit Frequency:</strong> {taskData.habitTracker.frequency} (target: {taskData.habitTracker.target})
+                  </div>
                 </div>
               </div>
             </div>
@@ -705,6 +1067,18 @@ const TaskCreator = ({ isOpen, onClose, onTaskCreate, existingTasks = [], agents
           </div>
         </div>
       </div>
+      
+      {/* Steve August Template Modal */}
+      <SteveAugustTemplate
+        isOpen={showSteveAugustTemplate}
+        onClose={() => setShowSteveAugustTemplate(false)}
+        onTaskCreate={(taskData) => {
+          onTaskCreate(taskData);
+          setShowSteveAugustTemplate(false);
+          onClose();
+        }}
+        userId={userId}
+      />
     </div>
   );
 };

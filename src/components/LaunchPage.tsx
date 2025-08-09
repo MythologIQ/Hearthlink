@@ -12,7 +12,7 @@ interface Module {
   name: string;
   angle: number;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: any;
 }
 
 interface LaunchPageProps {
@@ -114,12 +114,12 @@ const LaunchPage: React.FC<LaunchPageProps> = ({ onModuleSelect }) => {
 
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-auto bg-cover bg-center bg-no-repeat font-orbitron"
-         style={{ backgroundImage: 'url("./assets/obsidian-bg.png")' }}>
+         style={{ backgroundImage: 'url("/assets/obsidian-bg.png")' }}>
       
       {/* Starfield Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 opacity-80"
-             style={{ backgroundImage: 'url("./assets/stars.png")', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+             style={{ backgroundImage: 'url("/assets/stars.png")', backgroundSize: 'cover', backgroundPosition: 'center' }} />
         
         {/* Animated starfield layers */}
         <div className="absolute inset-0 animate-starfield">
@@ -129,7 +129,7 @@ const LaunchPage: React.FC<LaunchPageProps> = ({ onModuleSelect }) => {
 
       {/* MythologIQ Header Logo - CENTERED */}
       <div className="absolute top-[5%] left-1/2 transform -translate-x-1/2 z-10 text-center">
-        <img src="./assets/header-logo.png" alt="MythologIQ" 
+        <img src="/assets/header-logo.png" alt="MythologIQ" 
              className="h-20 w-auto filter drop-shadow-lg animate-pulse" 
              style={{ filter: 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.6))' }} />
       </div>
@@ -251,7 +251,7 @@ const LaunchPage: React.FC<LaunchPageProps> = ({ onModuleSelect }) => {
       
       {/* Hearthlink Logo */}
       <div className="absolute bottom-[5%] right-[5%] z-10">
-        <img src="./assets/hearthlink-logo.png" alt="Hearthlink" 
+        <img src="/assets/hearthlink-logo.png" alt="Hearthlink" 
              className="w-30 h-auto opacity-80 animate-float filter drop-shadow-md" />
       </div>
     </div>

@@ -442,8 +442,8 @@ class LocalLLMClient:
             base_url=self.config.base_url,
             timestamp=datetime.now().isoformat(),
             retry_count=retry_count,
-            response_status=getattr(e, 'response', {}).get('status_code') if hasattr(e, 'response') else None,
-            response_headers=dict(getattr(e, 'response', {}).headers) if hasattr(e, 'response') else None,
+            response_status=getattr(e, 'response', None).status_code if hasattr(e, 'response') and hasattr(e.response, 'status_code') else None,
+            response_headers=dict(getattr(e, 'response', None).headers) if hasattr(e, 'response') and hasattr(e.response, 'headers') else None,
             request_data={
                 "prompt_length": len(request.prompt),
                 "has_system_message": bool(request.system_message),

@@ -78,7 +78,7 @@ interface Alert {
 export class SentryPersona extends EventEmitter {
   private config: SentryConfig;
   private isMonitoring: boolean = false;
-  private monitoringInterval: NodeJS.Timeout | null = null;
+  private monitoringInterval: any | null = null;
   private events: MonitoringEvent[] = [];
   private alerts: Alert[] = [];
   private systemHealth: SystemHealth;

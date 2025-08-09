@@ -1,6 +1,0 @@
-Defaulting to user installation because normal site-packages is not writeable
-Requirement already satisfied: requests in /home/frostwulf/.local/lib/python3.10/site-packages (2.32.4)
-Requirement already satisfied: idna<4,>=2.5 in /usr/lib/python3/dist-packages (from requests) (3.3)
-Requirement already satisfied: charset_normalizer<4,>=2 in /home/frostwulf/.local/lib/python3.10/site-packages (from requests) (3.4.2)
-Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/lib/python3/dist-packages (from requests) (1.26.5)
-Requirement already satisfied: certifi>=2017.4.17 in /usr/lib/python3/dist-packages (from requests) (2020.6.20)
