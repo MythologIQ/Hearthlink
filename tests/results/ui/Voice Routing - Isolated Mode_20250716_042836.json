@@ -1,0 +1,31 @@
+{
+  "test_name": "Voice Routing - Isolated Mode",
+  "timestamp": "20250716_042836",
+  "results": {
+    "isolated_routing_working": true,
+    "pinned_agent_respected": true,
+    "access_prevention_working": true
+  },
+  "resource_data": {
+    "test_name": "Voice Routing - Isolated Mode",
+    "timestamp": "20250716_042836",
+    "initial_state": {
+      "cpu_percent": 22.9,
+      "memory_percent": 61.3,
+      "disk_percent": 66.4
+    },
+    "monitoring_start": 1752654531.376389,
+    "final_state": {
+      "cpu_percent": 14.8,
+      "memory_percent": 61.3,
+      "disk_percent": 66.4
+    },
+    "monitoring_end": 1752654532.377712,
+    "duration": 1.0013229846954346
+  },
+  "environment": {
+    "python_version": "3.10.12 (main, May 27 2025, 17:12:29) [GCC 11.4.0]",
+    "platform": "linux",
+    "working_directory": "/mnt/g/MythologIQ/Hearthlink"
+  }
+}

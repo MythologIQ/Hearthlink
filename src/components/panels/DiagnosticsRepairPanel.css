@@ -1,0 +1,798 @@
+/* Diagnostics & Repair Panel Styles */
+
+.diagnostics-repair-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.diagnostics-repair-panel.compact {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.diagnostics-repair-panel.compact:hover {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(34, 211, 238, 0.2);
+}
+
+.diagnostics-repair-panel.expanded {
+  height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.95));
+}
+
+/* Panel Header */
+.panel-header {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.3);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.panel-header.compact {
+  padding: 0.75rem;
+}
+
+.panel-header h2, .panel-header h3 {
+  margin: 0;
+  color: #22d3ee;
+  font-family: 'Orbitron', monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.panel-header h2 {
+  font-size: 1.5rem;
+}
+
+.panel-header h3 {
+  font-size: 1rem;
+}
+
+.panel-subtitle {
+  font-size: 0.8rem;
+  color: rgba(34, 211, 238, 0.7);
+  margin-top: 0.25rem;
+}
+
+.expand-hint {
+  font-size: 0.7rem;
+  color: rgba(34, 211, 238, 0.5);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* Content Areas */
+.diagnostics-compact-content {
+  flex: 1;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.diagnostics-expanded-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  grid-template-areas: 
+    "uptime latency prompt"
+    "failure repair repair"
+    "health health health";
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.uptime-heartbeat-section { grid-area: uptime; }
+.latency-performance-section { grid-area: latency; }
+.prompt-response-section { grid-area: prompt; }
+.failure-events-section { grid-area: failure; }
+.self-repair-section { grid-area: repair; }
+.health-light-section { grid-area: health; }
+
+.uptime-heartbeat-section,
+.latency-performance-section,
+.prompt-response-section,
+.failure-events-section,
+.self-repair-section,
+.health-light-section {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.uptime-heartbeat-section h3,
+.latency-performance-section h3,
+.prompt-response-section h3,
+.failure-events-section h3,
+.self-repair-section h3,
+.health-light-section h3 {
+  margin: 0 0 1rem 0;
+  color: #22d3ee;
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+/* Compact Uptime */
+.compact-uptime {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.uptime-display.compact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+}
+
+.uptime-value {
+  font-family: 'Orbitron', monospace;
+  font-weight: bold;
+  color: #22d3ee;
+  font-size: 1rem;
+}
+
+.heartbeat-pulse.compact {
+  font-size: 1rem;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* Expanded Uptime */
+.uptime-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.uptime-clock {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+}
+
+.uptime-display .uptime-value {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.uptime-label {
+  font-size: 0.9rem;
+  color: rgba(34, 211, 238, 0.7);
+  text-transform: uppercase;
+}
+
+.heartbeat-indicator.expanded {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+}
+
+.heartbeat-pulse {
+  font-size: 2rem;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.heartbeat-pulse.stable { filter: hue-rotate(120deg); }
+.heartbeat-pulse.degraded { filter: hue-rotate(60deg); }
+.heartbeat-pulse.failing { filter: hue-rotate(0deg); }
+
+.heartbeat-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.status-text {
+  font-weight: bold;
+  color: #22d3ee;
+  text-transform: uppercase;
+}
+
+.status-bpm {
+  font-size: 0.8rem;
+  color: rgba(34, 211, 238, 0.7);
+}
+
+.system-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.restart-button,
+.maintenance-button {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 6px;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.restart-button:hover,
+.maintenance-button:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 1), rgba(220, 38, 38, 1));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.maintenance-button {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.8), rgba(245, 158, 11, 0.8));
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.maintenance-button:hover {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 1), rgba(245, 158, 11, 1));
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+}
+
+/* Latency Performance */
+.latency-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.latency-chart-canvas {
+  border-radius: 8px;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  width: 100%;
+  min-height: 150px;
+}
+
+.latency-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 6px;
+}
+
+.stat-label {
+  color: rgba(34, 211, 238, 0.7);
+}
+
+.stat-value {
+  color: #22d3ee;
+  font-weight: bold;
+}
+
+/* Compact Metrics */
+.compact-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.1);
+}
+
+.metric-label {
+  color: rgba(34, 211, 238, 0.7);
+}
+
+.metric-value {
+  color: #22d3ee;
+  font-weight: bold;
+}
+
+/* Prompt Response Stream */
+.prompt-response-stream {
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.prompt-response-stream.expanded {
+  max-height: 300px;
+}
+
+.prompt-response-item {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  padding: 1rem;
+  border-left: 3px solid #22d3ee;
+  transition: all 0.3s ease;
+}
+
+.prompt-response-item:hover {
+  background: rgba(15, 23, 42, 0.8);
+  transform: translateX(4px);
+}
+
+.prompt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.prompt-timestamp {
+  color: rgba(34, 211, 238, 0.6);
+}
+
+.prompt-tokens {
+  color: rgba(251, 191, 36, 0.8);
+  font-weight: bold;
+}
+
+.prompt-content {
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.prompt-text,
+.response-text {
+  margin-bottom: 0.25rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.prompt-metrics {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.7rem;
+  color: rgba(34, 211, 238, 0.6);
+}
+
+/* Failure Events */
+.failure-timeline {
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.failure-timeline.expanded {
+  max-height: 300px;
+}
+
+.failure-event {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  border-left: 3px solid;
+  transition: all 0.3s ease;
+}
+
+.failure-event.low { border-left-color: #22d3ee; }
+.failure-event.medium { border-left-color: #fbbf24; }
+.failure-event.high { border-left-color: #ef4444; }
+.failure-event.critical { border-left-color: #dc2626; }
+.failure-event.info { border-left-color: #10b981; }
+
+.failure-event:hover {
+  background: rgba(15, 23, 42, 0.8);
+  transform: translateX(4px);
+}
+
+.event-icon {
+  font-size: 1.2rem;
+  min-width: 24px;
+}
+
+.event-content {
+  flex: 1;
+}
+
+.event-header {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.event-time {
+  color: rgba(34, 211, 238, 0.6);
+}
+
+.event-type {
+  font-weight: bold;
+  color: #22d3ee;
+}
+
+.event-severity {
+  font-weight: bold;
+  margin-left: auto;
+}
+
+.event-severity.low { color: #22d3ee; }
+.event-severity.medium { color: #fbbf24; }
+.event-severity.high { color: #ef4444; }
+.event-severity.critical { color: #dc2626; }
+.event-severity.info { color: #10b981; }
+
+.event-message {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.3;
+}
+
+/* Self Repair Operations */
+.repair-operations {
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.repair-operations.expanded {
+  max-height: 300px;
+}
+
+.repair-operation {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  border-left: 3px solid;
+  transition: all 0.3s ease;
+}
+
+.repair-operation.success {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.repair-operation.failure {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.repair-operation:hover {
+  background: rgba(15, 23, 42, 0.8);
+  transform: translateX(4px);
+}
+
+.repair-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 60px;
+}
+
+.repair-indicator {
+  font-size: 1.2rem;
+}
+
+.repair-timestamp {
+  font-size: 0.7rem;
+  color: rgba(34, 211, 238, 0.6);
+  text-align: center;
+}
+
+.repair-content {
+  flex: 1;
+}
+
+.repair-action {
+  font-weight: bold;
+  color: #22d3ee;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.repair-details {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+.repair-metrics {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.7rem;
+  color: rgba(34, 211, 238, 0.6);
+}
+
+/* Health Light */
+.health-light-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.health-light-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.health-light {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.health-light.stable {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.1));
+  border: 3px solid rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+}
+
+.health-light.degraded {
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.3), rgba(251, 191, 36, 0.1));
+  border: 3px solid rgba(251, 191, 36, 0.5);
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
+}
+
+.health-light.failing {
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.1));
+  border: 3px solid rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+  animation: healthAlert 1s ease-in-out infinite;
+}
+
+.light-core {
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.light-glow {
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  border-radius: 50%;
+  background: inherit;
+  opacity: 0.3;
+  animation: glow 2s ease-in-out infinite;
+}
+
+.health-status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.status-primary {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #22d3ee;
+}
+
+.status-primary .stable { color: #10b981; }
+.status-primary .degraded { color: #fbbf24; }
+.status-primary .failing { color: #ef4444; }
+
+.status-details {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+/* Compact Health Light */
+.compact-health-light {
+  border-top: 1px solid rgba(34, 211, 238, 0.2);
+  padding-top: 0.5rem;
+}
+
+.health-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6b7280;
+}
+
+.health-indicator.stable .indicator-dot {
+  background: #10b981;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.health-indicator.degraded .indicator-dot {
+  background: #fbbf24;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.health-indicator.failing .indicator-dot {
+  background: #ef4444;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.indicator-text {
+  color: #22d3ee;
+  font-weight: bold;
+}
+
+/* Animations */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.1); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.05); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes glow {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.1); opacity: 0.1; }
+}
+
+@keyframes healthAlert {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Scrollbar Styles */
+.prompt-response-stream::-webkit-scrollbar,
+.failure-timeline::-webkit-scrollbar,
+.repair-operations::-webkit-scrollbar {
+  width: 6px;
+}
+
+.prompt-response-stream::-webkit-scrollbar-track,
+.failure-timeline::-webkit-scrollbar-track,
+.repair-operations::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 3px;
+}
+
+.prompt-response-stream::-webkit-scrollbar-thumb,
+.failure-timeline::-webkit-scrollbar-thumb,
+.repair-operations::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.5);
+  border-radius: 3px;
+}
+
+.prompt-response-stream::-webkit-scrollbar-thumb:hover,
+.failure-timeline::-webkit-scrollbar-thumb:hover,
+.repair-operations::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.7);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .diagnostics-expanded-content {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas: 
+      "uptime latency"
+      "prompt prompt"
+      "failure repair"
+      "health health";
+  }
+  
+  .health-light-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .diagnostics-repair-panel.expanded {
+    padding: 1rem;
+  }
+  
+  .diagnostics-expanded-content {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "uptime"
+      "latency"
+      "prompt"
+      "failure"
+      "repair"
+      "health";
+  }
+  
+  .uptime-heartbeat-section,
+  .latency-performance-section,
+  .prompt-response-section,
+  .failure-events-section,
+  .self-repair-section,
+  .health-light-section {
+    padding: 0.75rem;
+  }
+  
+  .latency-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .system-actions {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .heartbeat-pulse,
+  .health-light,
+  .light-glow,
+  .indicator-dot {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-high-contrast: high) {
+  .diagnostics-repair-panel {
+    background: #000000;
+    border: 2px solid #ffffff;
+  }
+  
+  .prompt-response-item,
+  .failure-event,
+  .repair-operation,
+  .stat-item {
+    background: #222222;
+    border: 1px solid #ffffff;
+  }
+  
+  .health-light {
+    border: 3px solid #ffffff;
+  }
+}

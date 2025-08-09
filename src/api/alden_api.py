@@ -173,23 +173,21 @@ class AldenAPI:
                                           "user_agent": http_request.headers.get("user-agent", "")
                                       }})
                 
-                # Generate Alden's response
-                response = self.alden.generate_response(
+                # Generate Alden's response with metadata
+                response_data = self.alden.generate_response(
                     user_message=request.message,
                     session_id=session_id,
-                    context=request.context
+                    context=request.context,
+                    return_metadata=True
                 )
                 
-                # Get LLM status for response metadata
-                llm_status = self.alden.llm_client.get_status()
-                
                 return MessageResponse(
-                    response=response,
-                    session_id=session_id,
-                    timestamp=datetime.now().isoformat(),
-                    model=llm_status.get("model", "unknown"),
-                    response_time=0.0,  # Would need to track this in generate_response
-                    usage=None  # Would need to track this in generate_response
+                    response=response_data["content"],
+                    session_id=response_data["session_id"],
+                    timestamp=response_data["timestamp"],
+                    model=response_data["model"],
+                    response_time=response_data["response_time"],
+                    usage=response_data["usage"]
                 )
                 
             except Exception as e:
@@ -392,8 +390,7 @@ class AldenAPI:
                 self.app,
                 host=host,
                 port=port,
-                debug=debug,
-                log_level="info"
+                log_level="debug" if debug else "info"
             )
             
         except Exception as e:

@@ -1,0 +1,30 @@
+{
+  "test_name": "Vault Logging - Audit Trail",
+  "timestamp": "20250716_042836",
+  "results": {
+    "voice_event_logging_working": true,
+    "audit_trail_structure_working": true
+  },
+  "resource_data": {
+    "test_name": "Vault Logging - Audit Trail",
+    "timestamp": "20250716_042836",
+    "initial_state": {
+      "cpu_percent": 23.3,
+      "memory_percent": 61.4,
+      "disk_percent": 66.4
+    },
+    "monitoring_start": 1752654541.4066195,
+    "final_state": {
+      "cpu_percent": 14.4,
+      "memory_percent": 61.5,
+      "disk_percent": 66.4
+    },
+    "monitoring_end": 1752654542.4076939,
+    "duration": 1.0010743141174316
+  },
+  "environment": {
+    "python_version": "3.10.12 (main, May 27 2025, 17:12:29) [GCC 11.4.0]",
+    "platform": "linux",
+    "working_directory": "/mnt/g/MythologIQ/Hearthlink"
+  }
+}

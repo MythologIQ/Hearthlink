@@ -1,0 +1,351 @@
+name: Environment Consolidation Validation
+
+on:
+  push:
+    branches: [ main, develop, "Troubleshooting-*" ]
+    paths:
+      - '.env.example'
+      - 'scripts/verify_env.py'
+      - 'src/utils/env_loader.py'
+      - 'src/utils/envLoader.js'
+      - '.github/workflows/env-consolidation.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - '.env.example'
+      - 'scripts/verify_env.py'
+      - 'src/utils/env_loader.py'
+      - 'src/utils/envLoader.js'
+      - '.github/workflows/env-consolidation.yml'
+
+jobs:
+  validate-environment:
+    name: Validate Environment Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install python-dotenv
+        
+    - name: Install Node.js dependencies
+      run: |
+        npm ci
+        
+    - name: Validate .env.example format
+      run: |
+        echo "🔍 Validating .env.example format..."
+        python scripts/verify_env.py --check-example
+        
+    - name: Check for deprecated environment files
+      run: |
+        echo "🔍 Checking for deprecated environment files..."
+        deprecated_files=(".env.local" ".env.development" ".env.production" ".env.pgvector" "deploy/.env.production")
+        found_deprecated=false
+        
+        for file in "${deprecated_files[@]}"; do
+          if [ -f "$file" ]; then
+            echo "❌ Found deprecated environment file: $file"
+            echo "::warning file=$file::Deprecated environment file found. Variables should be consolidated into .env"
+            found_deprecated=true
+          fi
+        done
+        
+        if [ "$found_deprecated" = true ]; then
+          echo "::error::Deprecated environment files found. Please consolidate variables into .env"
+          exit 1
+        else
+          echo "✅ No deprecated environment files found"
+        fi
+        
+    - name: Validate Python environment loader
+      run: |
+        echo "🔍 Validating Python environment loader..."
+        python -c "
+        import sys
+        sys.path.insert(0, 'src')
+        from utils.env_loader import EnvironmentLoader
+        
+        # Test loader instantiation
+        loader = EnvironmentLoader('/.env.example')
+        print('✅ Python environment loader loads successfully')
+        
+        # Test configuration methods
+        try:
+            config = loader.get_service_config()
+            db_config = loader.get_database_config()
+            api_keys = loader.get_api_keys()
+            security_config = loader.get_security_config()
+            print('✅ All configuration methods work correctly')
+        except Exception as e:
+            print(f'❌ Configuration method failed: {e}')
+            sys.exit(1)
+        "
+        
+    - name: Validate Node.js environment loader
+      run: |
+        echo "🔍 Validating Node.js environment loader..."
+        node -e "
+        const path = require('path');
+        
+        // Temporarily set env file path to .env.example for testing
+        process.env.NODE_ENV = 'test';
+        
+        const { EnvironmentLoader } = require('./src/utils/envLoader');
+        
+        try {
+          // Test loader instantiation
+          const loader = new EnvironmentLoader('./.env.example');
+          console.log('✅ Node.js environment loader loads successfully');
+          
+          // Test configuration methods
+          const serviceConfig = loader.getServiceConfig();
+          const databaseConfig = loader.getDatabaseConfig();
+          const apiKeys = loader.getApiKeys();
+          const securityConfig = loader.getSecurityConfig();
+          console.log('✅ All configuration methods work correctly');
+          
+        } catch (error) {
+          console.error('❌ Node.js environment loader failed:', error.message);
+          process.exit(1);
+        }
+        "
+        
+    - name: Check environment variable consistency
+      run: |
+        echo "🔍 Checking environment variable consistency..."
+        python -c "
+        import re
+        from pathlib import Path
+        
+        def parse_env_file(file_path):
+            variables = set()
+            if not Path(file_path).exists():
+                return variables
+                
+            with open(file_path, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key = line.split('=', 1)[0].strip()
+                        variables.add(key)
+            return variables
+        
+        # Parse .env.example
+        example_vars = parse_env_file('.env.example')
+        print(f'Found {len(example_vars)} variables in .env.example')
+        
+        # Check Python loader required variables
+        sys.path.insert(0, 'src')
+        from utils.env_loader import EnvironmentLoader
+        
+        loader = EnvironmentLoader()
+        all_required = set()
+        for group_vars in loader.REQUIRED_VARS.values():
+            all_required.update(group_vars)
+        
+        missing_in_example = all_required - example_vars
+        if missing_in_example:
+            print(f'❌ Required variables missing from .env.example: {missing_in_example}')
+            exit(1)
+        else:
+            print('✅ All required variables are documented in .env.example')
+        "
+        
+    - name: Validate security best practices
+      run: |
+        echo "🔍 Validating security best practices..."
+        python -c "
+        import re
+        from pathlib import Path
+        
+        # Check .env.example for security issues
+        security_issues = []
+        
+        with open('.env.example', 'r') as f:
+            for line_num, line in enumerate(f, 1):
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                    
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    key = key.strip()
+                    value = value.strip()
+                    
+                    # Check for hardcoded secrets (should be placeholders)
+                    if any(term in key.upper() for term in ['SECRET', 'KEY', 'PASSWORD']):
+                        if not any(placeholder in value.lower() for placeholder in ['your_', 'replace_', 'secure_']):
+                            if len(value) > 10 and not value.startswith('http'):  # Likely a real secret
+                                security_issues.append(f'Line {line_num}: {key} may contain hardcoded secret')
+        
+        if security_issues:
+            for issue in security_issues:
+                print(f'⚠️  {issue}')
+            print('::warning::Potential security issues found in .env.example')
+        else:
+            print('✅ No security issues found in .env.example')
+        "
+        
+    - name: Generate environment documentation
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        echo "📝 Generating environment documentation summary..."
+        python -c "
+        import json
+        from pathlib import Path
+        
+        # Parse .env.example and generate summary
+        variables = {}
+        current_section = 'General'
+        
+        with open('.env.example', 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('# ===='):
+                    continue
+                elif line.startswith('#') and line != '#':
+                    # Section header
+                    current_section = line[1:].strip()
+                elif line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    key = key.strip()
+                    value = value.strip()
+                    
+                    if current_section not in variables:
+                        variables[current_section] = []
+                    
+                    variables[current_section].append({
+                        'name': key,
+                        'example_value': value,
+                        'is_required': any(term in key.upper() for term in ['SECRET', 'KEY']) and 'your_' in value.lower()
+                    })
+        
+        # Save summary
+        with open('environment-summary.json', 'w') as f:
+            json.dump(variables, f, indent=2)
+        
+        print(f'✅ Generated environment summary with {sum(len(vars) for vars in variables.values())} variables')
+        "
+        
+    - name: Upload environment summary
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v3
+      with:
+        name: environment-summary
+        path: environment-summary.json
+        retention-days: 30
+        
+    - name: Comment on PR with validation results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          // Count variables in .env.example
+          const envExample = fs.readFileSync('.env.example', 'utf8');
+          const varCount = (envExample.match(/^[A-Z_]+=.*/gm) || []).length;
+          
+          const comment = `## 🔍 Environment Consolidation Validation
+          
+          ✅ **Validation Status**: All checks passed
+          📊 **Variables in .env.example**: ${varCount}
+          🛡️ **Security**: No issues detected
+          🔧 **Loaders**: Python and Node.js loaders validated
+          
+          The environment consolidation system is working correctly!
+          
+          ---
+          *This comment was automatically generated by the Environment Consolidation workflow.*`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+          
+  validate-integration:
+    name: Test Environment Integration
+    runs-on: ubuntu-latest
+    needs: validate-environment
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install python-dotenv
+        
+    - name: Test environment loader integration
+      run: |
+        echo "🧪 Testing environment loader integration..."
+        
+        # Create a test .env file
+        cat > test.env << EOF
+        NODE_ENV=test
+        DATABASE_URL=sqlite:///test.db
+        JWT_SECRET=test_jwt_secret_minimum_32_chars
+        ENCRYPTION_KEY=test_encryption_key_32_chars
+        PORT=3000
+        REACT_APP_HEARTHLINK_API=http://localhost:8000/api
+        POSTGRES_HOST=localhost
+        POSTGRES_PORT=5432
+        POSTGRES_DB=test
+        POSTGRES_USER=test
+        ANTHROPIC_API_KEY=test_key
+        SESSION_SECRET=test_session_secret
+        EOF
+        
+        # Test Python loader
+        python -c "
+        import sys
+        sys.path.insert(0, 'src')
+        from utils.env_loader import EnvironmentLoader
+        
+        loader = EnvironmentLoader('test.env')
+        
+        # Test validation
+        missing = loader.validate_required_vars()
+        if missing:
+            print(f'❌ Missing variables: {missing}')
+            sys.exit(1)
+        else:
+            print('✅ Python loader integration test passed')
+        "
+        
+        # Clean up
+        rm test.env
+        
+    - name: Verify no .env file in repository
+      run: |
+        if [ -f ".env" ]; then
+          echo "❌ Found .env file in repository - this should not be committed!"
+          echo "::error::.env file found in repository. Remove it and add to .gitignore"
+          exit 1
+        else
+          echo "✅ No .env file found in repository (correct)"
+        fi

@@ -1,0 +1,385 @@
+version: '3.8'
+
+services:
+  # Frontend React Application
+  hearthlink-frontend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.frontend
+      target: production
+    container_name: hearthlink-frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_BASE_URL=https://api.hearthlink.local
+      - REACT_APP_HEARTHLINK_LOG_LEVEL=warn
+      - REACT_APP_HEARTHLINK_MONITORING_ENABLED=true
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/ssl/certs:ro
+      - frontend_logs:/var/log/nginx
+    networks:
+      - hearthlink-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend API Services
+  hearthlink-api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+      target: production
+    container_name: hearthlink-api
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - API_PORT=8080
+      - DATABASE_URL=postgresql://hearthlink:${DB_PASSWORD}@hearthlink-db:5432/hearthlink
+      - REDIS_URL=redis://hearthlink-redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - LOG_LEVEL=info
+      - MONITORING_ENABLED=true
+      - SENTRY_DSN=${SENTRY_DSN}
+    volumes:
+      - api_logs:/app/logs
+      - vault_data:/app/data/vault
+    networks:
+      - hearthlink-network
+    depends_on:
+      - hearthlink-db
+      - hearthlink-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Agent Processing Services
+  hearthlink-agents:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.agents
+      target: production
+    container_name: hearthlink-agents
+    environment:
+      - NODE_ENV=production
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - AGENT_TIMEOUT=30000
+      - MAX_CONCURRENT_REQUESTS=5
+      - LOG_LEVEL=info
+    volumes:
+      - agent_logs:/app/logs
+      - agent_data:/app/data
+    networks:
+      - hearthlink-network
+    depends_on:
+      - hearthlink-api
+      - hearthlink-redis
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8081/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Database
+  hearthlink-db:
+    image: postgres:15-alpine
+    container_name: hearthlink-db
+    environment:
+      - POSTGRES_DB=hearthlink
+      - POSTGRES_USER=hearthlink
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+      - db_logs:/var/log/postgresql
+    networks:
+      - hearthlink-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hearthlink -d hearthlink"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis Cache
+  hearthlink-redis:
+    image: redis:7-alpine
+    container_name: hearthlink-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/etc/redis/redis.conf:ro
+    networks:
+      - hearthlink-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+
+  # Monitoring Stack
+  hearthlink-prometheus:
+    image: prom/prometheus:latest
+    container_name: hearthlink-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - hearthlink-network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+
+  hearthlink-grafana:
+    image: grafana/grafana:latest
+    container_name: hearthlink-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN=monitoring.hearthlink.local
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - hearthlink-network
+    depends_on:
+      - hearthlink-prometheus
+    restart: unless-stopped
+
+  # Log Aggregation
+  hearthlink-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: hearthlink-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - hearthlink-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  hearthlink-logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.0
+    container_name: hearthlink-logstash
+    volumes:
+      - ./logging/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - api_logs:/logs/api:ro
+      - agent_logs:/logs/agents:ro
+      - frontend_logs:/logs/frontend:ro
+    networks:
+      - hearthlink-network
+    depends_on:
+      - hearthlink-elasticsearch
+    restart: unless-stopped
+
+  hearthlink-kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.0
+    container_name: hearthlink-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://hearthlink-elasticsearch:9200
+      - SERVER_NAME=logs.hearthlink.local
+    networks:
+      - hearthlink-network
+    depends_on:
+      - hearthlink-elasticsearch
+    restart: unless-stopped
+
+  # Security Services
+  hearthlink-vault:
+    image: vault:latest
+    container_name: hearthlink-vault
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=${VAULT_ROOT_TOKEN}
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    volumes:
+      - vault_secrets:/vault/data
+      - ./vault/config.hcl:/vault/config/config.hcl:ro
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - hearthlink-network
+    restart: unless-stopped
+    command: vault server -config=/vault/config/config.hcl
+
+  # Backup Service
+  hearthlink-backup:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backup
+    container_name: hearthlink-backup
+    environment:
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 2 * * *}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - S3_BUCKET=${BACKUP_S3_BUCKET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - ENCRYPTION_PASSWORD=${BACKUP_ENCRYPTION_PASSWORD}
+    volumes:
+      - postgres_data:/data/postgres:ro
+      - vault_data:/data/vault:ro
+      - backup_temp:/tmp/backups
+    networks:
+      - hearthlink-network
+    depends_on:
+      - hearthlink-db
+    restart: unless-stopped
+
+# Networks
+networks:
+  hearthlink-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Persistent Volumes
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/postgres
+  
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/redis
+  
+  vault_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/vault
+  
+  vault_secrets:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/vault-secrets
+  
+  agent_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/agents
+  
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/prometheus
+  
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/grafana
+  
+  elasticsearch_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/elasticsearch
+  
+  # Log volumes
+  api_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH}/api
+  
+  agent_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH}/agents
+  
+  frontend_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH}/frontend
+  
+  db_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH}/db
+  
+  backup_temp:
+    driver: local

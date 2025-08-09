@@ -1,0 +1,31 @@
+{
+  "test_name": "External Agents - Permission Layers Compliance",
+  "timestamp": "20250716_042836",
+  "results": {
+    "explicit_activation_working": true,
+    "core_connection_working": true,
+    "session_tracking_working": true
+  },
+  "resource_data": {
+    "test_name": "External Agents - Permission Layers Compliance",
+    "timestamp": "20250716_042836",
+    "initial_state": {
+      "cpu_percent": 11.0,
+      "memory_percent": 61.3,
+      "disk_percent": 66.4
+    },
+    "monitoring_start": 1752654529.372921,
+    "final_state": {
+      "cpu_percent": 19.8,
+      "memory_percent": 61.3,
+      "disk_percent": 66.4
+    },
+    "monitoring_end": 1752654530.373843,
+    "duration": 1.0009219646453857
+  },
+  "environment": {
+    "python_version": "3.10.12 (main, May 27 2025, 17:12:29) [GCC 11.4.0]",
+    "platform": "linux",
+    "working_directory": "/mnt/g/MythologIQ/Hearthlink"
+  }
+}

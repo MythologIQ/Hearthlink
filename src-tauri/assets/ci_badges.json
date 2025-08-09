@@ -1,0 +1,68 @@
+{
+  "ci_badges": {
+    "build_status": {
+      "label": "Build Status",
+      "status": "passing",
+      "color": "brightgreen",
+      "logo": "github-actions"
+    },
+    "spec2_compliance": {
+      "label": "SPEC-2 Compliance",
+      "status": "100%",
+      "color": "brightgreen",
+      "logo": "checkmark"
+    },
+    "vault_integration": {
+      "label": "Vault Integration",
+      "status": "active",
+      "color": "blue",
+      "logo": "shield"
+    },
+    "memory_debug": {
+      "label": "Memory Debug",
+      "status": "enabled",
+      "color": "orange",
+      "logo": "bug"
+    },
+    "audit_logging": {
+      "label": "Audit Logging",
+      "status": "comprehensive",
+      "color": "purple",
+      "logo": "file-text"
+    },
+    "performance": {
+      "label": "Performance",
+      "status": "optimized",
+      "color": "green",
+      "logo": "zap"
+    },
+    "security": {
+      "label": "Security",
+      "status": "encrypted",
+      "color": "red",
+      "logo": "lock"
+    },
+    "llm_integration": {
+      "label": "LLM Model",
+      "status": "Llama 3.5 micro",
+      "color": "blue",
+      "logo": "cpu"
+    }
+  },
+  "shields_io_urls": {
+    "build_status": "https://img.shields.io/badge/Build-passing-brightgreen?logo=github-actions",
+    "spec2_compliance": "https://img.shields.io/badge/SPEC--2%20Compliance-100%25-brightgreen?logo=checkmark",
+    "vault_integration": "https://img.shields.io/badge/Vault%20Integration-active-blue?logo=shield",
+    "memory_debug": "https://img.shields.io/badge/Memory%20Debug-enabled-orange?logo=bug",
+    "audit_logging": "https://img.shields.io/badge/Audit%20Logging-comprehensive-purple?logo=file-text",
+    "performance": "https://img.shields.io/badge/Performance-optimized-green?logo=zap",
+    "security": "https://img.shields.io/badge/Security-encrypted-red?logo=lock",
+    "llm_integration": "https://img.shields.io/badge/LLM%20Model-Llama%203.5%20micro-blue?logo=cpu"
+  },
+  "badge_metadata": {
+    "generated_at": "2025-07-30T12:00:00Z",
+    "spec_version": "SPEC-2-Tauri-Memory-Integration",
+    "validator": "Hearthlink CI/CD Pipeline",
+    "format": "shields.io compatible"
+  }
+}

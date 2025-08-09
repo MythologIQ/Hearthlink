@@ -44,5 +44,6 @@
     "cache_ttl_seconds": 300,
     "max_concurrent_sessions": 20,
     "session_cleanup_interval_minutes": 30
-  }
+  },
+  "schema_version": "1.5.0"
 } 

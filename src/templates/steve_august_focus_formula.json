@@ -1,0 +1,284 @@
+{
+  "template": "August Weekly Focus Formula",
+  "templateId": "steve-august-focus-formula",
+  "version": "1.0.0",
+  "description": "Steve August's proprietary ADHD coaching worksheet for weekly focus and productivity management",
+  "category": "adhd-coaching",
+  "licenseProtected": true,
+  "licenseKeyField": "focusFormulaLicenseToken",
+  "credit": {
+    "label": "Steve August – ADHD Coaching", 
+    "url": "https://steve-august.com",
+    "copyright": "© 2025 Steve August. All rights reserved."
+  },
+  "fields": {
+    "weekOf": {
+      "type": "date",
+      "label": "Week of",
+      "required": true,
+      "helpText": "Select the Monday of the week you're planning",
+      "validation": {
+        "type": "date",
+        "format": "YYYY-MM-DD"
+      }
+    },
+    "twoHourWorkdayPriorities": {
+      "type": "array",
+      "label": "2HR Workday Priorities",
+      "helpText": "List your top priorities that can be accomplished in 2-hour focused work sessions",
+      "minItems": 1,
+      "maxItems": 5,
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "defaultValue": [""]
+    },
+    "brainDumpOptions": {
+      "type": "array",
+      "label": "Brain Dump Options",
+      "helpText": "Capture all the thoughts, ideas, and tasks swirling in your mind",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "properties": {
+          "goal": {
+            "type": "string",
+            "label": "Goal",
+            "maxLength": 150,
+            "helpText": "What do you want to achieve?"
+          },
+          "rock": {
+            "type": "string", 
+            "label": "Rock",
+            "maxLength": 150,
+            "helpText": "What's the biggest obstacle or challenge?"
+          },
+          "smallestNextStep": {
+            "type": "string",
+            "label": "Smallest Next Step",
+            "maxLength": 150,
+            "helpText": "What's the tiniest action you can take to move forward?"
+          }
+        },
+        "required": ["goal", "smallestNextStep"]
+      },
+      "defaultValue": [{"goal": "", "rock": "", "smallestNextStep": ""}]
+    },
+    "magneticNorth": {
+      "type": "string",
+      "label": "Magnetic North",
+      "helpText": "Your guiding principle or core direction for this week",
+      "maxLength": 300,
+      "placeholder": "What is your true north this week?"
+    },
+    "mission": {
+      "type": "string",
+      "label": "Mission",
+      "helpText": "Your purpose and what you're working toward",
+      "maxLength": 500,
+      "placeholder": "What is your mission this week?"
+    },
+    "vision": {
+      "type": "string", 
+      "label": "Vision",
+      "helpText": "Your ideal outcome and what success looks like",
+      "maxLength": 500,
+      "placeholder": "What does success look like this week?"
+    },
+    "values": {
+      "type": "string",
+      "label": "Values",
+      "helpText": "The core values that will guide your decisions this week",
+      "maxLength": 300,
+      "placeholder": "What values will guide you this week?"
+    },
+    "selfCareHabitTracker": {
+      "type": "object",
+      "label": "Self-Care Habit Tracker",
+      "helpText": "Track your self-care habits throughout the week",
+      "properties": {
+        "habitName": {
+          "type": "string",
+          "label": "Habit Name",
+          "maxLength": 100,
+          "placeholder": "e.g., Morning meditation, Evening walk, Journaling",
+          "required": true
+        },
+        "targetFrequency": {
+          "type": "string",
+          "label": "Target Frequency",
+          "enum": ["daily", "weekdays", "weekends", "3x_week", "custom"],
+          "defaultValue": "daily"
+        },
+        "weekly": {
+          "type": "object",
+          "label": "Weekly Tracking",
+          "properties": {
+            "Mon": {"type": "boolean", "label": "Monday", "defaultValue": false},
+            "Tue": {"type": "boolean", "label": "Tuesday", "defaultValue": false},
+            "Wed": {"type": "boolean", "label": "Wednesday", "defaultValue": false},
+            "Thu": {"type": "boolean", "label": "Thursday", "defaultValue": false},
+            "Fri": {"type": "boolean", "label": "Friday", "defaultValue": false},
+            "Sat": {"type": "boolean", "label": "Saturday", "defaultValue": false},
+            "Sun": {"type": "boolean", "label": "Sunday", "defaultValue": false}
+          }
+        },
+        "notes": {
+          "type": "string",
+          "label": "Habit Notes",
+          "maxLength": 200,
+          "placeholder": "Any observations about this habit?"
+        }
+      }
+    },
+    "daily2HRPriorities": {
+      "type": "object",
+      "label": "Daily 2HR Priorities",
+      "helpText": "Your main 2-hour focus priority for each workday",
+      "properties": {
+        "Monday": {
+          "type": "string",
+          "label": "Monday Priority",
+          "maxLength": 150,
+          "placeholder": "What's your 2-hour focus for Monday?"
+        },
+        "Tuesday": {
+          "type": "string",
+          "label": "Tuesday Priority", 
+          "maxLength": 150,
+          "placeholder": "What's your 2-hour focus for Tuesday?"
+        },
+        "Wednesday": {
+          "type": "string",
+          "label": "Wednesday Priority",
+          "maxLength": 150,
+          "placeholder": "What's your 2-hour focus for Wednesday?"
+        },
+        "Thursday": {
+          "type": "string",
+          "label": "Thursday Priority",
+          "maxLength": 150,
+          "placeholder": "What's your 2-hour focus for Thursday?"
+        },
+        "Friday": {
+          "type": "string",
+          "label": "Friday Priority",
+          "maxLength": 150,
+          "placeholder": "What's your 2-hour focus for Friday?"
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "label": "Key Decisions",
+      "helpText": "Important decisions you need to make this week",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "label": "Decision",
+            "maxLength": 200,
+            "required": true
+          },
+          "deadline": {
+            "type": "date",
+            "label": "Decision Deadline"
+          },
+          "options": {
+            "type": "array",
+            "label": "Options",
+            "items": {"type": "string", "maxLength": 100},
+            "maxItems": 5
+          },
+          "criteria": {
+            "type": "string",
+            "label": "Decision Criteria",
+            "maxLength": 200,
+            "helpText": "What factors will guide this decision?"
+          }
+        }
+      },
+      "defaultValue": [{"decision": "", "options": [""], "criteria": ""}]
+    },
+    "weeklyReflection": {
+      "type": "object",
+      "label": "Weekly Reflection",
+      "helpText": "End-of-week reflection and planning",
+      "properties": {
+        "wins": {
+          "type": "array",
+          "label": "Weekly Wins",
+          "items": {"type": "string", "maxLength": 150},
+          "maxItems": 5,
+          "helpText": "What went well this week?"
+        },
+        "challenges": {
+          "type": "array", 
+          "label": "Challenges",
+          "items": {"type": "string", "maxLength": 150},
+          "maxItems": 5,
+          "helpText": "What was difficult this week?"
+        },
+        "lessons": {
+          "type": "string",
+          "label": "Key Lessons",
+          "maxLength": 300,
+          "helpText": "What did you learn about yourself this week?"
+        },
+        "nextWeekFocus": {
+          "type": "string",
+          "label": "Next Week Focus",
+          "maxLength": 200,
+          "helpText": "What will you focus on next week?"
+        }
+      }
+    }
+  },
+  "adhdSpecificFeatures": {
+    "executiveFunctionSupport": true,
+    "attentionRegulationTools": true,
+    "hyperfocusManagement": true,
+    "transitionSupport": true,
+    "workingMemoryAids": true
+  },
+  "integrations": {
+    "aldenMemory": {
+      "enabled": true,
+      "memoryTags": ["adhd-coaching", "weekly-planning", "steve-august", "focus-formula"],
+      "persistToVault": true,
+      "crossAgentSync": true
+    },
+    "habitTracking": {
+      "enabled": true,
+      "syncWithCalendar": true,
+      "reminderSystem": true
+    },
+    "decisionSupport": {
+      "enabled": true,
+      "aiAssistance": true,
+      "criteriaWeighting": true
+    }
+  },
+  "licensingTerms": {
+    "requiresValidLicense": true,
+    "trialPeriodDays": 7,
+    "maxUsesWithoutLicense": 3,
+    "licenseValidationEndpoint": "/api/templates/validate-license",
+    "purchaseUrl": "https://steve-august.com/focus-formula",
+    "licenseType": "individual",
+    "renewalRequired": false
+  },
+  "metadata": {
+    "createdDate": "2025-07-30T17:10:00Z",
+    "lastModified": "2025-07-30T17:10:00Z",
+    "templateVersion": "1.0.0",
+    "compatibilityVersion": "SPEC-2",
+    "tags": ["adhd", "productivity", "coaching", "weekly-planning", "licensed"],
+    "estimatedCompletionTime": "20-30 minutes",
+    "recommendedFrequency": "weekly",
+    "targetAudience": "Adults with ADHD seeking structured productivity support"
+  }
+}

@@ -1,0 +1,15 @@
+# Qdrant Configuration for Hearthlink
+service:
+  http_port: 6333
+  grpc_port: 6334
+  host: 0.0.0.0
+
+storage:
+  storage_path: /mnt/g/MythologIQ/Hearthlink/docker/data/qdrant
+  snapshots_path: /mnt/g/MythologIQ/Hearthlink/docker/data/qdrant/snapshots
+  temp_path: /mnt/g/MythologIQ/Hearthlink/docker/data/qdrant/tmp
+
+cluster:
+  enabled: false
+
+log_level: INFO

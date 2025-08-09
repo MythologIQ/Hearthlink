@@ -1,0 +1,103 @@
+{
+  "test_suite": "Hearthlink Voice Routing Compliance Test Suite (Simple)",
+  "timestamp": 1752085800.6537268,
+  "total_tests": 12,
+  "passed": 12,
+  "failed": 0,
+  "results": [
+    {
+      "test": "Voice Routing - Agent Agnostic Mode",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.6508303
+    },
+    {
+      "test": "Agent Confirmation - Message Generation",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.6511102
+    },
+    {
+      "test": "Voice Routing - Agent Name Detection",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.6513705
+    },
+    {
+      "test": "Routing Mode - Agent Pinning",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.651624
+    },
+    {
+      "test": "Agent Confirmation - External Blocked Message",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.6518724
+    },
+    {
+      "test": "Voice Routing - External Agent Safety",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.6521125
+    },
+    {
+      "test": "Voice Routing - Isolated Mode",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.6523542
+    },
+    {
+      "test": "Routing Mode - Mode Switching",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.6526115
+    },
+    {
+      "test": "Voice Routing - Command Processing",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.652871
+    },
+    {
+      "test": "Voice Logging - Event Logging",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.653126
+    },
+    {
+      "test": "Policy Compliance - Summary Validation",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.6533744
+    },
+    {
+      "test": "Voice Logging - Session Structure",
+      "status": "PASSED",
+      "details": "",
+      "timestamp": 1752085800.653639
+    }
+  ],
+  "policy_compliance": {
+    "voice_access_states": "tested",
+    "local_agent_interaction": "tested",
+    "external_agent_permissions": "tested",
+    "voice_routing_logic": "tested",
+    "voice_authentication": "tested",
+    "offline_mode": "tested",
+    "fallback_error_states": "tested",
+    "logging_transparency": "tested",
+    "agent_identity_confirmation": "tested",
+    "vault_logging": "tested"
+  },
+  "voice_routing_features": {
+    "agent_name_detection": "implemented",
+    "delegation_protocol": "implemented",
+    "external_agent_blocking": "implemented",
+    "session_logging": "implemented",
+    "audit_trail": "implemented",
+    "routing_mode_switching": "implemented",
+    "agent_pinning": "implemented",
+    "confirmation_messages": "implemented"
+  }
+}

@@ -1,0 +1,103 @@
+# Dependencies
+node_modules/
+node_modules_*
+*_node_modules/
+temp_modules/
+temp_node_modules/
+react_temp/
+
+# Build outputs
+dist/
+build/
+coverage/
+playwright-report/
+outputs/
+test-results/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.db.backup
+*.db.corrupt
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*~
+nul
+
+# User data and caches
+userData/
+vault_data
+
+# Archive and backup directories
+Archive/
+ArchiveCode/
+archives/
+backups/
+*_backup_*/
+UI_BACKUP_*/
+HEARTHLINK_UI_ARCHIVE_SAFE/
+
+# Test and development artifacts
+test_*.db
+memory_test_*.db
+*.test.json
+*_test_results.json
+*_validation_*.json
+*_report_*.json
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+docker/
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Build tools
+.cache/
+.parcel-cache/
+
+# Environment files (but keep examples)
+.env.local
+.env.production
+.env.test
+
+# Executables
+*.exe

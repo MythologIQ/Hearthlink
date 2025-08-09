@@ -1,0 +1,47 @@
+{
+  "neo4j": {
+    "uri": "bolt://localhost:7687",
+    "user": "neo4j",
+    "password": "hearthlink_neo4j_2024",
+    "database": "hearthlink_knowledge",
+    "connection_timeout": 30000,
+    "max_transaction_retry_time": 30000,
+    "encrypted": true,
+    "trust": "TRUST_SYSTEM_CA_SIGNED_CERTIFICATES"
+  },
+  "postgresql": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "hearthlink_memory",
+    "user": "alden_user",
+    "password": "alden_secure_2024",
+    "max_connections": 20,
+    "connection_timeout": 30000,
+    "ssl": true,
+    "schema": "alden_memory"
+  },
+  "vector_database": {
+    "type": "qdrant",
+    "host": "localhost",
+    "port": 6333,
+    "collection_name": "alden_knowledge_vectors",
+    "vector_size": 1536,
+    "distance_metric": "cosine",
+    "api_key": "qdrant_api_key_2024"
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "password": "redis_session_2024",
+    "db": 0,
+    "connection_timeout": 5000,
+    "retry_attempts": 3
+  },
+  "security": {
+    "encryption_key": "hearthlink_master_key_2024",
+    "jwt_secret": "jwt_secret_hearthlink_2024",
+    "bcrypt_rounds": 12,
+    "session_timeout": 3600000,
+    "max_failed_attempts": 5
+  }
+}

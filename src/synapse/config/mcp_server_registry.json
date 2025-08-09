@@ -1,0 +1,305 @@
+{
+  "registry_version": "1.0.0",
+  "last_updated": "2025-01-21T12:00:00Z",
+  "description": "Central registry for all Model Context Protocol (MCP) servers integrated as Synapse plugins",
+  
+  "active_servers": [
+    {
+      "server_id": "filesystem",
+      "plugin_id": "filesystem-mcp",
+      "name": "Filesystem MCP Server", 
+      "version": "1.0.0",
+      "status": "active",
+      "description": "File system operations with secure access control",
+      "package": "mcp__filesystem",
+      "tools_provided": [
+        "read_file",
+        "read_multiple_files", 
+        "write_file",
+        "edit_file",
+        "create_directory",
+        "list_directory",
+        "list_directory_with_sizes",
+        "directory_tree",
+        "move_file",
+        "search_files",
+        "get_file_info",
+        "list_allowed_directories"
+      ],
+      "connection_type": "direct",
+      "security_level": "high",
+      "auto_start": true
+    },
+    
+    {
+      "server_id": "github", 
+      "plugin_id": "github-mcp",
+      "name": "GitHub MCP Server",
+      "version": "1.0.0",
+      "status": "active",
+      "description": "GitHub repository operations and management",
+      "package": "mcp__github",
+      "tools_provided": [
+        "create_or_update_file",
+        "search_repositories",
+        "create_repository", 
+        "get_file_contents",
+        "push_files",
+        "create_issue",
+        "create_pull_request",
+        "fork_repository",
+        "create_branch",
+        "list_commits",
+        "list_issues",
+        "update_issue",
+        "add_issue_comment",
+        "search_code",
+        "search_issues", 
+        "search_users",
+        "get_issue",
+        "get_pull_request",
+        "list_pull_requests",
+        "create_pull_request_review",
+        "merge_pull_request",
+        "get_pull_request_files",
+        "get_pull_request_status",
+        "update_pull_request_branch",
+        "get_pull_request_comments",
+        "get_pull_request_reviews"
+      ],
+      "connection_type": "api",
+      "security_level": "medium",
+      "auto_start": true,
+      "oauth_required": true
+    },
+    
+    {
+      "server_id": "puppeteer",
+      "plugin_id": "puppeteer-mcp", 
+      "name": "Puppeteer MCP Server",
+      "version": "1.0.0",
+      "status": "active",
+      "description": "Web automation and browser control",
+      "package": "mcp__puppeteer",
+      "tools_provided": [
+        "puppeteer_navigate",
+        "puppeteer_screenshot", 
+        "puppeteer_click",
+        "puppeteer_fill",
+        "puppeteer_select",
+        "puppeteer_hover",
+        "puppeteer_evaluate"
+      ],
+      "connection_type": "process",
+      "security_level": "high",
+      "auto_start": false,
+      "sandbox_required": true
+    },
+    
+    {
+      "server_id": "memory",
+      "plugin_id": "memory-mcp",
+      "name": "Memory MCP Server", 
+      "version": "1.0.0",
+      "status": "active",
+      "description": "Knowledge graph and memory management",
+      "package": "mcp__memory",
+      "tools_provided": [
+        "create_entities",
+        "create_relations",
+        "add_observations",
+        "delete_entities", 
+        "delete_observations",
+        "delete_relations",
+        "read_graph",
+        "search_nodes",
+        "open_nodes"
+      ],
+      "connection_type": "direct",
+      "security_level": "medium", 
+      "auto_start": true
+    },
+    
+    {
+      "server_id": "context7",
+      "plugin_id": "context7-mcp",
+      "name": "Context7 Documentation MCP Server",
+      "version": "1.0.0", 
+      "status": "active",
+      "description": "Documentation and library context retrieval",
+      "package": "mcp__context7",
+      "tools_provided": [
+        "resolve-library-id",
+        "get-library-docs"
+      ],
+      "connection_type": "api",
+      "security_level": "low",
+      "auto_start": true
+    },
+    
+    {
+      "server_id": "magic-ui",
+      "plugin_id": "magic-ui-mcp",
+      "name": "Magic UI Components MCP Server",
+      "version": "1.0.0",
+      "status": "active", 
+      "description": "UI component library and design system access",
+      "package": "mcp__magic-ui",
+      "tools_provided": [
+        "getUIComponents",
+        "getComponents",
+        "getDeviceMocks",
+        "getSpecialEffects",
+        "getAnimations",
+        "getTextAnimations", 
+        "getButtons",
+        "getBackgrounds"
+      ],
+      "connection_type": "direct",
+      "security_level": "low",
+      "auto_start": true
+    },
+    
+    {
+      "server_id": "gmail-calendar",
+      "plugin_id": "gmail-calendar-mcp",
+      "name": "Gmail & Calendar MCP Server",
+      "version": "1.0.0",
+      "status": "pending_registration",
+      "description": "Gmail and Google Calendar integration",
+      "package": "@modelcontextprotocol/server-gmail",
+      "tools_provided": [
+        "list_emails",
+        "send_email",
+        "search_emails", 
+        "list_calendar_events",
+        "create_calendar_event",
+        "update_calendar_event",
+        "delete_calendar_event"
+      ],
+      "connection_type": "stdio",
+      "security_level": "medium",
+      "auto_start": false,
+      "oauth_required": true
+    },
+
+    {
+      "server_id": "serena",
+      "plugin_id": "serena-mcp",
+      "name": "Serena IDE Assistant MCP Server",
+      "version": "1.0.0",
+      "status": "active",
+      "description": "Serena IDE Assistant integration for enhanced development workflow",
+      "package": "serena-mcp-server",
+      "tools_provided": [
+        "analyze_code",
+        "suggest_improvements",
+        "generate_documentation",
+        "refactor_code",
+        "find_bugs",
+        "optimize_performance",
+        "ide_integration",
+        "project_analysis",
+        "code_completion",
+        "syntax_checking"
+      ],
+      "connection_type": "stdio",
+      "security_level": "medium",
+      "auto_start": true,
+      "context": "ide-assistant",
+      "project_root": "$(pwd)"
+    }
+  ],
+  
+  "pending_servers": [
+    {
+      "server_id": "slack",
+      "name": "Slack MCP Server",
+      "description": "Slack workspace integration",
+      "priority": "medium",
+      "estimated_integration": "Phase 3B"
+    },
+    
+    {
+      "server_id": "notion", 
+      "name": "Notion MCP Server",
+      "description": "Notion workspace and document management",
+      "priority": "low",
+      "estimated_integration": "Phase 4A"
+    },
+    
+    {
+      "server_id": "jira",
+      "name": "Jira MCP Server", 
+      "description": "Jira project management integration",
+      "priority": "medium",
+      "estimated_integration": "Phase 3B"
+    },
+    
+    {
+      "server_id": "database",
+      "name": "Database MCP Server",
+      "description": "SQL database operations",
+      "priority": "high", 
+      "estimated_integration": "Phase 3B"
+    }
+  ],
+  
+  "configuration": {
+    "default_security_level": "medium",
+    "auto_discovery": true,
+    "health_check_interval": 300,
+    "max_concurrent_servers": 20,
+    "plugin_timeout": 30000,
+    "sandbox_by_default": true,
+    "logging": {
+      "level": "info",
+      "include_performance_metrics": true,
+      "audit_all_requests": true
+    },
+    "security_policies": {
+      "require_manifest_validation": true,
+      "enforce_sandboxing": true,
+      "oauth_token_encryption": true,
+      "rate_limiting": {
+        "requests_per_minute": 100,
+        "burst_limit": 20
+      }
+    }
+  },
+  
+  "integration_status": {
+    "synapse_plugin_manager": "integrated",
+    "vault_storage": "integrated", 
+    "security_service": "integrated",
+    "audit_logging": "integrated",
+    "health_monitoring": "integrated",
+    "oauth_manager": "pending",
+    "ui_management": "partial"
+  },
+  
+  "deployment_notes": {
+    "installation_order": [
+      "filesystem",
+      "memory", 
+      "github",
+      "context7",
+      "magic-ui",
+      "serena",
+      "gmail-calendar",
+      "puppeteer"
+    ],
+    "critical_dependencies": [
+      "Node.js >= 18.0.0",
+      "Python >= 3.10",
+      "Synapse Plugin Manager",
+      "Vault Service",
+      "Security Service"
+    ],
+    "network_requirements": {
+      "outbound_https": ["github.com", "googleapis.com", "accounts.google.com"],
+      "inbound_ports": [],
+      "proxy_support": true
+    }
+  }
+}

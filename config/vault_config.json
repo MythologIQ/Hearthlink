@@ -11,5 +11,5 @@
   "audit": {
     "log_file": "vault/audit.log"
   },
-  "schema_version": "1.0.0"
+  "schema_version": "1.5.0"
 } 

@@ -1,0 +1,60 @@
+# Wrangler Configuration Template for Hearthlink Workers API
+# Copy this file to wrangler.toml and update with your Cloudflare details
+
+name = "hearthlink-api"
+main = "src/index.js"
+compatibility_date = "2024-07-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Account Configuration (UPDATE THESE)
+account_id = "your_cloudflare_account_id_here"
+
+# Worker Configuration
+workers_dev = true
+route = { pattern = "your-subdomain.workers.dev/*", zone_name = "" }
+
+# KV Namespaces (will be created automatically)
+kv_namespaces = [
+  { binding = "SESSIONS", id = "your_sessions_kv_id", preview_id = "your_sessions_preview_id" },
+  { binding = "CACHE", id = "your_cache_kv_id", preview_id = "your_cache_preview_id" },
+  { binding = "RATE_LIMITS", id = "your_rate_limits_kv_id", preview_id = "your_rate_limits_preview_id" }
+]
+
+# Environment Variables (Development)
+[env.development]
+name = "hearthlink-api-dev"
+vars = { 
+  ENVIRONMENT = "development",
+  API_VERSION = "v1",
+  RATE_LIMIT_PER_MINUTE = 100,
+  DEBUG = "true"
+}
+
+# Environment Variables (Staging)
+[env.staging]  
+name = "hearthlink-api-staging"
+vars = {
+  ENVIRONMENT = "staging", 
+  API_VERSION = "v1",
+  RATE_LIMIT_PER_MINUTE = 500,
+  DEBUG = "false"
+}
+
+# Environment Variables (Production)
+[env.production]
+name = "hearthlink-api-prod"
+vars = {
+  ENVIRONMENT = "production",
+  API_VERSION = "v1", 
+  RATE_LIMIT_PER_MINUTE = 1000,
+  DEBUG = "false"
+}
+
+# Build Configuration
+[build]
+command = "npm run build"
+
+# Migration Configuration
+[[migrations]]
+tag = "v1"
+new_classes = ["HearthlinkDurableObject"]

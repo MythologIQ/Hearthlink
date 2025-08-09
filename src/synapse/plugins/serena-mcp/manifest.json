@@ -1,0 +1,75 @@
+{
+  "plugin_id": "serena-mcp",
+  "name": "Serena IDE Assistant MCP Server",
+  "version": "1.0.0",
+  "description": "Serena IDE Assistant integration for enhanced development workflow",
+  "author": "Hearthlink Team",
+  "license": "MIT",
+  "
+  "server_info": {
+    "server_id": "serena",
+    "package": "serena-mcp-server",
+    "connection_type": "stdio",
+    "security_level": "medium",
+    "auto_start": true,
+    "context": "ide-assistant"
+  },
+  
+  "tools_provided": [
+    "analyze_code",
+    "suggest_improvements",
+    "generate_documentation",
+    "refactor_code",
+    "find_bugs",
+    "optimize_performance",
+    "ide_integration",
+    "project_analysis",
+    "code_completion",
+    "syntax_checking"
+  ],
+  
+  "dependencies": {
+    "node": ">=18.0.0",
+    "python": ">=3.10"
+  },
+  
+  "configuration": {
+    "project_root": "$(pwd)",
+    "supported_languages": [
+      "javascript",
+      "typescript", 
+      "python",
+      "rust",
+      "go",
+      "java",
+      "c++",
+      "html",
+      "css"
+    ],
+    "ide_features": {
+      "syntax_highlighting": true,
+      "code_completion": true,
+      "error_detection": true,
+      "refactoring_suggestions": true,
+      "documentation_generation": true
+    }
+  },
+  
+  "security": {
+    "sandbox_required": false,
+    "file_access": "project_scope",
+    "network_access": "limited",
+    "permissions": [
+      "read_project_files",
+      "write_project_files",
+      "execute_analysis_tools"
+    ]
+  },
+  
+  "integration": {
+    "synapse_compatible": true,
+    "vault_storage": true,
+    "audit_logging": true,
+    "health_monitoring": true
+  }
+}

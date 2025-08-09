@@ -1,0 +1,689 @@
+name: 🚀 Hearthlink Production Pipeline
+# Comprehensive CI/CD with semantic tests, benchmarks, security scans, E2E multi-agent sync
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened, ready_for_review ]
+  workflow_dispatch:
+    inputs:
+      run_load_tests:
+        description: 'Run full load tests'
+        required: false
+        default: 'false'
+        type: boolean
+      skip_security_scan:
+        description: 'Skip security scanning (emergency only)'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+
+jobs:
+  # ========================================
+  # SECURITY & QUALITY GATES
+  # ========================================
+  
+  security-scan:
+    name: 🔒 Security Analysis
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.skip_security_scan }}
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      
+      - name: Install Dependencies
+        run: npm ci --include=dev
+      
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=high --production
+          echo "NPM_AUDIT_RESULT=$?" >> $GITHUB_ENV
+      
+      - name: CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, python
+          queries: security-extended,security-and-quality
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript,python"
+      
+      - name: Semgrep Security Scan
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/nodejs
+            p/python
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+      
+      - name: Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Vault Secrets Detection
+        run: |
+          echo "🔍 Scanning for hardcoded secrets..."
+          if grep -r "vault.*token\|hvs\." src/ --exclude-dir=node_modules || \
+             grep -r "VAULT_TOKEN\|VAULT_ROOT_TOKEN" . --exclude-dir=node_modules --exclude="*.yml"; then
+            echo "❌ SECURITY VIOLATION: Hardcoded Vault tokens detected!"
+            exit 1
+          fi
+          echo "✅ No hardcoded Vault secrets found"
+
+  dependency-check:
+    name: 📦 Dependency Security
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install Safety
+        run: pip install safety
+      
+      - name: Python Dependency Check
+        run: |
+          pip freeze > requirements-current.txt
+          safety check --file requirements-current.txt --json --output safety-report.json || true
+          
+          # Parse and fail on high/critical vulnerabilities
+          if [ -f safety-report.json ]; then
+            HIGH_VULNS=$(jq '[.vulnerabilities[] | select(.severity == "high" or .severity == "critical")] | length' safety-report.json || echo "0")
+            if [ "$HIGH_VULNS" -gt 0 ]; then
+              echo "❌ $HIGH_VULNS high/critical vulnerabilities found in Python dependencies"
+              jq '.vulnerabilities[] | select(.severity == "high" or .severity == "critical")' safety-report.json
+              exit 1
+            fi
+          fi
+      
+      - name: Node.js License Check
+        run: |
+          npx license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;Unlicense' --excludePrivatePackages
+
+  # ========================================
+  # INFRASTRUCTURE SETUP
+  # ========================================
+  
+  infrastructure-setup:
+    name: 🏗️ Infrastructure Setup
+    runs-on: ubuntu-latest
+    outputs:
+      postgres-host: ${{ steps.setup.outputs.postgres-host }}
+      redis-host: ${{ steps.setup.outputs.redis-host }}
+      vault-host: ${{ steps.setup.outputs.vault-host }}
+    
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: hearthlink_test
+          POSTGRES_PASSWORD: test_password_123
+          POSTGRES_DB: hearthlink_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+          
+      vault:
+        image: hashicorp/vault:1.15.0
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: hvs.test.root.token.12345
+          VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+        options: >-
+          --cap-add=IPC_LOCK
+        ports:
+          - 8200:8200
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Wait for Services
+        run: |
+          echo "🔄 Waiting for PostgreSQL..."
+          while ! pg_isready -h localhost -p 5432 -U hearthlink_test; do
+            sleep 2
+          done
+          
+          echo "🔄 Waiting for Redis..."
+          while ! redis-cli -h localhost -p 6379 ping; do
+            sleep 2
+          done
+          
+          echo "🔄 Waiting for Vault..."
+          while ! curl -f http://localhost:8200/v1/sys/health; do
+            sleep 2
+          done
+          
+          echo "✅ All services ready"
+      
+      - name: Setup PostgreSQL Schema
+        run: |
+          PGPASSWORD=test_password_123 psql -h localhost -U hearthlink_test -d hearthlink_test -c "
+            CREATE EXTENSION IF NOT EXISTS vector;
+            CREATE EXTENSION IF NOT EXISTS pg_trgm;
+            
+            -- Memory storage table
+            CREATE TABLE IF NOT EXISTS memories (
+              id SERIAL PRIMARY KEY,
+              agent_id VARCHAR(50) NOT NULL,
+              session_id VARCHAR(100) NOT NULL,
+              content TEXT NOT NULL,
+              embedding vector(384),
+              importance_score FLOAT DEFAULT 0.5,
+              tags TEXT[] DEFAULT '{}',
+              metadata JSONB DEFAULT '{}',
+              created_at TIMESTAMP DEFAULT NOW(),
+              updated_at TIMESTAMP DEFAULT NOW()
+            );
+            
+            -- Sync operations table
+            CREATE TABLE IF NOT EXISTS sync_operations (
+              id SERIAL PRIMARY KEY,
+              sync_id VARCHAR(100) UNIQUE NOT NULL,
+              agent_id VARCHAR(50) NOT NULL,
+              memory_id VARCHAR(100) NOT NULL,
+              operation VARCHAR(20) NOT NULL,
+              status VARCHAR(20) DEFAULT 'pending',
+              conflict_id VARCHAR(100),
+              created_at TIMESTAMP DEFAULT NOW(),
+              completed_at TIMESTAMP
+            );
+            
+            -- Indexes for performance
+            CREATE INDEX IF NOT EXISTS idx_memories_agent_session ON memories(agent_id, session_id);
+            CREATE INDEX IF NOT EXISTS idx_memories_embedding ON memories USING ivfflat (embedding vector_cosine_ops);
+            CREATE INDEX IF NOT EXISTS idx_sync_operations_status ON sync_operations(status);
+          "
+      
+      - name: Setup Vault
+        env:
+          VAULT_ADDR: http://localhost:8200
+          VAULT_TOKEN: hvs.test.root.token.12345
+        run: |
+          # Enable KV v2 for testing
+          vault secrets enable -path=hearthlink-test kv-v2
+          
+          # Create test policy
+          vault policy write hearthlink-test-policy - << 'EOF'
+          path "hearthlink-test/data/*" {
+            capabilities = ["create", "read", "update", "delete", "list"]
+          }
+          EOF
+          
+          # Store test secrets
+          vault kv put hearthlink-test/config \
+            database_url="postgresql://hearthlink_test:test_password_123@localhost:5432/hearthlink_test" \
+            redis_url="redis://localhost:6379/0" \
+            llm_api_key="test_key_12345"
+      
+      - name: Set Outputs
+        id: setup
+        run: |
+          echo "postgres-host=localhost" >> $GITHUB_OUTPUT
+          echo "redis-host=localhost" >> $GITHUB_OUTPUT
+          echo "vault-host=localhost" >> $GITHUB_OUTPUT
+
+  # ========================================
+  # SEMANTIC RETRIEVAL TESTS
+  # ========================================
+  
+  semantic-tests:
+    name: 🧠 Semantic Retrieval Tests
+    runs-on: ubuntu-latest
+    needs: [infrastructure-setup]
+    timeout-minutes: 20
+    
+    strategy:
+      matrix:
+        agent: [alden, alice, sentry, mimic]
+        test-suite: [basic, advanced, edge-cases]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      
+      - name: Install Dependencies
+        run: |
+          npm ci
+          pip install -r requirements.txt
+          pip install sentence-transformers pytest pytest-asyncio pytest-benchmark
+      
+      - name: Run Semantic Tests
+        env:
+          POSTGRES_URL: postgresql://hearthlink_test:test_password_123@localhost:5432/hearthlink_test
+          REDIS_URL: redis://localhost:6379/0
+          VAULT_ADDR: http://localhost:8200
+          VAULT_TOKEN: hvs.test.root.token.12345
+          TEST_AGENT: ${{ matrix.agent }}
+          TEST_SUITE: ${{ matrix.test-suite }}
+        run: |
+          python -m pytest tests/semantic/ \
+            -v \
+            --agent=${{ matrix.agent }} \
+            --suite=${{ matrix.test-suite }} \
+            --benchmark-json=benchmark-${{ matrix.agent }}-${{ matrix.test-suite }}.json \
+            --tb=short
+      
+      - name: Upload Benchmark Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: semantic-benchmarks-${{ matrix.agent }}-${{ matrix.test-suite }}
+          path: benchmark-*.json
+
+  # ========================================
+  # MULTI-AGENT SYNC TESTS
+  # ========================================
+  
+  multi-agent-sync-tests:
+    name: 🤝 Multi-Agent Memory Sync Tests
+    runs-on: ubuntu-latest
+    needs: [infrastructure-setup]
+    timeout-minutes: 25
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Start Memory Sync Service
+        run: |
+          cd services/memory-sync
+          npm install
+          npm start &
+          MEMORY_SYNC_PID=$!
+          echo "MEMORY_SYNC_PID=$MEMORY_SYNC_PID" >> $GITHUB_ENV
+          
+          # Wait for service to be ready
+          for i in {1..30}; do
+            if curl -f http://localhost:8003/health; then
+              echo "✅ Memory sync service ready"
+              break
+            fi
+            sleep 2
+          done
+      
+      - name: Run Conflict Resolution Tests
+        env:
+          POSTGRES_URL: postgresql://hearthlink_test:test_password_123@localhost:5432/hearthlink_test
+          REDIS_URL: redis://localhost:6379/0
+          MEMORY_SYNC_URL: http://localhost:8003
+        run: |
+          echo "🧪 Testing agent priority conflicts..."
+          node tests/e2e/multi-agent-sync.js --test=priority
+          
+          echo "🧪 Testing timestamp-based resolution..."
+          node tests/e2e/multi-agent-sync.js --test=timestamp
+          
+          echo "🧪 Testing content merging..."
+          node tests/e2e/multi-agent-sync.js --test=merge
+          
+          echo "🧪 Testing security override policy..."
+          node tests/e2e/multi-agent-sync.js --test=security
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ ! -z "$MEMORY_SYNC_PID" ]; then
+            kill $MEMORY_SYNC_PID || true
+          fi
+
+  # ========================================
+  # PERFORMANCE BENCHMARKS
+  # ========================================
+  
+  performance-benchmarks:
+    name: ⚡ Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: [infrastructure-setup]
+    timeout-minutes: 30
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install locust psutil pytest-benchmark
+      
+      - name: Memory Retrieval Benchmarks
+        env:
+          POSTGRES_URL: postgresql://hearthlink_test:test_password_123@localhost:5432/hearthlink_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          echo "📊 Running memory retrieval benchmarks..."
+          python tests/benchmarks/memory_retrieval.py \
+            --queries=1000 \
+            --concurrent=50 \
+            --output=memory-bench-results.json
+      
+      - name: Embedding Generation Benchmarks
+        run: |
+          echo "📊 Running embedding generation benchmarks..."
+          python tests/benchmarks/embedding_generation.py \
+            --texts=500 \
+            --batch-size=32 \
+            --output=embedding-bench-results.json
+      
+      - name: Load Test with Locust
+        if: ${{ inputs.run_load_tests == true }}
+        run: |
+          echo "📊 Running load tests..."
+          locust -f tests/load/locustfile.py \
+            --host=http://localhost:8003 \
+            --users=100 \
+            --spawn-rate=10 \
+            --run-time=5m \
+            --html=load-test-report.html \
+            --csv=load-test-results
+      
+      - name: Performance Regression Check
+        run: |
+          echo "📈 Checking for performance regressions..."
+          python scripts/check_performance_regression.py \
+            --current=memory-bench-results.json \
+            --baseline=tests/baselines/memory-benchmark-baseline.json \
+            --threshold=0.2  # 20% regression threshold
+      
+      - name: Upload Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-benchmarks
+          path: |
+            *-bench-results.json
+            load-test-*.html
+            load-test-*.csv
+
+  # ========================================
+  # E2E INTEGRATION TESTS
+  # ========================================
+  
+  e2e-integration:
+    name: 🔄 End-to-End Integration Tests
+    runs-on: ubuntu-latest
+    needs: [infrastructure-setup]
+    timeout-minutes: 35
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      
+      - name: Install Dependencies
+        run: |
+          npm ci
+          npx playwright install chromium
+      
+      - name: Start All Services
+        env:
+          POSTGRES_URL: postgresql://hearthlink_test:test_password_123@localhost:5432/hearthlink_test
+          REDIS_URL: redis://localhost:6379/0
+          VAULT_ADDR: http://localhost:8200
+          VAULT_TOKEN: hvs.test.root.token.12345
+        run: |
+          echo "🚀 Starting all services for E2E tests..."
+          
+          # Start memory sync service
+          cd services/memory-sync && npm start &
+          MEMORY_SYNC_PID=$!
+          
+          # Start React dev server
+          cd ../.. && npm start &
+          REACT_DEV_PID=$!
+          
+          # Start Python backend services
+          python src/main.py &
+          PYTHON_BACKEND_PID=$!
+          
+          # Store PIDs for cleanup
+          echo "MEMORY_SYNC_PID=$MEMORY_SYNC_PID" >> $GITHUB_ENV
+          echo "REACT_DEV_PID=$REACT_DEV_PID" >> $GITHUB_ENV
+          echo "PYTHON_BACKEND_PID=$PYTHON_BACKEND_PID" >> $GITHUB_ENV
+          
+          # Wait for services
+          sleep 30
+      
+      - name: Run E2E Tests
+        run: |
+          echo "🧪 Running end-to-end integration tests..."
+          npx playwright test tests/e2e/ \
+            --config=playwright.config.js \
+            --reporter=html
+      
+      - name: Test Multi-Agent Workflows
+        run: |
+          echo "🤖 Testing multi-agent workflows..."
+          node tests/e2e/multi-agent-workflow.js
+      
+      - name: Upload E2E Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            playwright-report/
+            test-results/
+      
+      - name: Cleanup Services
+        if: always()
+        run: |
+          kill $MEMORY_SYNC_PID $REACT_DEV_PID $PYTHON_BACKEND_PID 2>/dev/null || true
+
+  # ========================================
+  # BUILD AND PACKAGE
+  # ========================================
+  
+  build-and-package:
+    name: 📦 Build & Package
+    runs-on: ubuntu-latest
+    needs: [security-scan, dependency-check]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Build React Application
+        run: |
+          npm run build
+          echo "✅ React build completed"
+      
+      - name: Build Electron Application
+        run: |
+          npm run electron-pack
+          echo "✅ Electron build completed"
+      
+      - name: Build Tauri Application
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: 'Hearthlink v__VERSION__'
+          releaseBody: 'Production release with full agent integration'
+          releaseDraft: true
+          prerelease: false
+
+  # ========================================
+  # DEPLOYMENT VALIDATION
+  # ========================================
+  
+  deployment-validation:
+    name: ✅ Deployment Validation
+    runs-on: ubuntu-latest
+    needs: [semantic-tests, multi-agent-sync-tests, performance-benchmarks, e2e-integration]
+    if: always()
+    
+    steps:
+      - name: Check Test Results
+        run: |
+          echo "📊 Validating all test results..."
+          
+          # Check if any critical tests failed
+          if [[ "${{ needs.semantic-tests.result }}" != "success" ]]; then
+            echo "❌ Semantic tests failed - blocking deployment"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.multi-agent-sync-tests.result }}" != "success" ]]; then
+            echo "❌ Multi-agent sync tests failed - blocking deployment"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.performance-benchmarks.result }}" != "success" ]]; then
+            echo "❌ Performance benchmarks failed - blocking deployment"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.e2e-integration.result }}" != "success" ]]; then
+            echo "❌ E2E integration tests failed - blocking deployment"
+            exit 1
+          fi
+          
+          echo "✅ All tests passed - deployment validated"
+      
+      - name: Generate Test Report
+        run: |
+          cat > deployment-validation-report.md << 'EOF'
+          # 🚀 Hearthlink Deployment Validation Report
+          
+          **Timestamp:** $(date -u)
+          **Commit:** ${{ github.sha }}
+          **Branch:** ${{ github.ref_name }}
+          
+          ## Test Results Summary
+          
+          | Test Suite | Status | 
+          |------------|--------|
+          | Security Scan | ${{ needs.security-scan.result }} |
+          | Dependency Check | ${{ needs.dependency-check.result }} |
+          | Semantic Tests | ${{ needs.semantic-tests.result }} |
+          | Multi-Agent Sync | ${{ needs.multi-agent-sync-tests.result }} |
+          | Performance Benchmarks | ${{ needs.performance-benchmarks.result }} |
+          | E2E Integration | ${{ needs.e2e-integration.result }} |
+          
+          ## ✅ Deployment Status: APPROVED
+          
+          All critical tests have passed. The system is ready for production deployment.
+          EOF
+      
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('deployment-validation-report.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  # ========================================
+  # STAKEHOLDER APPROVAL GATE
+  # ========================================
+  
+  stakeholder-approval:
+    name: 👥 Stakeholder Sign-off Required
+    runs-on: ubuntu-latest
+    needs: [deployment-validation]
+    if: github.ref == 'refs/heads/main'
+    environment: production-approval
+    
+    steps:
+      - name: Require Manual Approval
+        run: |
+          echo "⏳ Waiting for stakeholder approval..."
+          echo "This step requires manual approval from authorized personnel."
+          echo "Production deployment will proceed only after sign-off."

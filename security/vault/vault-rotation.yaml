@@ -1,0 +1,226 @@
+# HashiCorp Vault Key Rotation Configuration
+# Production configuration for automated key cycling
+
+vault:
+  url: "${VAULT_ADDR:-http://localhost:8200}"
+  token: "${VAULT_TOKEN}"
+  mount_path: "secret"
+  timeout: 30
+  tls_verify: true
+  ca_cert_path: "/etc/ssl/certs/vault-ca.crt"
+
+rotation:
+  check_interval_minutes: 60        # Check for rotations every hour
+  max_concurrent_rotations: 3       # Max simultaneous rotations
+  default_grace_period_hours: 24    # Grace period before old key deletion
+  enable_rollback: true             # Enable automatic rollback on failure
+  retry_attempts: 3                 # Retry failed rotations
+  retry_delay_minutes: 15           # Delay between retries
+
+keys:
+  # Database credentials
+  postgres_hearthlink:
+    type: "database"
+    rotation_interval_hours: 720    # 30 days
+    grace_period_hours: 48
+    alert_before_hours: 72
+    auto_rollback: true
+    compliance_required: true
+    notification_channels: ["webhook", "log", "email"]
+    
+  # API keys
+  openai_api_key:
+    type: "api_key"
+    rotation_interval_hours: 2160   # 90 days
+    grace_period_hours: 24
+    alert_before_hours: 168         # 1 week
+    auto_rollback: true
+    compliance_required: true
+    notification_channels: ["webhook", "log"]
+    
+  anthropic_api_key:
+    type: "api_key"
+    rotation_interval_hours: 2160   # 90 days
+    grace_period_hours: 24
+    alert_before_hours: 168
+    auto_rollback: true
+    compliance_required: true
+    notification_channels: ["webhook", "log"]
+    
+  # JWT secrets
+  jwt_signing_key:
+    type: "jwt_secret"
+    rotation_interval_hours: 720    # 30 days
+    grace_period_hours: 12          # Short grace period for JWTs
+    alert_before_hours: 48
+    auto_rollback: false            # JWT rotation requires careful coordination
+    compliance_required: true
+    notification_channels: ["webhook", "log", "email"]
+    
+  # Encryption keys
+  data_encryption_key:
+    type: "encryption"
+    rotation_interval_hours: 4320   # 180 days
+    grace_period_hours: 72
+    alert_before_hours: 336         # 2 weeks
+    auto_rollback: true
+    compliance_required: true
+    notification_channels: ["webhook", "log", "email"]
+    
+  # Service account keys
+  github_actions_token:
+    type: "service_account"
+    rotation_interval_hours: 1440   # 60 days
+    grace_period_hours: 24
+    alert_before_hours: 120         # 5 days
+    auto_rollback: true
+    compliance_required: true
+    notification_channels: ["webhook", "log"]
+    
+  # Certificates
+  tls_certificate:
+    type: "certificate"
+    rotation_interval_hours: 8760   # 365 days
+    grace_period_hours: 168         # 1 week
+    alert_before_hours: 720         # 30 days
+    auto_rollback: false            # Certificate rotation requires DNS updates
+    compliance_required: true
+    notification_channels: ["webhook", "log", "email"]
+
+alerting:
+  enabled: true
+  webhook_url: "${WEBHOOK_URL:-http://localhost:3000/webhooks/vault-rotation}"
+  email_enabled: true
+  email_smtp_host: "${SMTP_HOST:-smtp.hearthlink.local}"
+  email_smtp_port: 587
+  email_from: "vault-rotation@hearthlink.local"
+  email_to: ["security@hearthlink.local", "devops@hearthlink.local"]
+  slack_webhook_url: "${SLACK_WEBHOOK_URL}"
+  pagerduty_integration_key: "${PAGERDUTY_KEY}"
+  
+  # Alert templates
+  templates:
+    rotation_success: |
+      ✅ **Key Rotation Successful**
+      Key: {key_name}
+      Type: {key_type}
+      New Version: {new_version}
+      Completed: {completed_at}
+      
+    rotation_failure: |
+      ❌ **Key Rotation Failed**
+      Key: {key_name}
+      Type: {key_type}
+      Error: {error_message}
+      Failed: {completed_at}
+      Action Required: Manual intervention needed
+      
+    rotation_upcoming: |
+      ⚠️ **Key Rotation Due Soon**
+      Key: {key_name}
+      Type: {key_type}
+      Due: {due_date}
+      Grace Period: {grace_period_hours} hours
+
+compliance:
+  audit_log_path: "/var/log/hearthlink/vault-audit.log"
+  retention_days: 2555              # 7 years for compliance
+  require_approval: false           # Set to true for high-security environments
+  approval_required_for: []         # List of key names requiring manual approval
+  standards:
+    - "SOC2_TYPE2"
+    - "GDPR"
+    - "HIPAA"
+    - "PCI_DSS"
+  
+  # Compliance reporting
+  reports:
+    enabled: true
+    output_path: "/var/lib/hearthlink/compliance-reports"
+    schedule: "monthly"
+    include_metrics: true
+    encrypt_reports: true
+
+monitoring:
+  prometheus_enabled: true
+  prometheus_port: 9100
+  health_check_port: 8080
+  metrics_retention_days: 90
+  
+  # Custom metrics
+  custom_metrics:
+    - name: "vault_key_rotation_duration_seconds"
+      type: "histogram"
+      help: "Time taken for key rotation operations"
+    - name: "vault_key_rotation_failures_total"
+      type: "counter" 
+      help: "Total number of key rotation failures"
+    - name: "vault_keys_managed_total"
+      type: "gauge"
+      help: "Total number of keys under management"
+
+security:
+  # Service account permissions
+  vault_policies:
+    - "vault-rotation-policy"
+  
+  # Secure defaults
+  require_tls: true
+  validate_certificates: true
+  max_token_ttl: "24h"
+  
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+    burst_size: 10
+  
+  # Access control
+  allowed_source_ips: 
+    - "10.0.0.0/8"
+    - "192.168.0.0/16"
+    - "172.16.0.0/12"
+  
+  # Encryption at rest
+  encrypt_logs: true
+  log_encryption_key_id: "vault-logs-key"
+
+# Development/Testing overrides
+development:
+  vault:
+    url: "http://localhost:8200"
+    tls_verify: false
+  
+  rotation:
+    check_interval_minutes: 5       # Check every 5 minutes in dev
+  
+  keys:
+    test_api_key:
+      type: "api_key"
+      rotation_interval_hours: 1    # Rotate every hour for testing
+      grace_period_hours: 1
+      alert_before_hours: 1
+      auto_rollback: true
+      compliance_required: false
+      notification_channels: ["log"]
+
+# Production overrides
+production:
+  vault:
+    tls_verify: true
+    ca_cert_path: "/etc/ssl/certs/vault-ca.crt"
+  
+  compliance:
+    require_approval: true
+    approval_required_for: 
+      - "data_encryption_key"
+      - "jwt_signing_key"
+      - "tls_certificate"
+  
+  alerting:
+    email_enabled: true
+    pagerduty_enabled: true
+  
+  monitoring:
+    prometheus_enabled: true
+    detailed_metrics: true

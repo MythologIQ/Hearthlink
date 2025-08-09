@@ -1,0 +1,628 @@
+name: Semantic Retrieval Tests & Performance Benchmarks
+
+on:
+  push:
+    branches: [ main, develop, Pre-MVP ]
+    paths:
+      - 'src/api/**'
+      - 'src/vault/**'
+      - 'src/database/**'
+      - 'src/llm/**'
+      - 'services/memory-sync/**'
+      - 'tests/semantic/**'
+      - '.github/workflows/semantic-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/api/**'
+      - 'src/vault/**'
+      - 'src/database/**'
+      - 'src/llm/**'
+      - 'services/memory-sync/**'
+      - 'tests/semantic/**'
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+
+env:
+  POSTGRES_PASSWORD: hearthlink_test_pass
+  REDIS_PASSWORD: redis_test_pass
+  PGVECTOR_DB: hearthlink_test_semantic
+  NODE_ENV: test
+
+jobs:
+  setup-infrastructure:
+    runs-on: ubuntu-latest
+    outputs:
+      postgres-port: ${{ steps.services.outputs.postgres-port }}
+      redis-port: ${{ steps.services.outputs.redis-port }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Start PostgreSQL with PGVector
+      run: |
+        docker run -d \
+          --name postgres-pgvector \
+          -e POSTGRES_DB=${{ env.PGVECTOR_DB }} \
+          -e POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }} \
+          -p 5432:5432 \
+          pgvector/pgvector:pg16
+          
+    - name: Start Redis
+      run: |
+        docker run -d \
+          --name redis-semantic \
+          -p 6379:6379 \
+          redis:7-alpine redis-server --requirepass ${{ env.REDIS_PASSWORD }}
+          
+    - name: Wait for services
+      run: |
+        timeout 60 bash -c 'until docker exec postgres-pgvector pg_isready -U postgres; do sleep 2; done'
+        timeout 60 bash -c 'until docker exec redis-semantic redis-cli -a ${{ env.REDIS_PASSWORD }} ping | grep -q PONG; do sleep 2; done'
+        
+    - name: Initialize database schema
+      run: |
+        docker exec postgres-pgvector psql -U postgres -d ${{ env.PGVECTOR_DB }} -c "
+          CREATE EXTENSION IF NOT EXISTS vector;
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE EXTENSION IF NOT EXISTS btree_gin;
+        "
+        
+    - name: Set service ports
+      id: services
+      run: |
+        echo "postgres-port=5432" >> $GITHUB_OUTPUT
+        echo "redis-port=6379" >> $GITHUB_OUTPUT
+
+  semantic-retrieval-tests:
+    runs-on: ubuntu-latest
+    needs: setup-infrastructure
+    
+    strategy:
+      matrix:
+        test-suite:
+          - embedding-generation
+          - semantic-search
+          - vector-indexing
+          - memory-retrieval
+          - cross-agent-sync
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        pip install -r requirements.txt
+        pip install sentence-transformers faiss-cpu pytest-benchmark
+        
+    - name: Install test dependencies
+      run: |
+        npm install --save-dev jest-benchmark
+        pip install pytest-asyncio pytest-postgresql
+        
+    - name: Run semantic retrieval tests
+      run: |
+        export POSTGRES_HOST=localhost
+        export POSTGRES_PORT=${{ needs.setup-infrastructure.outputs.postgres-port }}
+        export POSTGRES_DB=${{ env.PGVECTOR_DB }}
+        export POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
+        export REDIS_HOST=localhost
+        export REDIS_PORT=${{ needs.setup-infrastructure.outputs.redis-port }}
+        export REDIS_PASSWORD=${{ env.REDIS_PASSWORD }}
+        
+        # Run specific test suite
+        case "${{ matrix.test-suite }}" in
+          "embedding-generation")
+            python -m pytest tests/semantic/test_embedding_generation.py -v --benchmark-json=benchmark-${{ matrix.test-suite }}.json
+            ;;
+          "semantic-search")
+            python -m pytest tests/semantic/test_semantic_search.py -v --benchmark-json=benchmark-${{ matrix.test-suite }}.json
+            ;;
+          "vector-indexing")
+            python -m pytest tests/semantic/test_vector_indexing.py -v --benchmark-json=benchmark-${{ matrix.test-suite }}.json
+            ;;
+          "memory-retrieval")
+            npm test -- --testPathPattern=tests/semantic/memory-retrieval --json --outputFile=test-results-${{ matrix.test-suite }}.json
+            ;;
+          "cross-agent-sync")
+            npm test -- --testPathPattern=tests/semantic/cross-agent-sync --json --outputFile=test-results-${{ matrix.test-suite }}.json
+            ;;
+        esac
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: semantic-test-results-${{ matrix.test-suite }}
+        path: |
+          benchmark-*.json
+          test-results-*.json
+        
+    - name: Generate test report
+      run: |
+        echo "## Semantic Test Results - ${{ matrix.test-suite }}" > test-report-${{ matrix.test-suite }}.md
+        echo "### Test Suite: ${{ matrix.test-suite }}" >> test-report-${{ matrix.test-suite }}.md
+        echo "### Timestamp: $(date -u)" >> test-report-${{ matrix.test-suite }}.md
+        
+        if [ -f "benchmark-${{ matrix.test-suite }}.json" ]; then
+          echo "### Performance Benchmarks:" >> test-report-${{ matrix.test-suite }}.md
+          python -c "
+import json
+with open('benchmark-${{ matrix.test-suite }}.json') as f:
+    data = json.load(f)
+    for test in data.get('benchmarks', []):
+        print(f\"- {test['name']}: {test['stats']['mean']:.4f}s (±{test['stats']['stddev']:.4f}s)\")
+" >> test-report-${{ matrix.test-suite }}.md
+        fi
+        
+    - name: Upload test report
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-report-${{ matrix.test-suite }}
+        path: test-report-${{ matrix.test-suite }}.md
+
+  performance-benchmarks:
+    runs-on: ubuntu-latest
+    needs: setup-infrastructure
+    
+    strategy:
+      matrix:
+        benchmark-type:
+          - query-latency
+          - throughput-load
+          - memory-usage
+          - concurrent-agents
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        pip install -r requirements.txt
+        pip install locust psutil memory-profiler
+        
+    - name: Run performance benchmarks
+      run: |
+        export POSTGRES_HOST=localhost
+        export POSTGRES_PORT=${{ needs.setup-infrastructure.outputs.postgres-port }}
+        export POSTGRES_DB=${{ env.PGVECTOR_DB }}
+        export POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
+        export REDIS_HOST=localhost
+        export REDIS_PORT=${{ needs.setup-infrastructure.outputs.redis-port }}
+        export REDIS_PASSWORD=${{ env.REDIS_PASSWORD }}
+        
+        mkdir -p benchmark-results
+        
+        case "${{ matrix.benchmark-type }}" in
+          "query-latency")
+            python tests/benchmarks/query_latency_benchmark.py --output benchmark-results/query-latency.json
+            ;;
+          "throughput-load")
+            python tests/benchmarks/throughput_benchmark.py --duration 300 --output benchmark-results/throughput.json
+            ;;
+          "memory-usage")  
+            python -m memory_profiler tests/benchmarks/memory_usage_benchmark.py > benchmark-results/memory-usage.txt
+            ;;
+          "concurrent-agents")
+            python tests/benchmarks/concurrent_agents_benchmark.py --agents 4 --operations 1000 --output benchmark-results/concurrent-agents.json
+            ;;
+        esac
+        
+    - name: Generate benchmark report
+      run: |
+        echo "## Performance Benchmark - ${{ matrix.benchmark-type }}" > benchmark-report-${{ matrix.benchmark-type }}.md
+        echo "### Benchmark Type: ${{ matrix.benchmark-type }}" >> benchmark-report-${{ matrix.benchmark-type }}.md
+        echo "### Timestamp: $(date -u)" >> benchmark-report-${{ matrix.benchmark-type }}.md
+        echo "### Environment: GitHub Actions Ubuntu Latest" >> benchmark-report-${{ matrix.benchmark-type }}.md
+        echo "" >> benchmark-report-${{ matrix.benchmark-type }}.md
+        
+        case "${{ matrix.benchmark-type }}" in
+          "query-latency")
+            if [ -f "benchmark-results/query-latency.json" ]; then
+              echo "### Query Latency Results:" >> benchmark-report-${{ matrix.benchmark-type }}.md
+              python -c "
+import json
+with open('benchmark-results/query-latency.json') as f:
+    data = json.load(f)
+    print(f\"- Average Query Time: {data.get('avg_query_time', 0):.3f}ms\")
+    print(f\"- P95 Query Time: {data.get('p95_query_time', 0):.3f}ms\")
+    print(f\"- P99 Query Time: {data.get('p99_query_time', 0):.3f}ms\")
+    print(f\"- Queries per Second: {data.get('queries_per_second', 0):.1f}\")
+" >> benchmark-report-${{ matrix.benchmark-type }}.md
+            fi
+            ;;
+          "throughput-load")
+            if [ -f "benchmark-results/throughput.json" ]; then
+              echo "### Throughput Results:" >> benchmark-report-${{ matrix.benchmark-type }}.md
+              python -c "
+import json
+with open('benchmark-results/throughput.json') as f:
+    data = json.load(f)
+    print(f\"- Peak RPS: {data.get('peak_rps', 0):.1f}\")
+    print(f\"- Average RPS: {data.get('avg_rps', 0):.1f}\")
+    print(f\"- Total Requests: {data.get('total_requests', 0)}\")
+    print(f\"- Error Rate: {data.get('error_rate', 0):.2f}%\")
+" >> benchmark-report-${{ matrix.benchmark-type }}.md
+            fi
+            ;;
+          "memory-usage")
+            if [ -f "benchmark-results/memory-usage.txt" ]; then
+              echo "### Memory Usage Profile:" >> benchmark-report-${{ matrix.benchmark-type }}.md
+              echo '```' >> benchmark-report-${{ matrix.benchmark-type }}.md
+              tail -20 benchmark-results/memory-usage.txt >> benchmark-report-${{ matrix.benchmark-type }}.md
+              echo '```' >> benchmark-report-${{ matrix.benchmark-type }}.md
+            fi
+            ;;
+          "concurrent-agents")
+            if [ -f "benchmark-results/concurrent-agents.json" ]; then
+              echo "### Concurrent Agents Results:" >> benchmark-report-${{ matrix.benchmark-type }}.md
+              python -c "
+import json
+with open('benchmark-results/concurrent-agents.json') as f:
+    data = json.load(f)
+    print(f\"- Total Operations: {data.get('total_operations', 0)}\")
+    print(f\"- Successful Operations: {data.get('successful_operations', 0)}\")
+    print(f\"- Failed Operations: {data.get('failed_operations', 0)}\")
+    print(f\"- Average Operation Time: {data.get('avg_operation_time', 0):.3f}ms\")
+    print(f\"- Conflicts Resolved: {data.get('conflicts_resolved', 0)}\")
+" >> benchmark-report-${{ matrix.benchmark-type }}.md
+            fi
+            ;;
+        esac
+        
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-results-${{ matrix.benchmark-type }}
+        path: |
+          benchmark-results/
+          benchmark-report-${{ matrix.benchmark-type }}.md
+
+  vector-store-health-check:
+    runs-on: ubuntu-latest
+    needs: setup-infrastructure
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        pip install psycopg2-binary pgvector redis
+        
+    - name: Health check - PostgreSQL PGVector
+      run: |
+        python -c "
+import psycopg2
+import json
+from datetime import datetime
+
+try:
+    conn = psycopg2.connect(
+        host='localhost',
+        port=${{ needs.setup-infrastructure.outputs.postgres-port }},
+        database='${{ env.PGVECTOR_DB }}',
+        user='postgres',
+        password='${{ env.POSTGRES_PASSWORD }}'
+    )
+    cur = conn.cursor()
+    
+    # Check PGVector extension
+    cur.execute('SELECT extname FROM pg_extension WHERE extname = %s', ('vector',))
+    vector_ext = cur.fetchone()
+    
+    # Check database size
+    cur.execute('SELECT pg_size_pretty(pg_database_size(%s))', ('${{ env.PGVECTOR_DB }}',))
+    db_size = cur.fetchone()[0]
+    
+    # Check connection count
+    cur.execute('SELECT count(*) FROM pg_stat_activity')
+    connections = cur.fetchone()[0]
+    
+    health_data = {
+        'timestamp': datetime.utcnow().isoformat(),
+        'vector_extension': bool(vector_ext),
+        'database_size': db_size,
+        'active_connections': connections,
+        'status': 'healthy'
+    }
+    
+    with open('pgvector-health.json', 'w') as f:
+        json.dump(health_data, f, indent=2)
+        
+    print('✅ PostgreSQL PGVector health check passed')
+    
+except Exception as e:
+    health_data = {
+        'timestamp': datetime.utcnow().isoformat(),
+        'status': 'unhealthy', 
+        'error': str(e)
+    }
+    with open('pgvector-health.json', 'w') as f:
+        json.dump(health_data, f, indent=2)
+    print(f'❌ PostgreSQL PGVector health check failed: {e}')
+    exit(1)
+finally:
+    if 'conn' in locals():
+        conn.close()
+"
+        
+    - name: Health check - Redis
+      run: |
+        python -c "
+import redis
+import json
+from datetime import datetime
+
+try:
+    r = redis.Redis(
+        host='localhost',
+        port=${{ needs.setup-infrastructure.outputs.redis-port }},
+        password='${{ env.REDIS_PASSWORD }}'
+    )
+    
+    # Test connection
+    ping_result = r.ping()
+    
+    # Get Redis info
+    info = r.info()
+    
+    health_data = {
+        'timestamp': datetime.utcnow().isoformat(),
+        'ping_successful': ping_result,
+        'redis_version': info.get('redis_version'),
+        'used_memory_human': info.get('used_memory_human'),
+        'connected_clients': info.get('connected_clients'),
+        'status': 'healthy'
+    }
+    
+    with open('redis-health.json', 'w') as f:
+        json.dump(health_data, f, indent=2)
+        
+    print('✅ Redis health check passed')
+    
+except Exception as e:
+    health_data = {
+        'timestamp': datetime.utcnow().isoformat(),
+        'status': 'unhealthy',
+        'error': str(e)
+    }
+    with open('redis-health.json', 'w') as f:
+        json.dump(health_data, f, indent=2)
+    print(f'❌ Redis health check failed: {e}')
+    exit(1)
+"
+        
+    - name: Upload health check results
+      uses: actions/upload-artifact@v3
+      with:
+        name: vector-store-health-check
+        path: |
+          pgvector-health.json
+          redis-health.json
+
+  memory-sync-integration-test:
+    runs-on: ubuntu-latest
+    needs: setup-infrastructure
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd services/memory-sync
+        npm ci
+        
+    - name: Start memory sync service
+      run: |
+        cd services/memory-sync
+        export REDIS_HOST=localhost
+        export REDIS_PORT=${{ needs.setup-infrastructure.outputs.redis-port }}
+        export REDIS_PASSWORD=${{ env.REDIS_PASSWORD }}
+        export NODE_ENV=test
+        npm start &
+        MEMORY_SYNC_PID=$!
+        echo $MEMORY_SYNC_PID > memory-sync.pid
+        
+        # Wait for service to start
+        timeout 30 bash -c 'until curl -f http://localhost:8003/health; do sleep 2; done'
+        
+    - name: Run memory sync integration tests
+      run: |
+        export MEMORY_SYNC_URL=http://localhost:8003
+        
+        # Test multi-agent conflict resolution
+        npm test -- --testPathPattern=tests/integration/memory-sync --verbose
+        
+    - name: Stop memory sync service
+      run: |
+        if [ -f services/memory-sync/memory-sync.pid ]; then
+          kill $(cat services/memory-sync/memory-sync.pid) || true
+        fi
+        
+    - name: Upload integration test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: memory-sync-integration-results
+        path: test-results/
+
+  consolidate-results:
+    runs-on: ubuntu-latest
+    needs: 
+      - semantic-retrieval-tests
+      - performance-benchmarks
+      - vector-store-health-check
+      - memory-sync-integration-test
+    if: always()
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Consolidate test results
+      run: |
+        echo "# Semantic Tests & Performance Benchmarks Report" > consolidated-report.md
+        echo "**Generated:** $(date -u)" >> consolidated-report.md
+        echo "**Commit:** ${{ github.sha }}" >> consolidated-report.md
+        echo "**Branch:** ${{ github.ref_name }}" >> consolidated-report.md
+        echo "" >> consolidated-report.md
+        
+        echo "## Test Results Summary" >> consolidated-report.md
+        echo "| Test Suite | Status | Details |" >> consolidated-report.md
+        echo "|------------|--------|---------|" >> consolidated-report.md
+        
+        # Process test results
+        for suite in embedding-generation semantic-search vector-indexing memory-retrieval cross-agent-sync; do
+          if [ -d "semantic-test-results-$suite" ]; then
+            echo "| $suite | ✅ Passed | [Details](#$suite) |" >> consolidated-report.md
+          else
+            echo "| $suite | ❌ Failed | [Details](#$suite) |" >> consolidated-report.md
+          fi
+        done
+        
+        echo "" >> consolidated-report.md
+        echo "## Performance Benchmarks" >> consolidated-report.md
+        echo "| Benchmark | Status | Key Metrics |" >> consolidated-report.md
+        echo "|-----------|--------|-------------|" >> consolidated-report.md
+        
+        # Process benchmark results
+        for benchmark in query-latency throughput-load memory-usage concurrent-agents; do
+          if [ -d "benchmark-results-$benchmark" ]; then
+            echo "| $benchmark | ✅ Completed | See detailed report |" >> consolidated-report.md
+          else
+            echo "| $benchmark | ❌ Failed | No results available |" >> consolidated-report.md
+          fi
+        done
+        
+        echo "" >> consolidated-report.md
+        echo "## Vector Store Health" >> consolidated-report.md
+        
+        if [ -f "vector-store-health-check/pgvector-health.json" ]; then
+          echo "### PostgreSQL PGVector" >> consolidated-report.md
+          python -c "
+import json
+with open('vector-store-health-check/pgvector-health.json') as f:
+    data = json.load(f)
+    status = '✅ Healthy' if data.get('status') == 'healthy' else '❌ Unhealthy'
+    print(f'**Status:** {status}')
+    if data.get('database_size'):
+        print(f'**Database Size:** {data[\"database_size\"]}')
+    if data.get('active_connections'):
+        print(f'**Active Connections:** {data[\"active_connections\"]}')
+" >> consolidated-report.md
+        fi
+        
+        if [ -f "vector-store-health-check/redis-health.json" ]; then
+          echo "### Redis" >> consolidated-report.md
+          python -c "
+import json
+with open('vector-store-health-check/redis-health.json') as f:
+    data = json.load(f)
+    status = '✅ Healthy' if data.get('status') == 'healthy' else '❌ Unhealthy'
+    print(f'**Status:** {status}')
+    if data.get('redis_version'):
+        print(f'**Version:** {data[\"redis_version\"]}')
+    if data.get('used_memory_human'):
+        print(f'**Memory Usage:** {data[\"used_memory_human\"]}')
+" >> consolidated-report.md
+        fi
+        
+        # Append individual test reports
+        echo "" >> consolidated-report.md
+        echo "## Detailed Test Reports" >> consolidated-report.md
+        
+        for report in test-report-*/test-report-*.md; do
+          if [ -f "$report" ]; then
+            echo "" >> consolidated-report.md
+            cat "$report" >> consolidated-report.md
+          fi
+        done
+        
+        for report in benchmark-results-*/benchmark-report-*.md; do
+          if [ -f "$report" ]; then
+            echo "" >> consolidated-report.md
+            cat "$report" >> consolidated-report.md
+          fi
+        done
+        
+    - name: Upload consolidated report
+      uses: actions/upload-artifact@v3
+      with:
+        name: semantic-tests-consolidated-report
+        path: consolidated-report.md
+        
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('consolidated-report.md')) {
+            const report = fs.readFileSync('consolidated-report.md', 'utf8');
+            
+            // Truncate if too long for GitHub comment
+            const maxLength = 65000;
+            const finalReport = report.length > maxLength 
+              ? report.substring(0, maxLength) + '\n\n... (Report truncated - see artifacts for full report)'
+              : report;
+              
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: finalReport
+            });
+          }
+        
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: consolidate-results
+    if: always()
+    
+    steps:
+    - name: Cleanup test infrastructure
+      run: |
+        docker stop postgres-pgvector redis-semantic || true
+        docker rm postgres-pgvector redis-semantic || true

@@ -1,0 +1,73 @@
+[Unit]
+Description=HashiCorp Vault Key Rotation Service
+Documentation=https://docs.hearthlink.local/security/vault-rotation
+After=network.target vault.service
+Requires=vault.service
+Wants=prometheus.service
+
+[Service]
+Type=simple
+User=vault-rotation
+Group=vault-rotation
+WorkingDirectory=/opt/hearthlink/security/vault
+ExecStart=/usr/bin/python3 /opt/hearthlink/security/vault/vault-key-rotation.py
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+TimeoutStopSec=30
+KillMode=mixed
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vault-key-rotation
+
+# Environment variables
+Environment=PYTHONPATH=/opt/hearthlink/security/vault
+Environment=PYTHONUNBUFFERED=1
+Environment=VAULT_ADDR=http://localhost:8200
+Environment=VAULT_TOKEN_FILE=/etc/hearthlink/vault-token
+EnvironmentFile=-/etc/hearthlink/vault-rotation.env
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+RemoveIPC=true
+
+# File system access
+ReadWritePaths=/var/log/hearthlink /var/lib/hearthlink /tmp
+ReadOnlyPaths=/etc/hearthlink
+InaccessiblePaths=/home /root /boot /usr/src
+
+# Network security
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+IPAddressDeny=any
+IPAddressAllow=localhost
+IPAddressAllow=10.0.0.0/8
+IPAddressAllow=192.168.0.0/16
+IPAddressAllow=172.16.0.0/12
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+MemoryMax=512M
+CPUQuota=200%
+
+# Capabilities
+CapabilityBoundingSet=
+AmbientCapabilities=
+SeccompFilter=@system-service
+SystemCallFilter=~@clock @cpu-emulation @debug @keyring @module @mount @obsolete @raw-io @reboot @swap
+
+[Install]
+WantedBy=multi-user.target

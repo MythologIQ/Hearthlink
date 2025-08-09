@@ -1,0 +1,31 @@
+{
+  "test_name": "Logging - External Agent Logging",
+  "timestamp": "20250709_144155",
+  "results": {
+    "agent_identity_working": true,
+    "duration_logging_working": true,
+    "purpose_summary_working": true
+  },
+  "resource_data": {
+    "test_name": "Logging - External Agent Logging",
+    "timestamp": "20250709_144155",
+    "initial_state": {
+      "cpu_percent": 13.2,
+      "memory_percent": 74.8,
+      "disk_percent": 35.6
+    },
+    "monitoring_start": 1752086527.1660976,
+    "final_state": {
+      "cpu_percent": 17.6,
+      "memory_percent": 74.8,
+      "disk_percent": 35.6
+    },
+    "monitoring_end": 1752086528.1741574,
+    "duration": 1.0080597400665283
+  },
+  "environment": {
+    "python_version": "3.13.3 (tags/v3.13.3:6280bb5, Apr  8 2025, 14:47:33) [MSC v.1943 64 bit (AMD64)]",
+    "platform": "win32",
+    "working_directory": "G:\\MythologIQ\\Hearthlink"
+  }
+}

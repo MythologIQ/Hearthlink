@@ -1,0 +1,30 @@
+{
+  "test_name": "Agent Identity - Confirmation Messages",
+  "timestamp": "20250709_144155",
+  "results": {
+    "confirmation_messages_working": true,
+    "speaking_messages_working": true
+  },
+  "resource_data": {
+    "test_name": "Agent Identity - Confirmation Messages",
+    "timestamp": "20250709_144155",
+    "initial_state": {
+      "cpu_percent": 25.8,
+      "memory_percent": 75.2,
+      "disk_percent": 35.6
+    },
+    "monitoring_start": 1752086519.0154235,
+    "final_state": {
+      "cpu_percent": 15.4,
+      "memory_percent": 75.1,
+      "disk_percent": 35.6
+    },
+    "monitoring_end": 1752086520.0232522,
+    "duration": 1.007828712463379
+  },
+  "environment": {
+    "python_version": "3.13.3 (tags/v3.13.3:6280bb5, Apr  8 2025, 14:47:33) [MSC v.1943 64 bit (AMD64)]",
+    "platform": "win32",
+    "working_directory": "G:\\MythologIQ\\Hearthlink"
+  }
+}

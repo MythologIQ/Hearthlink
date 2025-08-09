@@ -1,0 +1,22 @@
+{
+  "test_suite": "circuit_breaker_failover",
+  "timestamp": "2025-07-20T12:47:42.914378",
+  "summary": {
+    "total_tests": 10,
+    "passed": 9,
+    "failed": 1,
+    "success_rate": 90.0
+  },
+  "results": {
+    "failure_detection": "PASSED",
+    "recovery_scenario": "PASSED",
+    "half_open_failure": "PASSED",
+    "concurrent_requests": "PASSED",
+    "dashboard_integration": "PASSED",
+    "manual_operations": "PASSED",
+    "metrics_accuracy": "PASSED",
+    "emergency_stop": "PASSED",
+    "health_monitoring": "PASSED"
+  },
+  "recommendation": "REQUIRES_FIXES"
+}

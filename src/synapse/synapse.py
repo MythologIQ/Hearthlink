@@ -18,6 +18,8 @@ from .permissions import PermissionManager, PermissionRequest
 from .sandbox import SandboxManager
 from .benchmark import BenchmarkManager, PerformanceTier
 from .traffic_logger import TrafficLogger, TrafficSummary
+from .traffic_manager import SynapseTrafficManager, AgentPriority
+from .sentry_siem import SentrySecurityOrchestrator, ThreatLevel
 
 @dataclass
 class SynapseConfig:
@@ -39,7 +41,13 @@ class SynapseConfig:
     security: Dict[str, Any] = field(default_factory=lambda: {
         "require_manifest_signature": True,
         "auto_approve_low_risk": False,
-        "max_concurrent_executions": 10
+        "max_concurrent_executions": 10,
+        "security_threshold": "MEDIUM"
+    })
+    traffic_manager: Dict[str, Any] = field(default_factory=lambda: {
+        "max_workers": 10,
+        "enable_rate_limiting": True,
+        "enable_security_monitoring": True
     })
 
 @dataclass
@@ -87,6 +95,16 @@ class Synapse:
         # Connection management
         self.connections: Dict[str, ConnectionRequest] = {}
         self.active_connections: Dict[str, Dict[str, Any]] = {}
+        
+        # Enhanced traffic management and security
+        self.traffic_manager = SynapseTrafficManager(
+            config=self.config.traffic_manager,
+            logger=self.logger
+        )
+        self.security_orchestrator = SentrySecurityOrchestrator(
+            config=self.config.security,
+            logger=self.logger
+        )
     
     # Plugin Management API
     
@@ -134,7 +152,7 @@ class Synapse:
     def execute_plugin(self, plugin_id: str, user_id: str, payload: Dict[str, Any],
                       session_id: Optional[str] = None, timeout: Optional[int] = None) -> PluginExecutionResult:
         """
-        Execute a plugin.
+        Execute a plugin with enhanced security and rate limiting.
         
         Args:
             plugin_id: Plugin to execute
@@ -146,7 +164,98 @@ class Synapse:
         Returns:
             Execution result
         """
-        return self.plugin_manager.execute_plugin(plugin_id, user_id, payload, session_id, timeout)
+        # Get plugin manifest to determine agent type
+        manifest = self.get_plugin_manifest(plugin_id)
+        agent_type = "external_agents"  # Default
+        
+        if manifest:
+            # Determine agent type based on manifest
+            if manifest.name.lower() == "alden":
+                agent_type = "alden"
+            elif manifest.name.lower() in ["alice", "mimic", "sentry"]:
+                agent_type = "internal_agents"
+            elif manifest.name.lower() == "system":
+                agent_type = "system"
+        
+        # Security monitoring
+        security_result = self.security_orchestrator.monitor_agent_transaction(
+            agent_id=plugin_id,
+            transaction_data={
+                "user_id": user_id,
+                "payload": payload,
+                "session_id": session_id,
+                "cpu_usage": 0,  # Would be populated by actual monitoring
+                "memory_usage": 0,
+                "network_activity": 0,
+                "request_rate": 1,
+                "response_time": 0,
+                "data_volume": len(str(payload))
+            }
+        )
+        
+        # Check if security blocked the request
+        if not security_result.get("allowed", False):
+            return PluginExecutionResult(
+                plugin_id=plugin_id,
+                user_id=user_id,
+                success=False,
+                error=f"Security blocked: {security_result.get('reason', 'Unknown security violation')}",
+                execution_time=0,
+                response_data={"security_event_id": security_result.get("security_event_id")}
+            )
+        
+        # Execute through traffic manager for rate limiting
+        request_id = f"req-{uuid.uuid4().hex[:8]}"
+        
+        # Submit to traffic manager (this is async but we'll handle it synchronously for now)
+        import asyncio
+        
+        try:
+            # Create new event loop if none exists
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            # Submit request for rate limiting
+            traffic_result = loop.run_until_complete(
+                self.traffic_manager.submit_request(
+                    request_id=request_id,
+                    agent_type=agent_type,
+                    payload=payload,
+                    user_id=user_id
+                )
+            )
+            
+            # Check if rate limited
+            if not traffic_result.get("success", False):
+                return PluginExecutionResult(
+                    plugin_id=plugin_id,
+                    user_id=user_id,
+                    success=False,
+                    error=f"Rate limited: {traffic_result.get('error', 'Rate limit exceeded')}",
+                    execution_time=0,
+                    response_data={"retry_after": traffic_result.get("retry_after")}
+                )
+            
+            # Execute the plugin
+            execution_result = self.plugin_manager.execute_plugin(plugin_id, user_id, payload, session_id, timeout)
+            
+            # Log successful execution
+            self.logger.info(f"Plugin executed successfully: {plugin_id} by {user_id}")
+            
+            return execution_result
+            
+        except Exception as e:
+            self.logger.error(f"Error executing plugin {plugin_id}: {e}")
+            return PluginExecutionResult(
+                plugin_id=plugin_id,
+                user_id=user_id,
+                success=False,
+                error=str(e),
+                execution_time=0
+            )
     
     def get_plugin_status(self, plugin_id: str) -> Optional[PluginStatus]:
         """Get plugin status."""
@@ -412,7 +521,7 @@ class Synapse:
     # System Management API
     
     def get_system_status(self) -> Dict[str, Any]:
-        """Get overall system status."""
+        """Get overall system status with enhanced monitoring."""
         return {
             "plugins": {
                 "total": len(self.plugin_manager.plugins),
@@ -431,6 +540,8 @@ class Synapse:
                 "active_grants": len(self.permission_manager.grants)
             },
             "traffic": self.traffic_logger.get_traffic_statistics(),
+            "enhanced_traffic": self.traffic_manager.get_system_metrics(),
+            "security": self.security_orchestrator.get_security_report(),
             "last_updated": datetime.now().isoformat()
         }
     
@@ -459,4 +570,254 @@ class Synapse:
         for connection_id in list(self.active_connections.keys()):
             self.close_connection(connection_id, "system")
         
-        self.logger.info("System cleanup completed") 
+        # Shutdown enhanced components
+        self.traffic_manager.shutdown()
+        self.security_orchestrator.shutdown()
+        
+        self.logger.info("System cleanup completed")
+    
+    # Enhanced API methods for traffic management and security
+    
+    def get_traffic_metrics(self) -> Dict[str, Any]:
+        """Get comprehensive traffic metrics."""
+        return self.traffic_manager.get_system_metrics()
+    
+    def get_security_report(self) -> Dict[str, Any]:
+        """Get detailed security monitoring report."""
+        return self.security_orchestrator.get_security_report()
+    
+    def update_user_bandwidth(self, user_id: str, agent_type: str, rate: float, burst: int):
+        """Update user bandwidth budget."""
+        self.traffic_manager.update_user_budget(user_id, agent_type, rate, burst)
+    
+    def register_agent_process(self, agent_id: str, pid: int):
+        """Register agent process for security monitoring."""
+        self.security_orchestrator.register_agent_process(agent_id, pid)
+    
+    def is_agent_quarantined(self, agent_id: str) -> bool:
+        """Check if agent is quarantined by security system."""
+        return self.security_orchestrator.is_agent_quarantined(agent_id)
+    
+    def release_agent_quarantine(self, agent_id: str):
+        """Release agent from security quarantine."""
+        self.security_orchestrator.release_quarantine(agent_id)
+    
+    # Local Resource Management API
+    
+    def launch_local_resource(self, target: str, **kwargs) -> Dict[str, Any]:
+        """
+        Launch a local resource/tool as specified in the Claude Integration Protocol.
+        
+        Args:
+            target: The target resource to launch (e.g., 'claude_code', 'dev_container', 'gemini_colab')
+            **kwargs: Optional flags (background, monitor, ipc_bridge)
+            
+        Returns:
+            Dict containing launch result and status
+        """
+        import subprocess
+        import uuid
+        
+        # Generate request ID for tracking
+        request_id = f"launch-{uuid.uuid4().hex[:8]}"
+        
+        # Log the launch request
+        from .traffic_logger import TrafficType, TrafficSeverity
+        self.traffic_logger.log_traffic(
+            traffic_type=TrafficType.SYSTEM_OPERATION,
+            source="synapse",
+            target=target,
+            user_id="system",
+            request_id=request_id,
+            payload={"target": target, "kwargs": kwargs},
+            severity=TrafficSeverity.MEDIUM
+        )
+        
+        try:
+            # Handle different target types
+            if target == "claude_code":
+                return self._launch_claude_code(**kwargs)
+            elif target == "dev_container":
+                return self._launch_dev_container(**kwargs)
+            elif target == "gemini_colab":
+                return self._launch_gemini_colab(**kwargs)
+            else:
+                raise ValueError(f"Unknown target: {target}")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to launch {target}: {e}")
+            return {
+                "request_id": request_id,
+                "target": target,
+                "success": False,
+                "error": str(e),
+                "launched_at": datetime.now().isoformat()
+            }
+    
+    def _launch_claude_code(self, background: bool = False, monitor: bool = False, 
+                           ipc_bridge: bool = False) -> Dict[str, Any]:
+        """Launch claude-code with specified options."""
+        import subprocess
+        import uuid
+        
+        request_id = f"claude-{uuid.uuid4().hex[:8]}"
+        
+        # Check if claude is available
+        try:
+            version_result = subprocess.run(['claude', '--version'], 
+                                          capture_output=True, text=True, timeout=10)
+            if version_result.returncode != 0:
+                raise RuntimeError("claude not available or not responding")
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            raise RuntimeError(f"claude not found or not responding: {e}")
+        
+        # Build command
+        cmd = ['claude']
+        
+        # Add flags based on options
+        if background:
+            cmd.append('--background')
+        if monitor:
+            cmd.append('--monitor')
+        if ipc_bridge:
+            cmd.append('--ipc-bridge')
+        
+        # Launch the process
+        try:
+            if background:
+                # Launch in background
+                process = subprocess.Popen(cmd, 
+                                         stdout=subprocess.PIPE, 
+                                         stderr=subprocess.PIPE,
+                                         text=True)
+                pid = process.pid
+                
+                return {
+                    "request_id": request_id,
+                    "target": "claude_code",
+                    "success": True,
+                    "pid": pid,
+                    "background": True,
+                    "launched_at": datetime.now().isoformat()
+                }
+            else:
+                # Launch synchronously
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                
+                return {
+                    "request_id": request_id,
+                    "target": "claude_code",
+                    "success": result.returncode == 0,
+                    "return_code": result.returncode,
+                    "stdout": result.stdout,
+                    "stderr": result.stderr,
+                    "launched_at": datetime.now().isoformat()
+                }
+                
+        except subprocess.TimeoutExpired:
+            return {
+                "request_id": request_id,
+                "target": "claude_code",
+                "success": False,
+                "error": "claude-code launch timed out",
+                "launched_at": datetime.now().isoformat()
+            }
+    
+    def _launch_dev_container(self, **kwargs) -> Dict[str, Any]:
+        """Launch development container."""
+        # Placeholder implementation
+        return {
+            "target": "dev_container",
+            "success": False,
+            "error": "dev_container not implemented yet",
+            "launched_at": datetime.now().isoformat()
+        }
+    
+    def _launch_gemini_colab(self, **kwargs) -> Dict[str, Any]:
+        """Launch Gemini Colab integration."""
+        # Placeholder implementation
+        return {
+            "target": "gemini_colab",
+            "success": False,
+            "error": "gemini_colab not implemented yet",
+            "launched_at": datetime.now().isoformat()
+        }
+    
+    def get_connections(self) -> List[Dict[str, Any]]:
+        """Get all active connections."""
+        try:
+            # Get connections from the traffic manager
+            connections = []
+            
+            # Mock connection data for now - in real implementation would get from active sessions
+            active_connections = [
+                {
+                    "id": "hearthlink_core",
+                    "agentId": "hearthlink-core",
+                    "status": "connected",
+                    "lastActivity": datetime.now().isoformat(),
+                    "trafficCount": len(self.traffic_logger.get_logs()),
+                    "permissions": ["core_access", "agent_management"],
+                    "riskLevel": "low"
+                }
+            ]
+            
+            # Check for Claude Code CLI connection
+            try:
+                import os
+                if os.environ.get('CLAUDE_CLI_ACTIVE'):
+                    active_connections.append({
+                        "id": "claude_code_cli",
+                        "agentId": "claude-code",
+                        "status": "connected",
+                        "lastActivity": datetime.now().isoformat(),
+                        "trafficCount": 1,
+                        "permissions": ["code_analysis", "file_operations"],
+                        "riskLevel": "medium"
+                    })
+            except:
+                pass
+            
+            return active_connections
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get connections: {e}")
+            return []
+    
+    def get_webhooks(self) -> List[Dict[str, Any]]:
+        """Get webhook configuration."""
+        try:
+            # Mock webhook data for now - in real implementation would get from storage
+            webhooks = [
+                {
+                    "id": "default_webhook",
+                    "name": "Default Webhook",
+                    "url": "https://example.com/webhook",
+                    "method": "POST",
+                    "headers": {"Content-Type": "application/json"},
+                    "enabled": True,
+                    "created_at": datetime.now().isoformat(),
+                    "last_triggered": None
+                }
+            ]
+            
+            return webhooks
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get webhooks: {e}")
+            return []
+    
+    def create_webhook(self, name: str, url: str, method: str = "POST", 
+                      headers: Dict[str, str] = None, enabled: bool = True) -> str:
+        """Create a new webhook."""
+        try:
+            webhook_id = str(uuid.uuid4())
+            
+            # In real implementation, would store webhook configuration
+            self.logger.info(f"Created webhook: {name} -> {url}")
+            
+            return webhook_id
+            
+        except Exception as e:
+            self.logger.error(f"Failed to create webhook: {e}")
+            raise e

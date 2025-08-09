@@ -1,0 +1,30 @@
+{
+  "test_name": "Fallback - Voice Misrouting Prevention",
+  "timestamp": "20250716_042836",
+  "results": {
+    "misrouting_prevention_working": true,
+    "engagement_prompts_working": true
+  },
+  "resource_data": {
+    "test_name": "Fallback - Voice Misrouting Prevention",
+    "timestamp": "20250716_042836",
+    "initial_state": {
+      "cpu_percent": 18.7,
+      "memory_percent": 61.5,
+      "disk_percent": 66.4
+    },
+    "monitoring_start": 1752654549.436211,
+    "final_state": {
+      "cpu_percent": 20.1,
+      "memory_percent": 61.5,
+      "disk_percent": 66.4
+    },
+    "monitoring_end": 1752654550.437887,
+    "duration": 1.0016758441925049
+  },
+  "environment": {
+    "python_version": "3.10.12 (main, May 27 2025, 17:12:29) [GCC 11.4.0]",
+    "platform": "linux",
+    "working_directory": "/mnt/g/MythologIQ/Hearthlink"
+  }
+}

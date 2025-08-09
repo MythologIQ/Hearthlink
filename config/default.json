@@ -1,0 +1,21 @@
+{
+  "app": {
+    "name": "Hearthlink",
+    "version": "1.0.0",
+    "environment": "development"
+  },
+  "api": {
+    "baseUrl": "http://localhost:8080"
+  },
+  "security": {
+    "encryptionKey": "development-key-change-in-production"
+  },
+  "agents": {
+    "alden": {
+      "enabled": true
+    },
+    "alice": {
+      "enabled": true
+    }
+  }
+}

@@ -632,27 +632,374 @@ class HearthlinkContainer:
             self.logger.log_error(e, "status_retrieval")
             return {"error": str(e)}
     
-    def simulate_error(self, error_type: str = "test") -> None:
-        """
-        Simulate an error for testing purposes.
+class IPCHandler:
+    """
+    Handler for Inter-Process Communication with Electron main process.
+    
+    Manages communication between Python backend and Electron frontend,
+    handling JSON messages over stdin/stdout.
+    """
+    
+    def __init__(self, container):
+        self.container = container
+        self.core = None
+        self.vault = None
+        self.synapse = None
+        self.logger = container.logger
+        self.running = False
         
-        Args:
-            error_type: Type of error to simulate
-        """
+        # Initialize backend modules
+        self._initialize_modules()
+    
+    def _initialize_modules(self):
+        """Initialize Core, Vault, and Synapse modules."""
         try:
-            if error_type == "value":
-                raise ValueError("Simulated ValueError for testing")
-            elif error_type == "runtime":
-                raise RuntimeError("Simulated RuntimeError for testing")
-            elif error_type == "io":
-                raise IOError("Simulated IOError for testing")
-            elif error_type == "keyboard":
-                raise KeyboardInterrupt("Simulated KeyboardInterrupt for testing")
-            else:
-                raise Exception(f"Simulated {error_type} error for testing")
-                
+            # Import and initialize modules
+            from vault.vault import Vault
+            from core.core import Core
+            from synapse.synapse import Synapse
+            
+            # Initialize Vault
+            vault_config = {
+                "storage": {
+                    "file_path": str(Path(__file__).parent.parent / "vault_data")
+                },
+                "encryption": {
+                    "key_env_var": "HEARTHLINK_VAULT_KEY",
+                    "key_file": None,
+                    "use_hardware_key": False
+                },
+                "schema_version": "1.0.0"
+            }
+            self.vault = Vault(vault_config, self.logger.logger)
+            
+            # Initialize Core with Vault
+            core_config = {
+                "turn_timeout": 300,
+                "auto_advance": True
+            }
+            self.core = Core(core_config, self.vault, self.logger.logger)
+            
+            # Initialize Synapse
+            from synapse.synapse import SynapseConfig
+            synapse_config = SynapseConfig(
+                sandbox={
+                    "max_cpu_percent": 50.0,
+                    "max_memory_mb": 512,
+                    "max_disk_mb": 100,
+                    "max_execution_time": 300
+                },
+                benchmark={
+                    "test_duration": 30,
+                    "response_time_threshold": 1000.0
+                },
+                traffic={
+                    "max_entries": 10000,
+                    "retention_days": 30
+                },
+                security={
+                    "require_manifest_signature": True,
+                    "auto_approve_low_risk": False,
+                    "max_concurrent_executions": 10
+                }
+            )
+            self.synapse = Synapse(synapse_config, self.logger.logger)
+            
+            self.logger.logger.info("Backend modules initialized successfully")
+            
         except Exception as e:
-            self._handle_error(e, f"simulated_error_{error_type}")
+            self.logger.log_error(e, "module_initialization")
+            raise
+    
+    def start(self):
+        """Start IPC communication loop."""
+        self.running = True
+        
+        # Signal readiness to Electron
+        print("HEARTHLINK_READY", flush=True)
+        
+        try:
+            while self.running:
+                # Read command from stdin
+                line = sys.stdin.readline().strip()
+                if not line:
+                    continue
+                
+                try:
+                    command = json.loads(line)
+                    response = self._process_command(command)
+                    
+                    # Send response to stdout
+                    response_json = json.dumps(response)
+                    print(response_json, flush=True)
+                    
+                except json.JSONDecodeError as e:
+                    self.logger.log_error(e, "json_decode")
+                    error_response = {
+                        "id": None,
+                        "success": False,
+                        "error": "Invalid JSON"
+                    }
+                    print(json.dumps(error_response), flush=True)
+                except Exception as e:
+                    self.logger.log_error(e, "command_processing")
+                    error_response = {
+                        "id": command.get("id") if "command" in locals() else None,
+                        "success": False,
+                        "error": str(e)
+                    }
+                    print(json.dumps(error_response), flush=True)
+                    
+        except KeyboardInterrupt:
+            self.logger.logger.info("IPC handler stopped by user")
+        except Exception as e:
+            self.logger.log_error(e, "ipc_main_loop")
+        finally:
+            self.running = False
+    
+    def _process_command(self, command):
+        """Process a command from Electron and return response."""
+        command_type = command.get("type")
+        command_id = command.get("id")
+        payload = command.get("payload", {})
+        
+        try:
+            if command_type == "voice_command":
+                return self._handle_voice_command(command_id, payload)
+            elif command_type == "core_create_session":
+                return self._handle_core_create_session(command_id, payload)
+            elif command_type == "core_get_session":
+                return self._handle_core_get_session(command_id, payload)
+            elif command_type == "core_add_participant":
+                return self._handle_core_add_participant(command_id, payload)
+            elif command_type == "core_start_turn_taking":
+                return self._handle_core_start_turn_taking(command_id, payload)
+            elif command_type == "core_advance_turn":
+                return self._handle_core_advance_turn(command_id, payload)
+            elif command_type == "vault_get_persona_memory":
+                return self._handle_vault_get_persona_memory(command_id, payload)
+            elif command_type == "vault_update_persona_memory":
+                return self._handle_vault_update_persona_memory(command_id, payload)
+            elif command_type == "synapse_execute_plugin":
+                return self._handle_synapse_execute_plugin(command_id, payload)
+            elif command_type == "synapse_list_plugins":
+                return self._handle_synapse_list_plugins(command_id, payload)
+            elif command_type == "test_write":
+                return self._handle_file_write(command_id, payload)
+            elif command_type == "file_write":
+                return self._handle_file_write(command_id, payload)
+            else:
+                return {
+                    "id": command_id,
+                    "success": False,
+                    "error": f"Unknown command type: {command_type}"
+                }
+        except Exception as e:
+            return {
+                "id": command_id,
+                "success": False,
+                "error": str(e)
+            }
+    
+    def _handle_voice_command(self, command_id, payload):
+        """Handle voice command processing."""
+        command = payload.get("command", "")
+        
+        # Simple command processing - can be enhanced with NLP
+        response_text = f"Processed voice command: {command}"
+        
+        return {
+            "id": command_id,
+            "success": True,
+            "data": response_text
+        }
+    
+    def _handle_core_create_session(self, command_id, payload):
+        """Handle Core session creation."""
+        user_id = payload.get("userId")
+        topic = payload.get("topic")
+        participants = payload.get("participants", [])
+        
+        session_id = self.core.create_session(user_id, topic, participants)
+        
+        return {
+            "id": command_id,
+            "success": True,
+            "data": {"sessionId": session_id}
+        }
+    
+    def _handle_core_get_session(self, command_id, payload):
+        """Handle Core session retrieval."""
+        session_id = payload.get("sessionId")
+        
+        session = self.core.get_session(session_id)
+        if session:
+            # Convert session to dict for JSON serialization
+            session_dict = {
+                "session_id": session.session_id,
+                "created_by": session.created_by,
+                "created_at": session.created_at,
+                "topic": session.topic,
+                "status": session.status.value,
+                "participants": [{"id": p.id, "name": p.name, "type": p.type.value} for p in session.participants],
+                "current_turn": session.current_turn
+            }
+            return {
+                "id": command_id,
+                "success": True,
+                "data": session_dict
+            }
+        else:
+            return {
+                "id": command_id,
+                "success": False,
+                "error": "Session not found"
+            }
+    
+    def _handle_core_add_participant(self, command_id, payload):
+        """Handle Core participant addition."""
+        session_id = payload.get("sessionId")
+        user_id = payload.get("userId")
+        participant_data = payload.get("participantData")
+        
+        success = self.core.add_participant(session_id, user_id, participant_data)
+        
+        return {
+            "id": command_id,
+            "success": success,
+            "data": {"participantAdded": success}
+        }
+    
+    def _handle_core_start_turn_taking(self, command_id, payload):
+        """Handle Core turn-taking start."""
+        session_id = payload.get("sessionId")
+        user_id = payload.get("userId")
+        turn_order = payload.get("turnOrder")
+        
+        success = self.core.start_turn_taking(session_id, user_id, turn_order)
+        
+        return {
+            "id": command_id,
+            "success": success,
+            "data": {"turnTakingStarted": success}
+        }
+    
+    def _handle_core_advance_turn(self, command_id, payload):
+        """Handle Core turn advancement."""
+        session_id = payload.get("sessionId")
+        user_id = payload.get("userId")
+        
+        next_participant = self.core.advance_turn(session_id, user_id)
+        
+        return {
+            "id": command_id,
+            "success": True,
+            "data": {"nextParticipant": next_participant}
+        }
+    
+    def _handle_vault_get_persona_memory(self, command_id, payload):
+        """Handle Vault persona memory retrieval."""
+        persona_id = payload.get("personaId")
+        user_id = payload.get("userId")
+        
+        # Get persona memory from vault
+        memory_data = self.vault.get_persona_memory(persona_id, user_id)
+        
+        return {
+            "id": command_id,
+            "success": True,
+            "data": memory_data
+        }
+    
+    def _handle_vault_update_persona_memory(self, command_id, payload):
+        """Handle Vault persona memory update."""
+        persona_id = payload.get("personaId")
+        user_id = payload.get("userId")
+        data = payload.get("data")
+        
+        success = self.vault.update_persona_memory(persona_id, user_id, data)
+        
+        return {
+            "id": command_id,
+            "success": success,
+            "data": {"updated": success}
+        }
+    
+    def _handle_synapse_execute_plugin(self, command_id, payload):
+        """Handle Synapse plugin execution."""
+        plugin_id = payload.get("pluginId")
+        plugin_payload = payload.get("payload")
+        user_id = payload.get("userId")
+        
+        result = self.synapse.execute_plugin(plugin_id, plugin_payload, user_id)
+        
+        return {
+            "id": command_id,
+            "success": True,
+            "data": result
+        }
+    
+    def _handle_synapse_list_plugins(self, command_id, payload):
+        """Handle Synapse plugin listing."""
+        plugins = self.synapse.list_plugins()
+        
+        return {
+            "id": command_id,
+            "success": True,
+            "data": {"plugins": plugins}
+        }
+    
+    def _handle_file_write(self, command_id, payload):
+        """Handle file write operations."""
+        try:
+            file_path = payload.get("filePath")
+            content = payload.get("content")
+            
+            if not file_path:
+                return {
+                    "id": command_id,
+                    "success": False,
+                    "error": "filePath is required"
+                }
+                
+            if content is None:
+                return {
+                    "id": command_id,
+                    "success": False,
+                    "error": "content is required"
+                }
+            
+            # Ensure directory exists
+            import os
+            from pathlib import Path
+            
+            file_path = Path(file_path)
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Write file
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            
+            # Log the successful write
+            print(f"[INFO] File written successfully: {file_path}")
+            
+            return {
+                "id": command_id,
+                "success": True,
+                "data": {
+                    "filePath": str(file_path),
+                    "size": len(content),
+                    "timestamp": datetime.now().isoformat()
+                }
+            }
+            
+        except Exception as e:
+            print(f"[ERROR] File write failed: {e}")
+            return {
+                "id": command_id,
+                "success": False,
+                "error": f"File write failed: {str(e)}"
+            }
 
 
 def main():
@@ -673,8 +1020,14 @@ def main():
         
         container = HearthlinkContainer(log_config=log_config)
         
-        # Start container (this will run until interrupted)
-        container.start()
+        # Check if running in IPC mode (called from Electron)
+        if len(sys.argv) > 1 and sys.argv[1] == '--ipc':
+            # Run in IPC mode
+            ipc_handler = IPCHandler(container)
+            ipc_handler.start()
+        else:
+            # Start container (this will run until interrupted)
+            container.start()
         
     except Exception as e:
         # Fallback logging if container initialization fails

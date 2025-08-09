@@ -48,9 +48,15 @@ class VaultEnhanced:
         self.audit_log.append(entry)
         if self.logger:
             if error:
-                self.logger.error(f"Vault error: {action} - {error}", extra={"traceback": traceback.format_exc(), "details": details})
+                if hasattr(self.logger, 'logger'):
+                    self.logger.logger.error(f"Vault error: {action} - {error}", extra={"traceback": traceback.format_exc(), "details": details})
+                else:
+                    self.logger.error(f"Vault error: {action} - {error}", extra={"traceback": traceback.format_exc(), "details": details})
             else:
-                self.logger.info(f"Vault action: {action}", extra={"details": details})
+                if hasattr(self.logger, 'logger'):
+                    self.logger.logger.info(f"Vault action: {action}", extra={"details": details})
+                else:
+                    self.logger.info(f"Vault action: {action}", extra={"details": details})
 
     def _load_key(self):
         key_env = self.config["encryption"].get("key_env_var")

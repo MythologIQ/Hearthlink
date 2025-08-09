@@ -1,0 +1,55 @@
+{
+  "models": [
+    {
+      "name": "llama3.2-1b",
+      "size_gb": 0.7,
+      "priority": 3,
+      "endpoint": "http://localhost:11434",
+      "capabilities": [
+        "chat",
+        "completion",
+        "emergency"
+      ]
+    },
+    {
+      "name": "llama3.2-3b",
+      "size_gb": 2.0,
+      "priority": 2,
+      "endpoint": "http://localhost:11434",
+      "capabilities": [
+        "chat",
+        "completion",
+        "reasoning"
+      ]
+    },
+    {
+      "name": "llama3.1-8b",
+      "size_gb": 4.7,
+      "priority": 1,
+      "endpoint": "http://localhost:11434",
+      "capabilities": [
+        "chat",
+        "completion",
+        "reasoning",
+        "coding"
+      ]
+    }
+  ],
+  "fallback_endpoints": [
+    "http://localhost:11434",
+    "http://127.0.0.1:11434",
+    "http://localhost:11435",
+    "http://localhost:8080"
+  ],
+  "cache_settings": {
+    "max_cache_size_gb": 50,
+    "auto_download": true,
+    "cleanup_threshold": 0.9
+  },
+  "redundancy_settings": {
+    "min_models_available": 2,
+    "health_check_interval": 30,
+    "max_failure_rate": 0.3,
+    "circuit_breaker_threshold": 5
+  }
+}

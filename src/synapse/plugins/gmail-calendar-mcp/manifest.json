@@ -1,0 +1,238 @@
+{
+  "plugin_id": "gmail-calendar-mcp",
+  "name": "Gmail & Calendar MCP Server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for Gmail and Google Calendar integration providing email management, calendar scheduling, and event coordination capabilities",
+  "author": "MythologIQ Hearthlink Team",
+  "type": "mcp_server",
+  "category": "productivity",
+  "tags": ["gmail", "calendar", "email", "scheduling", "google", "mcp"],
+  
+  "capabilities": [
+    "email_management",
+    "email_search", 
+    "email_composition",
+    "calendar_management",
+    "calendar_events",
+    "calendar_scheduling",
+    "google_oauth",
+    "mcp_protocol",
+    "real_time_sync",
+    "notification_handling"
+  ],
+  
+  "permissions": [
+    "NETWORK_ACCESS",
+    "EXTERNAL_API", 
+    "READ_VAULT",
+    "WRITE_VAULT",
+    "USER_DATA_ACCESS",
+    "OAUTH_MANAGEMENT"
+  ],
+  
+  "mcp_config": {
+    "server_executable": "npx @modelcontextprotocol/server-gmail",
+    "server_package": "@modelcontextprotocol/server-gmail",
+    "transport": "stdio",
+    "protocol_version": "2024-11-05",
+    "initialization_timeout": 30000,
+    "heartbeat_interval": 60000,
+    "max_concurrent_requests": 10,
+    "environment_vars": {
+      "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
+      "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}",
+      "GOOGLE_REDIRECT_URI": "${GOOGLE_REDIRECT_URI}",
+      "MCP_SERVER_LOG_LEVEL": "info"
+    }
+  },
+  
+  "oauth_config": {
+    "provider": "google",
+    "auth_url": "https://accounts.google.com/o/oauth2/v2/auth",
+    "token_url": "https://oauth2.googleapis.com/token", 
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send",
+      "https://www.googleapis.com/auth/gmail.compose",
+      "https://www.googleapis.com/auth/gmail.modify",
+      "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/calendar.events.readonly",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ],
+    "access_type": "offline",
+    "approval_prompt": "force"
+  },
+  
+  "sandbox_config": {
+    "memory_limit": "256MB",
+    "cpu_limit": "500m",
+    "timeout": 30,
+    "network_policy": "restricted",
+    "allowed_domains": [
+      "*.googleapis.com",
+      "*.google.com",
+      "accounts.google.com",
+      "oauth2.googleapis.com"
+    ],
+    "blocked_commands": [
+      "rm",
+      "del", 
+      "format",
+      "sudo",
+      "chmod",
+      "chown"
+    ]
+  },
+  
+  "core_integration": {
+    "startup_priority": "normal",
+    "health_check_endpoint": "/health",
+    "metrics_enabled": true,
+    "logging_level": "info",
+    "integration_points": [
+      "task_management",
+      "calendar_sync",
+      "notification_system",
+      "vault_storage"
+    ]
+  },
+  
+  "api_endpoints": [
+    {
+      "name": "list_emails",
+      "description": "List emails from Gmail",
+      "parameters": ["query", "max_results", "page_token"]
+    },
+    {
+      "name": "send_email", 
+      "description": "Send email via Gmail",
+      "parameters": ["to", "subject", "body", "attachments"]
+    },
+    {
+      "name": "search_emails",
+      "description": "Search emails with advanced filters",
+      "parameters": ["query", "labels", "date_range"]
+    },
+    {
+      "name": "list_calendar_events",
+      "description": "List calendar events",
+      "parameters": ["calendar_id", "time_min", "time_max", "max_results"]
+    },
+    {
+      "name": "create_calendar_event",
+      "description": "Create new calendar event",
+      "parameters": ["calendar_id", "summary", "start", "end", "description", "attendees"]
+    },
+    {
+      "name": "update_calendar_event", 
+      "description": "Update existing calendar event",
+      "parameters": ["calendar_id", "event_id", "updates"]
+    },
+    {
+      "name": "delete_calendar_event",
+      "description": "Delete calendar event",
+      "parameters": ["calendar_id", "event_id"]
+    }
+  ],
+  
+  "configuration_schema": {
+    "type": "object",
+    "properties": {
+      "gmail_enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable Gmail functionality"
+      },
+      "calendar_enabled": {
+        "type": "boolean", 
+        "default": true,
+        "description": "Enable Calendar functionality"
+      },
+      "sync_interval": {
+        "type": "integer",
+        "default": 300,
+        "minimum": 60,
+        "maximum": 3600,
+        "description": "Sync interval in seconds"
+      },
+      "max_email_results": {
+        "type": "integer",
+        "default": 50,
+        "minimum": 1,
+        "maximum": 100,
+        "description": "Maximum emails to retrieve per request"
+      },
+      "calendar_lookback_days": {
+        "type": "integer",
+        "default": 30,
+        "minimum": 1,
+        "maximum": 365,
+        "description": "Days to look back for calendar events"
+      },
+      "notification_preferences": {
+        "type": "object",
+        "properties": {
+          "email_notifications": {
+            "type": "boolean",
+            "default": true
+          },
+          "calendar_reminders": {
+            "type": "boolean", 
+            "default": true
+          }
+        }
+      }
+    }
+  },
+  
+  "security_profile": {
+    "risk_level": 55,
+    "risk_factors": [
+      "External API access to Google services",
+      "OAuth token management",
+      "User email and calendar data access",
+      "Network communication required"
+    ],
+    "mitigations": [
+      "OAuth 2.0 secure authentication",
+      "Encrypted token storage in Vault",
+      "Sandboxed execution environment", 
+      "Rate limiting and request monitoring",
+      "Audit logging for all operations"
+    ],
+    "data_classification": "sensitive",
+    "compliance_notes": "Handles personal email and calendar data - ensure GDPR/privacy compliance"
+  },
+  
+  "dependencies": {
+    "node_version": ">=18.0.0",
+    "npm_packages": [
+      "@modelcontextprotocol/server-gmail@^0.4.0",
+      "@modelcontextprotocol/sdk@^0.5.0"
+    ],
+    "system_requirements": {
+      "memory": "128MB",
+      "storage": "10MB",
+      "network": "required"
+    }
+  },
+  
+  "lifecycle": {
+    "install_script": "npm install @modelcontextprotocol/server-gmail",
+    "start_script": "npx @modelcontextprotocol/server-gmail",
+    "health_check": "curl -f http://localhost:3000/health || exit 1",
+    "shutdown_timeout": 10000,
+    "restart_policy": "on-failure"
+  },
+  
+  "metadata": {
+    "created_at": "2025-01-21T12:00:00Z",
+    "updated_at": "2025-01-21T12:00:00Z",
+    "documentation_url": "https://github.com/modelcontextprotocol/servers/tree/main/src/gmail",
+    "support_url": "https://github.com/MythologIQ/Hearthlink/issues",
+    "license": "MIT",
+    "keywords": ["mcp", "gmail", "calendar", "productivity", "google", "email"]
+  }
+}

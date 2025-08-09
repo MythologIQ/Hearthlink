@@ -1,0 +1,293 @@
+{
+  "plugin_id": "github-mcp",
+  "name": "GitHub MCP Server", 
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for comprehensive GitHub repository operations, issue management, and collaboration workflows",
+  "author": "Hearthlink Development Team",
+  "type": "mcp_server",
+  "category": "development",
+  "tags": ["github", "git", "repositories", "issues", "pull-requests", "mcp", "development"],
+  
+  "capabilities": [
+    "repository_management",
+    "file_operations",
+    "issue_management", 
+    "pull_request_management",
+    "branch_operations",
+    "search_functionality",
+    "collaboration_tools",
+    "github_api_integration"
+  ],
+  
+  "permissions": [
+    "NETWORK_ACCESS",
+    "EXTERNAL_API",
+    "READ_VAULT",
+    "WRITE_VAULT",
+    "OAUTH_MANAGEMENT",
+    "USER_DATA_ACCESS"
+  ],
+  
+  "mcp_config": {
+    "server_type": "built_in",
+    "transport": "direct", 
+    "protocol_version": "2024-11-05",
+    "initialization_timeout": 10000,
+    "max_concurrent_requests": 25,
+    "api_base_url": "https://api.github.com",
+    "rate_limiting": {
+      "requests_per_hour": 5000,
+      "burst_limit": 50
+    },
+    "environment_vars": {
+      "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+      "GITHUB_API_VERSION": "2022-11-28"
+    }
+  },
+  
+  "oauth_config": {
+    "provider": "github",
+    "auth_url": "https://github.com/login/oauth/authorize",
+    "token_url": "https://github.com/login/oauth/access_token",
+    "scopes": [
+      "repo",
+      "user:email",
+      "read:user",
+      "write:repo_hook",
+      "admin:repo_hook",
+      "read:org",
+      "workflow"
+    ],
+    "access_type": "online"
+  },
+  
+  "sandbox_config": {
+    "memory_limit": "256MB",
+    "cpu_limit": "300m", 
+    "timeout": 45,
+    "network_policy": "restricted",
+    "allowed_domains": [
+      "api.github.com",
+      "github.com",
+      "*.github.com",
+      "raw.githubusercontent.com"
+    ],
+    "blocked_commands": ["git", "ssh", "curl", "wget"]
+  },
+  
+  "api_endpoints": [
+    {
+      "name": "create_or_update_file",
+      "description": "Create or update a single file in repository",
+      "parameters": ["owner", "repo", "path", "content", "message", "branch", "sha"]
+    },
+    {
+      "name": "search_repositories", 
+      "description": "Search for GitHub repositories",
+      "parameters": ["query", "page", "perPage"]
+    },
+    {
+      "name": "create_repository",
+      "description": "Create new repository in account",
+      "parameters": ["name", "description", "private", "autoInit"]
+    },
+    {
+      "name": "get_file_contents",
+      "description": "Get contents of file or directory",
+      "parameters": ["owner", "repo", "path", "branch"]
+    },
+    {
+      "name": "push_files",
+      "description": "Push multiple files in single commit", 
+      "parameters": ["owner", "repo", "branch", "files", "message"]
+    },
+    {
+      "name": "create_issue",
+      "description": "Create new issue in repository",
+      "parameters": ["owner", "repo", "title", "body", "assignees", "labels", "milestone"]
+    },
+    {
+      "name": "create_pull_request",
+      "description": "Create new pull request",
+      "parameters": ["owner", "repo", "title", "head", "base", "body", "draft", "maintainer_can_modify"]
+    },
+    {
+      "name": "fork_repository",
+      "description": "Fork repository to account or organization",
+      "parameters": ["owner", "repo", "organization"]
+    },
+    {
+      "name": "create_branch",
+      "description": "Create new branch in repository",
+      "parameters": ["owner", "repo", "branch", "from_branch"]
+    },
+    {
+      "name": "list_commits",
+      "description": "Get list of commits from branch", 
+      "parameters": ["owner", "repo", "sha", "page", "perPage"]
+    },
+    {
+      "name": "list_issues",
+      "description": "List issues with filtering options",
+      "parameters": ["owner", "repo", "state", "labels", "sort", "direction", "since", "page", "per_page"]
+    },
+    {
+      "name": "update_issue",
+      "description": "Update existing issue",
+      "parameters": ["owner", "repo", "issue_number", "title", "body", "state", "assignees", "labels", "milestone"]
+    },
+    {
+      "name": "add_issue_comment",
+      "description": "Add comment to issue",
+      "parameters": ["owner", "repo", "issue_number", "body"]
+    },
+    {
+      "name": "search_code",
+      "description": "Search for code across repositories",
+      "parameters": ["q", "sort", "order", "page", "per_page"]
+    },
+    {
+      "name": "search_issues",
+      "description": "Search for issues and pull requests", 
+      "parameters": ["q", "sort", "order", "page", "per_page"]
+    },
+    {
+      "name": "search_users",
+      "description": "Search for users on GitHub",
+      "parameters": ["q", "sort", "order", "page", "per_page"]
+    },
+    {
+      "name": "get_issue",
+      "description": "Get details of specific issue",
+      "parameters": ["owner", "repo", "issue_number"]
+    },
+    {
+      "name": "get_pull_request",
+      "description": "Get details of specific pull request",
+      "parameters": ["owner", "repo", "pull_number"]
+    },
+    {
+      "name": "list_pull_requests",
+      "description": "List and filter repository pull requests",
+      "parameters": ["owner", "repo", "state", "head", "base", "sort", "direction", "page", "per_page"]
+    },
+    {
+      "name": "create_pull_request_review",
+      "description": "Create review on pull request",
+      "parameters": ["owner", "repo", "pull_number", "body", "event", "comments", "commit_id"]
+    },
+    {
+      "name": "merge_pull_request",
+      "description": "Merge pull request",
+      "parameters": ["owner", "repo", "pull_number", "commit_title", "commit_message", "merge_method"]
+    },
+    {
+      "name": "get_pull_request_files",
+      "description": "Get list of files changed in pull request",
+      "parameters": ["owner", "repo", "pull_number"]
+    },
+    {
+      "name": "get_pull_request_status", 
+      "description": "Get combined status of pull request checks",
+      "parameters": ["owner", "repo", "pull_number"]
+    },
+    {
+      "name": "update_pull_request_branch",
+      "description": "Update pull request branch with latest changes",
+      "parameters": ["owner", "repo", "pull_number", "expected_head_sha"]
+    },
+    {
+      "name": "get_pull_request_comments",
+      "description": "Get review comments on pull request",
+      "parameters": ["owner", "repo", "pull_number"]
+    },
+    {
+      "name": "get_pull_request_reviews",
+      "description": "Get reviews on pull request",
+      "parameters": ["owner", "repo", "pull_number"]
+    }
+  ],
+  
+  "security_profile": {
+    "risk_level": 60,
+    "risk_factors": [
+      "External API access to GitHub",
+      "OAuth token management",
+      "Repository modification capabilities",
+      "Public/private repository access",
+      "Workflow and actions permissions"
+    ],
+    "mitigations": [
+      "OAuth 2.0 secure authentication",
+      "Scoped permissions for repository access",
+      "Rate limiting and request monitoring", 
+      "Sandboxed execution environment",
+      "Audit logging for all operations",
+      "Token encryption in Vault storage"
+    ],
+    "data_classification": "sensitive",
+    "compliance_notes": "Handles source code and development workflows - ensure secure token management"
+  },
+  
+  "core_integration": {
+    "startup_priority": "normal",
+    "health_check_endpoint": "/health",
+    "metrics_enabled": true,
+    "logging_level": "info",
+    "integration_points": [
+      "project_management",
+      "task_coordination", 
+      "notification_system",
+      "audit_logging",
+      "vault_storage"
+    ]
+  },
+  
+  "configuration_schema": {
+    "type": "object",
+    "properties": {
+      "default_branch": {
+        "type": "string",
+        "default": "main",
+        "description": "Default branch for operations"
+      },
+      "max_file_size": {
+        "type": "integer",
+        "default": 1048576,
+        "description": "Maximum file size for uploads (1MB)"
+      },
+      "auto_create_issues": {
+        "type": "boolean",
+        "default": false,
+        "description": "Automatically create issues for tasks"
+      },
+      "pr_auto_merge": {
+        "type": "boolean", 
+        "default": false,
+        "description": "Enable automatic PR merging for approved changes"
+      },
+      "webhook_notifications": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable webhook notifications for repository events"
+      }
+    }
+  },
+  
+  "lifecycle": {
+    "install_script": "echo 'GitHub MCP server is built-in'",
+    "start_script": "internal://github-mcp", 
+    "health_check": "curl -f https://api.github.com || exit 1",
+    "shutdown_timeout": 10000,
+    "restart_policy": "on-failure"
+  },
+  
+  "metadata": {
+    "created_at": "2025-01-21T12:00:00Z",
+    "updated_at": "2025-01-21T12:00:00Z",
+    "documentation_url": "https://github.com/MythologIQ/Hearthlink/docs/mcp-servers/github",
+    "support_url": "https://github.com/MythologIQ/Hearthlink/issues",
+    "license": "MIT",
+    "keywords": ["mcp", "github", "git", "repositories", "development", "collaboration"]
+  }
+}

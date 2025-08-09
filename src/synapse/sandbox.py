@@ -52,9 +52,9 @@ class SandboxResult:
     """Sandbox execution result."""
     success: bool
     output: str
-    error: Optional[str] = None
     metrics: SandboxMetrics
     execution_id: str
+    error: Optional[str] = None
 
 class SandboxManager:
     """Manages secure sandboxed execution environments."""

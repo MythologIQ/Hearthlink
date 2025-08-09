@@ -1,0 +1,40 @@
+# Alden Backend Requirements
+# Core web framework
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+
+# Database drivers
+asyncpg==0.29.0
+neo4j==5.15.0
+redis==5.0.1
+qdrant-client==1.7.0
+
+# LLM and ML
+ollama==0.1.7
+sentence-transformers==2.2.2
+spacy==3.7.2
+numpy==1.24.3
+torch==2.1.0
+transformers==4.35.0
+
+# NLP models (download separately)
+# python -m spacy download en_core_web_sm
+
+# Security
+bcrypt==4.0.1
+pyjwt==2.8.0
+cryptography==41.0.7
+
+# Utilities
+python-dateutil==2.8.2
+python-dotenv==1.0.0
+aiofiles==23.2.1
+httpx==0.25.2
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.9.1
+flake8==6.1.0
+mypy==1.7.0

@@ -1,0 +1,63 @@
+{
+  "api": {
+    "port": 8001,
+    "host": "localhost",
+    "base_url": "http://localhost:8001",
+    "cors_origins": ["http://localhost:3000", "http://localhost:3001"],
+    "rate_limiting": {
+      "requests_per_minute": 100,
+      "burst_limit": 20,
+      "window_ms": 60000
+    }
+  },
+  "plugin_management": {
+    "plugin_path": "src/synapse/plugins",
+    "mcp_registry": "src/synapse/config/mcp_server_registry.json",
+    "auto_discovery": true,
+    "max_concurrent_plugins": 20,
+    "plugin_timeout_ms": 30000,
+    "sandbox_by_default": true,
+    "health_check_interval_seconds": 300
+  },
+  "security": {
+    "default_security_level": "medium",
+    "require_manifest_validation": true,
+    "enforce_sandboxing": true, 
+    "oauth_token_encryption": true,
+    "allowed_origins": ["localhost", "127.0.0.1"],
+    "blocked_domains": [],
+    "security_scan_plugins": true
+  },
+  "mcp_servers": {
+    "connection_timeout_ms": 10000,
+    "request_timeout_ms": 30000,
+    "max_retries": 3,
+    "retry_delay_ms": 1000,
+    "health_check_enabled": true,
+    "auto_restart_failed": true,
+    "load_balancing": false
+  },
+  "monitoring": {
+    "enable_metrics": true,
+    "metrics_interval_seconds": 60,
+    "performance_tracking": true,
+    "error_tracking": true,
+    "audit_all_requests": true,
+    "log_level": "info"
+  },
+  "caching": {
+    "enable_response_cache": true,
+    "cache_ttl_seconds": 300,
+    "max_cache_size_mb": 100,
+    "cache_compression": true
+  },
+  "handoff": {
+    "context_preservation": true,
+    "tag_verification": true,
+    "last_k_messages": 20,
+    "memory_reference_tracking": true,
+    "handoff_timeout_seconds": 60,
+    "max_handoff_chain_length": 10
+  },
+  "schema_version": "1.5.0"
+}

@@ -1,0 +1,548 @@
+/* Cognition & Memory Panel Styles */
+
+.cognition-memory-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.cognition-memory-panel.compact {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cognition-memory-panel.compact:hover {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(34, 211, 238, 0.2);
+}
+
+.cognition-memory-panel.expanded {
+  height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.95));
+}
+
+/* Panel Header */
+.panel-header {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.3);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.panel-header.compact {
+  padding: 0.75rem;
+}
+
+.panel-header h2, .panel-header h3 {
+  margin: 0;
+  color: #22d3ee;
+  font-family: 'Orbitron', monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.panel-header h2 {
+  font-size: 1.5rem;
+}
+
+.panel-header h3 {
+  font-size: 1rem;
+}
+
+.panel-subtitle {
+  font-size: 0.8rem;
+  color: rgba(34, 211, 238, 0.7);
+  margin-top: 0.25rem;
+}
+
+.expand-hint {
+  font-size: 0.7rem;
+  color: rgba(34, 211, 238, 0.5);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* Content Areas */
+.cognition-compact-content {
+  flex: 1;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cognition-expanded-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas: 
+    "memory working"
+    "cognitive embedding";
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.memory-usage-section { grid-area: memory; }
+.working-set-section { grid-area: working; }
+.cognitive-load-section { grid-area: cognitive; }
+.embedding-map-section { grid-area: embedding; }
+
+.memory-usage-section,
+.working-set-section,
+.cognitive-load-section,
+.embedding-map-section {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.memory-usage-section h3,
+.working-set-section h3,
+.cognitive-load-section h3,
+.embedding-map-section h3 {
+  margin: 0 0 1rem 0;
+  color: #22d3ee;
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+/* Memory Usage Visualization */
+.memory-visualization-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.visualization-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.visualization-controls button {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 6px;
+  color: #22d3ee;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.visualization-controls button:hover {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: #22d3ee;
+}
+
+.visualization-controls button.active {
+  background: linear-gradient(135deg, #22d3ee, #0891b2);
+  color: #0f172a;
+  border-color: #22d3ee;
+}
+
+.memory-usage-canvas {
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+.memory-usage-canvas.compact {
+  max-height: 60px;
+}
+
+.memory-usage-canvas.expanded {
+  min-height: 150px;
+}
+
+.memory-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(34, 211, 238, 0.8);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legend-color.short-term { background: rgba(34, 211, 238, 0.8); }
+.legend-color.long-term { background: rgba(16, 185, 129, 0.8); }
+.legend-color.embedded { background: rgba(251, 191, 36, 0.8); }
+
+/* Compact Metrics */
+.compact-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.1);
+}
+
+.metric-label {
+  color: rgba(34, 211, 238, 0.7);
+}
+
+.metric-value {
+  color: #22d3ee;
+  font-weight: bold;
+}
+
+/* Working Set */
+.working-set-list {
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.working-set-list.expanded {
+  max-height: 300px;
+}
+
+.memory-item {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  padding: 0.75rem;
+  border-left: 3px solid #22d3ee;
+  transition: all 0.3s ease;
+}
+
+.memory-item.expanded {
+  padding: 1rem;
+}
+
+.memory-item:hover {
+  background: rgba(15, 23, 42, 0.8);
+  transform: translateX(4px);
+}
+
+.memory-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.memory-type-icon {
+  font-size: 1rem;
+}
+
+.memory-type {
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(34, 211, 238, 0.2);
+  color: #22d3ee;
+}
+
+.memory-type.episodic { background: rgba(34, 211, 238, 0.2); color: #22d3ee; }
+.memory-type.semantic { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.memory-type.procedural { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+
+.memory-importance {
+  margin-left: auto;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: white;
+}
+
+.memory-content {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.memory-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: rgba(34, 211, 238, 0.6);
+}
+
+/* Compact Recent Memory */
+.compact-recent-memory {
+  border-top: 1px solid rgba(34, 211, 238, 0.2);
+  padding-top: 0.5rem;
+}
+
+.recent-memory-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.memory-type-indicator {
+  font-size: 0.8rem;
+}
+
+.memory-preview {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Cognitive Load */
+.cognitive-load-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.load-meter {
+  position: relative;
+}
+
+.load-bar {
+  height: 20px;
+  background: rgba(107, 114, 128, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.load-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.load-burst {
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: white;
+  border-radius: 2px;
+  animation: burst 1s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+@keyframes burst {
+  0%, 100% { opacity: 0.7; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.2); }
+}
+
+.load-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.load-current {
+  color: #22d3ee;
+  font-weight: bold;
+}
+
+.load-status {
+  color: rgba(34, 211, 238, 0.8);
+  font-style: italic;
+}
+
+.load-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.metric-item {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.metric-item .metric-label {
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(34, 211, 238, 0.7);
+  margin-bottom: 0.25rem;
+}
+
+.metric-item .metric-value {
+  display: block;
+  font-size: 1.1rem;
+  color: #22d3ee;
+  font-weight: bold;
+}
+
+/* Embedding Map */
+.embedding-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.embedding-map-canvas {
+  border-radius: 8px;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  width: 100%;
+  min-height: 200px;
+}
+
+.embedding-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.embedding-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 6px;
+  flex: 1;
+}
+
+.stat-label {
+  color: rgba(34, 211, 238, 0.7);
+  text-align: center;
+}
+
+.stat-value {
+  color: #22d3ee;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+/* Scrollbar Styles */
+.working-set-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.working-set-list::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 3px;
+}
+
+.working-set-list::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.5);
+  border-radius: 3px;
+}
+
+.working-set-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.7);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .cognition-expanded-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas: 
+      "memory"
+      "working"
+      "cognitive"
+      "embedding";
+  }
+  
+  .load-metrics {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .embedding-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .cognition-memory-panel.expanded {
+    padding: 1rem;
+  }
+  
+  .memory-usage-section,
+  .working-set-section,
+  .cognitive-load-section,
+  .embedding-map-section {
+    padding: 0.75rem;
+  }
+  
+  .visualization-controls {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .memory-header {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .memory-item,
+  .load-fill,
+  .load-burst {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-high-contrast: high) {
+  .cognition-memory-panel {
+    background: #000000;
+    border: 2px solid #ffffff;
+  }
+  
+  .memory-item,
+  .metric-item,
+  .stat-item {
+    background: #222222;
+    border: 1px solid #ffffff;
+  }
+  
+  .load-bar {
+    background: #444444;
+    border: 1px solid #ffffff;
+  }
+}

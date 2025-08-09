@@ -27,6 +27,7 @@ class TrafficType(Enum):
     API_REQUEST = "api_request"
     API_RESPONSE = "api_response"
     EXTERNAL_CALL = "external_call"
+    SYSTEM_OPERATION = "system_operation"
     ERROR = "error"
     WARNING = "warning"
 
@@ -36,6 +37,7 @@ class TrafficSeverity(Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
+    WARNING = "warning"
 
 @dataclass
 class TrafficLogEntry:

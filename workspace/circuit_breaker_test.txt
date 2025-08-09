@@ -1,0 +1,1 @@
+Testing circuit breaker protection for external agents

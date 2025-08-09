@@ -1,0 +1,68 @@
+{
+  "plugin_id": "google-ai",
+  "name": "Google AI External Agent",
+  "version": "1.0.0",
+  "description": "External agent integration with Google AI API for enhanced capabilities",
+  "type": "external_agent",
+  "author": "Hearthlink Core Team",
+  "capabilities": [
+    "natural_language_processing",
+    "text_generation", 
+    "multi_modal_analysis",
+    "external_api_integration",
+    "file_operations"
+  ],
+  "permissions": [
+    "NETWORK_ACCESS",
+    "EXTERNAL_API", 
+    "FILE_SYSTEM",
+    "READ_VAULT",
+    "WRITE_VAULT",
+    "READ_CORE"
+  ],
+  "endpoints": {
+    "primary": "https://generativelanguage.googleapis.com",
+    "fallback": []
+  },
+  "file_access": {
+    "allowed_paths": [
+      "/tmp/hearthlink",
+      "./hearthlink_data",
+      "./workspace",
+      "./outputs"
+    ],
+    "read_only_paths": [
+      "./config"
+    ],
+    "max_file_size_mb": 100,
+    "allowed_extensions": [
+      ".txt", ".json", ".csv", ".md", ".log", ".yml", ".yaml"
+    ]
+  },
+  "risk_assessment": {
+    "overall_risk": 45,
+    "data_privacy": 60,
+    "system_security": 30,
+    "network_access": 50,
+    "file_access": 60
+  },
+  "communication": {
+    "input_formats": ["text", "json"],
+    "output_formats": ["text", "json"],
+    "protocols": ["REST", "WebSocket"],
+    "authentication": "api_key"
+  },
+  "sandbox_config": {
+    "max_cpu_percent": 30.0,
+    "max_memory_mb": 256,
+    "max_disk_mb": 50,
+    "max_execution_time": 180,
+    "network_isolation": false
+  },
+  "core_integration": {
+    "participant_type": "EXTERNAL",
+    "session_capable": true,
+    "voice_routing_enabled": false,
+    "delegation_priority": 2
+  }
+}

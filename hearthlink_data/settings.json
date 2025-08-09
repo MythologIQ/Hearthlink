@@ -1,0 +1,71 @@
+{
+  "general": {
+    "autoSave": true,
+    "language": "en",
+    "notifications": true,
+    "startupModule": "alden",
+    "theme": "starcraft",
+    "voiceEnabled": true
+  },
+  "apis": {
+    "claudeCodePath": "",
+    "customEndpoints": [],
+    "googleAiKey": "",
+    "ollamaUrl": "http://localhost:11434"
+  },
+  "localLLM": {
+    "autoStart": true,
+    "contextLength": 32768,
+    "enabled": true,
+    "endpoint": "http://localhost:11434",
+    "fallbackEnabled": true,
+    "healthCheckInterval": 30000,
+    "maxTokens": 4096,
+    "model": "llama3.2:latest",
+    "provider": "ollama",
+    "streaming": true,
+    "temperature": 0.7
+  },
+  "agents": {
+    "alden": {
+      "enabled": true,
+      "priority": 1
+    },
+    "alice": {
+      "enabled": true,
+      "priority": 2
+    },
+    "core": {
+      "enabled": true,
+      "priority": 0
+    },
+    "mimic": {
+      "enabled": true,
+      "priority": 3
+    },
+    "sentry": {
+      "enabled": true,
+      "priority": 4
+    }
+  },
+  "voice": {
+    "enabled": true,
+    "language": "en-US",
+    "routingMode": "smart",
+    "sensitivity": 0.7,
+    "wakeWord": "alden"
+  },
+  "security": {
+    "auditLogging": true,
+    "autoLock": false,
+    "encryptionEnabled": true,
+    "sessionTimeout": 30
+  },
+  "performance": {
+    "backgroundSync": true,
+    "cachingEnabled": true,
+    "maxMemoryUsage": 4096,
+    "preloadModules": true
+  },
+  "test": "save"
+}

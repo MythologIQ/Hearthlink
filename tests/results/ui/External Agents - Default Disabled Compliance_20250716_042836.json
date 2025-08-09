@@ -1,0 +1,30 @@
+{
+  "test_name": "External Agents - Default Disabled Compliance",
+  "timestamp": "20250716_042836",
+  "results": {
+    "external_agents_default_disabled": 3,
+    "security_indicators_present": true
+  },
+  "resource_data": {
+    "test_name": "External Agents - Default Disabled Compliance",
+    "timestamp": "20250716_042836",
+    "initial_state": {
+      "cpu_percent": 17.3,
+      "memory_percent": 61.3,
+      "disk_percent": 66.4
+    },
+    "monitoring_start": 1752654525.353155,
+    "final_state": {
+      "cpu_percent": 16.2,
+      "memory_percent": 61.3,
+      "disk_percent": 66.4
+    },
+    "monitoring_end": 1752654526.3540592,
+    "duration": 1.0009043216705322
+  },
+  "environment": {
+    "python_version": "3.10.12 (main, May 27 2025, 17:12:29) [GCC 11.4.0]",
+    "platform": "linux",
+    "working_directory": "/mnt/g/MythologIQ/Hearthlink"
+  }
+}
