@@ -1,0 +1,86 @@
+{
+  "name": "Hearthlink Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "stable",
+      "profile": "default"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.flake8",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-json",
+        "rust-lang.rust-analyzer",
+        "tauri-apps.tauri-vscode",
+        "ms-vscode.js-debug",
+        "ms-playwright.playwright",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "ms-vscode.vscode-eslint",
+        "ms-vscode.test-adapter-converter"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.provider": "black",
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": true
+        },
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "forwardPorts": [3000, 3005, 3008, 8000, 8001, 8888],
+  "portsAttributes": {
+    "3000": {
+      "label": "React Dev Server",
+      "onAutoForward": "notify"
+    },
+    "3005": {
+      "label": "React App (Primary)",
+      "onAutoForward": "notify"
+    },
+    "3008": {
+      "label": "Static Server",
+      "onAutoForward": "silent"
+    },
+    "8000": {
+      "label": "Core API Server",
+      "onAutoForward": "notify"
+    },
+    "8001": {
+      "label": "Synapse API",
+      "onAutoForward": "silent"
+    },
+    "8888": {
+      "label": "Alden Backend",
+      "onAutoForward": "silent"
+    }
+  },
+  "postCreateCommand": ".devcontainer/postCreate.sh",
+  "remoteUser": "node",
+  "mounts": [
+    "source=${localWorkspaceFolder}/.devcontainer,target=/workspace/.devcontainer,type=bind"
+  ],
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "PYTHONPATH": "/workspace/src:/workspace",
+    "RUST_BACKTRACE": "1"
+  }
+}
