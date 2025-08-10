@@ -19,7 +19,10 @@ embed-resource = "3.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "2.0", features = ["devtools"] }
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.0", features = ["rt-multi-thread", "process", "macros", "time"] }
+
+tauri-plugin-single-instance = "2"
+= { version = "1.0", features = ["full"] }
 reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
 aes-gcm = "0.10"
 rand = "0.8"
