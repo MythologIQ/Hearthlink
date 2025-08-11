@@ -13,4 +13,4 @@ This file triggers the GitHub Actions workflow for Windows installer builds.
 - `build-info.json` with metadata
 
 ## Workflow Status:
-Ready to trigger via GitHub Actions manual dispatch or PR to main.
+Ready to trigger via GitHub Actions manual dispatch or PR to main.Build trigger updated: 2025-08-11T17:43:02Z
