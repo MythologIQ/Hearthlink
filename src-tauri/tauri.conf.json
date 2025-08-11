@@ -11,7 +11,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["msi", "nsis"],
     "identifier": "com.hearthlink.native",
     "publisher": "Hearthlink Development Team",
     "icon": [
@@ -66,19 +66,25 @@
         "featureGroupRefs": [],
         "featureRefs": [],
         "mergeRefs": [],
-        "skipWebviewInstall": false
+        "skipWebviewInstall": false,
+        "enableElevatedUpdateTask": false,
+        "bannerPath": null,
+        "dialogImagePath": null,
+        "foldersToRemove": []
       },
       "nsis": {
         "template": "installer.nsi",
-        "languages": ["English"],
-        "customLanguageFiles": {},
-        "displayLanguageSelector": false,
+        "headerImage": null,
+        "sidebarImage": null,
         "installerIcon": "icons/icon.ico",
         "installMode": "both",
         "allowDowngrades": true,
         "allowToChangeInstallationDirectory": true,
         "compressionLevel": "high",
-        "packagingFormat": "oneClick"
+        "displayLanguageSelector": false,
+        "languages": ["English"],
+        "customLanguageFiles": {},
+        "requestExecutionLevel": "user"
       }
     }
   },

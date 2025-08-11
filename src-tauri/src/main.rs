@@ -3,17 +3,117 @@
 
 use std::collections::HashMap;
 use std::process::{Child, Command, Stdio};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use std::path::{Path, PathBuf};
 use std::env;
+use std::fs::{File, OpenOptions};
+use std::io::{Read, Write};
 
 use tauri::{Manager, State, Window};
 use serde::{Deserialize, Serialize};
 use tokio::time::sleep;
 
 mod vault_rotation;
+
+// Single-instance lock management
+static INSTANCE_LOCK: OnceLock<Option<File>> = OnceLock::new();
+
+// Port profiles for different environments
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum PortProfile {
+    Default,  // 8000, 8001, 8002, 8888
+    Qa,       // 8010, 8011, 8012, 8898
+    Dev,      // 8020, 8021, 8022, 8908
+}
+
+impl PortProfile {
+    fn get_ports(&self) -> (u16, u16, u16, u16) {
+        match self {
+            PortProfile::Default => (8000, 8001, 8002, 8888), // core, vault, synapse, alden
+            PortProfile::Qa => (8010, 8011, 8012, 8898),
+            PortProfile::Dev => (8020, 8021, 8022, 8908),
+        }
+    }
+    
+    fn from_env() -> Self {
+        match env::var("HEARTHLINK_PORT_PROFILE").unwrap_or_default().as_str() {
+            "qa" => PortProfile::Qa,
+            "dev" => PortProfile::Dev,
+            _ => PortProfile::Default,
+        }
+    }
+}
+
+// Single instance enforcement
+fn acquire_instance_lock() -> Result<(), String> {
+    let lock_file_path = if cfg!(windows) {
+        env::temp_dir().join("hearthlink_instance.lock")
+    } else {
+        PathBuf::from("/tmp/hearthlink_instance.lock")
+    };
+
+    match OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(&lock_file_path)
+    {
+        Ok(mut file) => {
+            // Write current process ID to lock file
+            let pid = std::process::id().to_string();
+            if file.write_all(pid.as_bytes()).is_err() {
+                return Err("Failed to write to lock file".to_string());
+            }
+            
+            // Store the lock file handle to keep it locked
+            INSTANCE_LOCK.set(Some(file)).map_err(|_| "Failed to store lock file handle")?;
+            
+            println!("✅ Single instance lock acquired (PID: {})", pid);
+            Ok(())
+        }
+        Err(e) => {
+            // Check if another instance is running
+            if lock_file_path.exists() {
+                if let Ok(mut file) = File::open(&lock_file_path) {
+                    let mut contents = String::new();
+                    if file.read_to_string(&mut contents).is_ok() {
+                        if let Ok(other_pid) = contents.trim().parse::<u32>() {
+                            return Err(format!(
+                                "Another Hearthlink instance is already running (PID: {}). Please close it first.",
+                                other_pid
+                            ));
+                        }
+                    }
+                }
+            }
+            Err(format!("Failed to acquire instance lock: {}", e))
+        }
+    }
+}
+
+fn release_instance_lock() {
+    let lock_file_path = if cfg!(windows) {
+        env::temp_dir().join("hearthlink_instance.lock")
+    } else {
+        PathBuf::from("/tmp/hearthlink_instance.lock")
+    };
+
+    // Drop the lock file handle
+    if let Some(lock) = INSTANCE_LOCK.get() {
+        drop(lock);
+    }
+    
+    // Remove the lock file
+    if lock_file_path.exists() {
+        if let Err(e) = std::fs::remove_file(&lock_file_path) {
+            eprintln!("Warning: Failed to remove lock file: {}", e);
+        } else {
+            println!("✅ Single instance lock released");
+        }
+    }
+}
 
 // Service status tracking
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,6 +126,9 @@ pub struct ServiceStatus {
     pub health_check_url: String,
     pub last_health_check: Option<u64>,
     pub error_message: Option<String>,
+    pub restart_count: u32,
+    pub last_restart: Option<u64>,
+    pub restart_backoff: u64, // seconds to wait before next restart
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -40,10 +143,15 @@ pub struct ServiceManager {
     processes: Arc<Mutex<HashMap<String, Child>>>,
     services: Arc<Mutex<HashMap<String, ServiceStatus>>>,
     startup_time: u64,
+    port_profile: PortProfile,
+    shutdown_in_progress: Arc<Mutex<bool>>,
 }
 
 impl ServiceManager {
     pub fn new() -> Self {
+        let port_profile = PortProfile::from_env();
+        println!("🚀 Initializing ServiceManager with {:?} port profile", port_profile);
+        
         Self {
             processes: Arc::new(Mutex::new(HashMap::new())),
             services: Arc::new(Mutex::new(HashMap::new())),
@@ -51,20 +159,31 @@ impl ServiceManager {
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
                 .as_secs(),
+            port_profile,
+            shutdown_in_progress: Arc::new(Mutex::new(false)),
         }
     }
 
     pub fn start_all_services(&self, resource_dir: PathBuf) -> Result<(), String> {
-        // Define Python services with their configurations
+        // Get ports from the current profile
+        let (core_port, vault_port, synapse_port, alden_port) = self.port_profile.get_ports();
+        
+        println!("📡 Starting services on ports - Core:{}, Vault:{}, Synapse:{}, Alden:{}", 
+                core_port, vault_port, synapse_port, alden_port);
+        
+        // Define Python services with their configurations using dynamic ports
         let services = vec![
-            ("alden", "src/api/alden_api.py", 8888, "http://127.0.0.1:8888/health"),
-            ("vault", "src/vault/vault.py", 8001, "http://127.0.0.1:8001/health"),
-            ("core", "src/api/core_api.py", 8000, "http://127.0.0.1:8000/health"),
-            ("synapse", "src/api/synapse_api_server.py", 8002, "http://127.0.0.1:8002/health"),
+            ("alden", "src/api/alden_api.py", alden_port, format!("http://127.0.0.1:{}/health", alden_port)),
+            ("vault", "src/vault/vault_api_server.py", vault_port, format!("http://127.0.0.1:{}/health", vault_port)),
+            ("core", "src/api/core_api.py", core_port, format!("http://127.0.0.1:{}/health", core_port)),
+            ("synapse", "src/api/synapse_api_server.py", synapse_port, format!("http://127.0.0.1:{}/health", synapse_port)),
         ];
+        
+        // Pre-flight port availability check
+        self.check_port_availability(&services)?;
 
         for (name, script_path, port, health_url) in services {
-            self.start_service(name, script_path, port, health_url, &resource_dir)?;
+            self.start_service(name, script_path, port, &health_url, &resource_dir)?;
         }
 
         // Start health monitoring
@@ -130,6 +249,9 @@ impl ServiceManager {
             health_check_url: health_url.to_string(),
             last_health_check: None,
             error_message: None,
+            restart_count: 0,
+            last_restart: None,
+            restart_backoff: 1, // Start with 1 second backoff
         };
 
         {
@@ -160,6 +282,115 @@ impl ServiceManager {
         Err("Python 3.x not found. Please ensure Python 3.x is installed and in PATH.".to_string())
     }
 
+    fn check_port_availability(&self, services: &[(&str, &str, u16, String)]) -> Result<(), String> {
+        use std::net::TcpListener;
+        
+        for (name, _, port, _) in services {
+            match TcpListener::bind(format!("127.0.0.1:{}", port)) {
+                Ok(_) => {
+                    println!("✓ Port {} available for {} service", port, name);
+                }
+                Err(e) => {
+                    return Err(format!("Port {} unavailable for {} service: {}", port, name, e));
+                }
+            }
+        }
+        Ok(())
+    }
+    
+    fn restart_service_with_backoff(&self, service_name: &str, resource_dir: &PathBuf) -> Result<(), String> {
+        let (core_port, vault_port, synapse_port, alden_port) = self.port_profile.get_ports();
+        
+        let service_config = match service_name {
+            "alden" => ("src/api/alden_api.py", alden_port, format!("http://127.0.0.1:{}/health", alden_port)),
+            "vault" => ("src/vault/vault_api_server.py", vault_port, format!("http://127.0.0.1:{}/health", vault_port)),
+            "core" => ("src/api/core_api.py", core_port, format!("http://127.0.0.1:{}/health", core_port)),
+            "synapse" => ("src/api/synapse_api_server.py", synapse_port, format!("http://127.0.0.1:{}/health", synapse_port)),
+            _ => return Err(format!("Unknown service: {}", service_name)),
+        };
+        
+        // Check if service should be restarted based on backoff
+        let should_restart = {
+            let services = self.services.lock().unwrap();
+            if let Some(service) = services.get(service_name) {
+                if service.restart_count >= 5 {
+                    println!("Service {} has failed {} times, not restarting", service_name, service.restart_count);
+                    return Err("Max restart attempts exceeded".to_string());
+                }
+                
+                if let Some(last_restart) = service.last_restart {
+                    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+                    let time_since_restart = now - last_restart;
+                    if time_since_restart < service.restart_backoff {
+                        println!("Service {} in backoff period, waiting {} more seconds", 
+                                service_name, service.restart_backoff - time_since_restart);
+                        return Ok(()); // Don't restart yet
+                    }
+                }
+                true
+            } else {
+                false
+            }
+        };
+        
+        if !should_restart {
+            return Ok(());
+        }
+        
+        println!("Restarting {} service with exponential backoff", service_name);
+        
+        // Stop existing process if running
+        self.graceful_stop_service(service_name);
+        
+        // Start the service again
+        match self.start_service(service_name, service_config.0, service_config.1, &service_config.2, resource_dir) {
+            Ok(_) => {
+                // Update restart statistics
+                let mut services = self.services.lock().unwrap();
+                if let Some(service) = services.get_mut(service_name) {
+                    service.restart_count += 1;
+                    service.last_restart = Some(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs());
+                    // Exponential backoff: 1, 2, 4, 8, 16 seconds
+                    service.restart_backoff = std::cmp::min(service.restart_backoff * 2, 30);
+                    println!("Service {} restarted (attempt {}), next backoff: {}s", 
+                            service_name, service.restart_count, service.restart_backoff);
+                }
+                Ok(())
+            }
+            Err(e) => {
+                println!("Failed to restart {} service: {}", service_name, e);
+                Err(e)
+            }
+        }
+    }
+    
+    fn graceful_stop_service(&self, service_name: &str) {
+        let mut processes = self.processes.lock().unwrap();
+        if let Some(mut process) = processes.remove(service_name) {
+            println!("Gracefully stopping {} service...", service_name);
+            
+            // Step 1: Send SIGTERM (terminate)
+            let _ = process.kill();
+            
+            // Step 2: Wait for up to 10 seconds
+            let wait_result = std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_secs(10));
+                let _ = process.wait();
+            }).join();
+            
+            if wait_result.is_err() {
+                println!("Force killing {} service after timeout", service_name);
+            }
+        }
+        
+        // Update service status
+        let mut services = self.services.lock().unwrap();
+        if let Some(service) = services.get_mut(service_name) {
+            service.status = "stopped".to_string();
+            service.pid = None;
+        }
+    }
+    
     fn start_health_monitoring(&self) {
         let services_clone = Arc::clone(&self.services);
         
@@ -169,8 +400,22 @@ impl ServiceManager {
                 .build()
                 .unwrap();
 
+            // Track startup phase outside the loop
+            let mut startup_phase = true;
+            let mut startup_elapsed = 0;
+            let startup_duration = 60; // seconds
+
             loop {
-                sleep(Duration::from_secs(30)).await;
+                let probe_interval = if startup_phase { 5 } else { 30 };
+                sleep(Duration::from_secs(probe_interval)).await;
+                
+                if startup_phase {
+                    startup_elapsed += probe_interval;
+                    if startup_elapsed >= startup_duration {
+                        startup_phase = false;
+                        println!("Health monitoring: Switching to steady-state mode (30s intervals)");
+                    }
+                }
                 
                 let service_names: Vec<String> = {
                     let services = services_clone.lock().unwrap();
@@ -196,20 +441,33 @@ impl ServiceManager {
                             );
 
                             match health_result {
-                                Ok(response) if response.status().is_success() => {
-                                    if service.status == "starting" || service.status == "error" {
-                                        service.status = "running".to_string();
-                                        service.error_message = None;
-                                        println!("{} service is healthy", name);
+                            Ok(response) if response.status().is_success() => {
+                            if service.status == "starting" || service.status == "error" {
+                            service.status = "running".to_string();
+                            service.error_message = None;
+                            // Reset restart count on successful health check
+                                service.restart_count = 0;
+                                    service.restart_backoff = 1;
+                                    println!("{} service is healthy", name);
+                            }
+                            }
+                            Ok(response) => {
+                                let was_running = service.status == "running";
+                            service.status = "error".to_string();
+                            service.error_message = Some(format!("HTTP {}", response.status()));
+                                
+                                    if was_running {
+                                        println!("{} service unhealthy (HTTP {}), scheduling restart", name, response.status());
                                     }
                                 }
-                                Ok(response) => {
-                                    service.status = "error".to_string();
-                                    service.error_message = Some(format!("HTTP {}", response.status()));
-                                }
                                 Err(e) => {
+                                    let was_running = service.status == "running";
                                     service.status = "error".to_string();
                                     service.error_message = Some(e.to_string());
+                                    
+                                    if was_running {
+                                        println!("{} service unhealthy ({}), scheduling restart", name, e);
+                                    }
                                 }
                             }
                         }
@@ -239,17 +497,99 @@ impl ServiceManager {
     }
 
     pub fn stop_all_services(&self) {
+        // Check if shutdown is already in progress
+        {
+            let mut shutdown_flag = self.shutdown_in_progress.lock().unwrap();
+            if *shutdown_flag {
+                println!("⚠️  Shutdown already in progress, skipping duplicate request");
+                return;
+            }
+            *shutdown_flag = true;
+        }
+        
+        println!("🛑 Initiating enhanced shutdown sequence...");
+        
+        // Step 1: Gracefully shutdown in reverse dependency order
+        let shutdown_order = vec!["synapse", "core", "vault", "alden"];
+        
+        for service_name in &shutdown_order {
+            self.graceful_stop_service_enhanced(service_name);
+        }
+        
+        // Step 2: Force cleanup any remaining processes after timeout
+        println!("🧹 Final cleanup: terminating any remaining processes");
         let mut processes = self.processes.lock().unwrap();
         
         for (name, mut process) in processes.drain() {
-            println!("Stopping {} service...", name);
+            println!("Force terminating {} service...", name);
             let _ = process.kill();
+            
+            // Give it a moment to terminate
+            std::thread::sleep(Duration::from_millis(500));
             let _ = process.wait();
         }
 
-        // Update service statuses
+        // Step 3: Update service statuses
         let mut services = self.services.lock().unwrap();
         for (_, service) in services.iter_mut() {
+            service.status = "stopped".to_string();
+            service.pid = None;
+        }
+        
+        // Step 4: Release instance lock
+        release_instance_lock();
+        
+        println!("✅ Enhanced shutdown sequence completed");
+    }
+    
+    fn graceful_stop_service_enhanced(&self, service_name: &str) {
+        let mut processes = self.processes.lock().unwrap();
+        if let Some(mut process) = processes.remove(service_name) {
+            println!("🔄 Gracefully stopping {} service (enhanced)...", service_name);
+            
+            // Step 1: Send SIGTERM (terminate) - give process chance to cleanup
+            match process.kill() {
+                Ok(_) => println!("  📤 SIGTERM sent to {} service", service_name),
+                Err(e) => println!("  ⚠️  Failed to send SIGTERM to {}: {}", service_name, e),
+            }
+            
+            // Step 2: Wait for up to 15 seconds for graceful shutdown
+            let wait_handle = std::thread::spawn(move || {
+                for i in 0..15 {
+                    match process.try_wait() {
+                        Ok(Some(_)) => {
+                            println!("  ✅ {} service stopped gracefully after {}s", service_name, i);
+                            return true;
+                        }
+                        Ok(None) => {
+                            // Still running, wait a bit more
+                            std::thread::sleep(Duration::from_secs(1));
+                        }
+                        Err(e) => {
+                            println!("  ⚠️  Error checking {} service status: {}", service_name, e);
+                            break;
+                        }
+                    }
+                }
+                
+                // Force kill after timeout
+                println!("  🔨 Force killing {} service after 15s timeout", service_name);
+                let _ = process.kill();
+                let _ = process.wait();
+                false
+            });
+            
+            // Wait for the shutdown thread to complete
+            if let Err(_) = wait_handle.join() {
+                println!("  ⚠️  Shutdown thread for {} service panicked", service_name);
+            }
+        } else {
+            println!("  ℹ️  {} service not running or already stopped", service_name);
+        }
+        
+        // Update service status
+        let mut services = self.services.lock().unwrap();
+        if let Some(service) = services.get_mut(service_name) {
             service.status = "stopped".to_string();
             service.pid = None;
         }
@@ -276,12 +616,15 @@ async fn restart_service(
         .resource_dir()
         .ok_or("Failed to get resource directory")?;
 
+    // Get current port profile
+    let (core_port, vault_port, synapse_port, alden_port) = service_manager.port_profile.get_ports();
+    
     // Find service configuration
     let service_config = match service_name.as_str() {
-        "alden" => ("src/api/alden_api.py", 8888, "http://127.0.0.1:8888/health"),
-        "vault" => ("src/vault/vault.py", 8001, "http://127.0.0.1:8001/health"),
-        "core" => ("src/api/core_api.py", 8000, "http://127.0.0.1:8000/health"),
-        "synapse" => ("src/api/synapse_api_server.py", 8002, "http://127.0.0.1:8002/health"),
+        "alden" => ("src/api/alden_api.py", alden_port, format!("http://127.0.0.1:{}/health", alden_port)),
+        "vault" => ("src/vault/vault_api_server.py", vault_port, format!("http://127.0.0.1:{}/health", vault_port)),
+        "core" => ("src/api/core_api.py", core_port, format!("http://127.0.0.1:{}/health", core_port)),
+        "synapse" => ("src/api/synapse_api_server.py", synapse_port, format!("http://127.0.0.1:{}/health", synapse_port)),
         _ => return Err(format!("Unknown service: {}", service_name)),
     };
 
@@ -299,7 +642,7 @@ async fn restart_service(
         &service_name,
         service_config.0,
         service_config.1,
-        service_config.2,
+        &service_config.2,
         &resource_dir,
     )?;
 
@@ -324,6 +667,12 @@ fn greet(name: &str) -> String {
 }
 
 fn main() {
+    // Acquire single instance lock before starting
+    if let Err(e) = acquire_instance_lock() {
+        eprintln!("🚫 {}", e);
+        std::process::exit(1);
+    }
+    
     // Initialize service manager
     let service_manager = ServiceManager::new();
 
@@ -393,6 +742,8 @@ impl Clone for ServiceManager {
             processes: Arc::clone(&self.processes),
             services: Arc::clone(&self.services),
             startup_time: self.startup_time,
+            port_profile: self.port_profile.clone(),
+            shutdown_in_progress: Arc::clone(&self.shutdown_in_progress),
         }
     }
 }
