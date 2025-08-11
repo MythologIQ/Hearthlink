@@ -51,7 +51,12 @@
     "setup:all": "npm install && npm run python:install",
     "build:complete": "npm run setup:all && npm run tauri:build",
     "verify:setup": "node scripts/verify_tauri_setup.js",
-    "postinstall": "node scripts/verify_tauri_setup.js"
+    "postinstall": "node scripts/verify_tauri_setup.js",
+    "test:tauri-config": "node validate-tauri-config.js",
+    "test:build-local": "node test-tauri-build.js",
+    "test:build-msi": "node test-tauri-build.js --msi",
+    "test:build-nsis": "node test-tauri-build.js --nsis",
+    "ci:validate": "npm run test:tauri-config && npm run build && echo '✅ CI validation passed'"
   },
   "build": {
     "appId": "com.hearthlink.app",
