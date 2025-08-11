@@ -1,0 +1,379 @@
+name: "Windows Native Build - Tauri"
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release Type'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+        - development
+        - alpha
+        - release
+      build_target:
+        description: 'Build Target'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+        - msi
+        - nsis
+        - both
+  
+  # Automatic triggers
+  push:
+    tags:
+      - 'v*.*.*'
+    branches:
+      - main
+    paths:
+      - 'src-tauri/**'
+      - 'src/**'
+      - 'package.json'
+      - 'requirements*.txt'
+      - '.github/workflows/tauri-build-windows.yml'
+  
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src-tauri/**'
+      - '.github/workflows/tauri-build-windows.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  # Tauri environment variables
+  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        # Support different Windows architectures if needed
+        target: [x86_64-pc-windows-msvc]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Full history for version info
+    
+    - name: Setup Node.js LTS
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: |
+          package-lock.json
+          workers/package-lock.json
+    
+    - name: Setup Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: |
+          requirements.txt
+          requirements_full.txt
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        targets: ${{ matrix.target }}
+    
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: './src-tauri -> target'
+        cache-on-failure: true
+    
+    - name: Install Tauri CLI
+      run: |
+        cargo install tauri-cli --version "^2.0" --force
+        tauri --version
+    
+    - name: Verify build environment
+      run: |
+        echo "=== Environment Information ==="
+        echo "Node version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+        echo "Python version: $(python --version)"
+        echo "Cargo version: $(cargo --version)"
+        echo "Rust version: $(rustc --version)"
+        echo "Tauri version: $(tauri --version)"
+        echo "Target: ${{ matrix.target }}"
+        echo "Release Type: ${{ github.event.inputs.release_type || 'auto' }}"
+        echo "Build Target: ${{ github.event.inputs.build_target || 'both' }}"
+    
+    - name: Install Node dependencies
+      run: |
+        npm ci --prefer-offline --no-audit --progress=false
+        echo "✅ Node dependencies installed"
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install -r requirements.txt
+        if (Test-Path requirements_full.txt) {
+          echo "Installing full requirements..."
+          pip install -r requirements_full.txt
+        }
+        echo "✅ Python dependencies installed"
+    
+    - name: Verify Python environment
+      run: |
+        python -c "import fastapi, uvicorn, pydantic, requests; print('✅ Core Python packages verified')"
+    
+    - name: Validate Tauri configuration
+      run: |
+        echo "=== Validating Tauri Configuration ==="
+        if (Test-Path "src-tauri/tauri.conf.json") {
+          echo "✅ tauri.conf.json found"
+          # Basic JSON validation
+          Get-Content "src-tauri/tauri.conf.json" | ConvertFrom-Json | Out-Null
+          echo "✅ tauri.conf.json is valid JSON"
+        } else {
+          echo "❌ tauri.conf.json not found"
+          exit 1
+        }
+        
+        # Check for required icons
+        if (Test-Path "src-tauri/icons") {
+          echo "✅ Icons directory found"
+          $iconFiles = @("32x32.png", "128x128.png", "icon.ico")
+          foreach ($icon in $iconFiles) {
+            if (Test-Path "src-tauri/icons/$icon") {
+              echo "✅ $icon found"
+            } else {
+              echo "⚠️ $icon missing - may cause build issues"
+            }
+          }
+        } else {
+          echo "❌ Icons directory not found"
+          exit 1
+        }
+    
+    - name: Build React frontend
+      run: |
+        echo "=== Building React Frontend ==="
+        npm run build
+        echo "✅ React build completed"
+        
+        # Verify build output
+        if (Test-Path "build") {
+          echo "✅ Build directory created"
+          $buildSize = (Get-ChildItem build -Recurse | Measure-Object -Property Length -Sum).Sum
+          echo "Build size: $([math]::Round($buildSize/1MB, 2)) MB"
+        } else {
+          echo "❌ Build directory not found"
+          exit 1
+        }
+    
+    - name: Build Tauri app (MSI)
+      if: github.event.inputs.build_target == 'msi' || github.event.inputs.build_target == 'both' || github.event.inputs.build_target == ''
+      run: |
+        echo "=== Building Tauri MSI Package ==="
+        try {
+          tauri build --target ${{ matrix.target }} --bundles msi --verbose
+          echo "✅ MSI build completed successfully"
+        } catch {
+          echo "❌ MSI build failed: $_"
+          echo "Build logs:"
+          if (Test-Path "src-tauri/target/release/build") {
+            Get-ChildItem "src-tauri/target/release/build" -Recurse -Name "*.log" | ForEach-Object {
+              echo "=== $_ ==="
+              Get-Content "src-tauri/target/release/build/$_" -Tail 50
+            }
+          }
+          exit 1
+        }
+    
+    - name: Build Tauri app (NSIS EXE)
+      if: github.event.inputs.build_target == 'nsis' || github.event.inputs.build_target == 'both' || github.event.inputs.build_target == ''
+      run: |
+        echo "=== Building Tauri NSIS EXE Package ==="
+        try {
+          tauri build --target ${{ matrix.target }} --bundles nsis --verbose
+          echo "✅ NSIS EXE build completed successfully"
+        } catch {
+          echo "❌ NSIS EXE build failed: $_"
+          echo "Build logs:"
+          if (Test-Path "src-tauri/target/release/build") {
+            Get-ChildItem "src-tauri/target/release/build" -Recurse -Name "*.log" | ForEach-Object {
+              echo "=== $_ ==="
+              Get-Content "src-tauri/target/release/build/$_" -Tail 50
+            }
+          }
+          exit 1
+        }
+    
+    - name: Verify build artifacts
+      run: |
+        echo "=== Verifying Build Artifacts ==="
+        $bundleDir = "src-tauri/target/release/bundle"
+        
+        if (Test-Path $bundleDir) {
+          echo "✅ Bundle directory found"
+          echo "Bundle contents:"
+          Get-ChildItem $bundleDir -Recurse -Name | ForEach-Object { echo "  $_" }
+          
+          # Check for MSI files
+          $msiFiles = Get-ChildItem "$bundleDir/msi" -Filter "*.msi" -ErrorAction SilentlyContinue
+          if ($msiFiles) {
+            echo "✅ MSI files found:"
+            $msiFiles | ForEach-Object { 
+              $size = [math]::Round($_.Length/1MB, 2)
+              echo "  $($_.Name) ($size MB)"
+            }
+          }
+          
+          # Check for NSIS files
+          $nsisFiles = Get-ChildItem "$bundleDir/nsis" -Filter "*.exe" -ErrorAction SilentlyContinue
+          if ($nsisFiles) {
+            echo "✅ NSIS EXE files found:"
+            $nsisFiles | ForEach-Object { 
+              $size = [math]::Round($_.Length/1MB, 2)
+              echo "  $($_.Name) ($size MB)"
+            }
+          }
+          
+          if (-not $msiFiles -and -not $nsisFiles) {
+            echo "❌ No installer files found"
+            exit 1
+          }
+        } else {
+          echo "❌ Bundle directory not found"
+          exit 1
+        }
+    
+    - name: Prepare artifacts for upload
+      run: |
+        echo "=== Preparing Artifacts ==="
+        $artifactDir = "windows-artifacts"
+        New-Item -ItemType Directory -Path $artifactDir -Force
+        
+        $version = (Get-Content "src-tauri/tauri.conf.json" | ConvertFrom-Json).version
+        $timestamp = Get-Date -Format "yyyyMMdd-HHmm"
+        $releaseType = "${{ github.event.inputs.release_type }}"
+        if (-not $releaseType) { $releaseType = "auto" }
+        
+        $bundleDir = "src-tauri/target/release/bundle"
+        
+        # Copy MSI files with versioned names
+        if (Test-Path "$bundleDir/msi") {
+          Get-ChildItem "$bundleDir/msi" -Filter "*.msi" | ForEach-Object {
+            $newName = "Hearthlink-${version}-${releaseType}-${timestamp}-${{ matrix.target }}.msi"
+            Copy-Item $_.FullName "$artifactDir/$newName"
+            echo "✅ Prepared: $newName"
+          }
+        }
+        
+        # Copy NSIS EXE files with versioned names
+        if (Test-Path "$bundleDir/nsis") {
+          Get-ChildItem "$bundleDir/nsis" -Filter "*.exe" | ForEach-Object {
+            $newName = "Hearthlink-${version}-${releaseType}-${timestamp}-${{ matrix.target }}.exe"
+            Copy-Item $_.FullName "$artifactDir/$newName"
+            echo "✅ Prepared: $newName"
+          }
+        }
+        
+        # Create build info file
+        $buildInfo = @{
+          version = $version
+          timestamp = $timestamp
+          releaseType = $releaseType
+          target = "${{ matrix.target }}"
+          gitRef = "${{ github.ref }}"
+          gitSha = "${{ github.sha }}"
+          workflow = "${{ github.workflow }}"
+          runId = "${{ github.run_id }}"
+          buildTarget = "${{ github.event.inputs.build_target }}"
+        }
+        $buildInfo | ConvertTo-Json -Depth 3 | Out-File "$artifactDir/build-info.json" -Encoding UTF8
+        echo "✅ Build info created"
+        
+        echo "Final artifacts:"
+        Get-ChildItem $artifactDir | ForEach-Object {
+          $size = if ($_.PSIsContainer) { "DIR" } else { "$([math]::Round($_.Length/1MB, 2)) MB" }
+          echo "  $($_.Name) ($size)"
+        }
+    
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v4
+      if: always() # Upload even if some builds failed
+      with:
+        name: windows-installers-${{ matrix.target }}-${{ github.run_number }}
+        path: windows-artifacts/
+        retention-days: 30
+        compression-level: 6
+    
+    - name: Upload build logs (on failure)
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: build-logs-${{ matrix.target }}-${{ github.run_number }}
+        path: |
+          src-tauri/target/release/build/**/output
+          src-tauri/target/release/build/**/*.log
+        retention-days: 7
+        if-no-files-found: ignore
+
+    - name: Create release (on tag)
+      if: startsWith(github.ref, 'refs/tags/v') && matrix.target == 'x86_64-pc-windows-msvc'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: windows-artifacts/*
+        generate_release_notes: true
+        draft: true
+        prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Summary job to collect results
+  build-summary:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Build Summary
+      run: |
+        echo "## 🚀 Windows Native Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Ref:** ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+        echo "**SHA:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ github.event.inputs.release_type }}" != "" ]; then
+          echo "**Release Type:** ${{ github.event.inputs.release_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Target:** ${{ github.event.inputs.build_target }}" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Build Results" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.build-windows.result }}" == "success" ]; then
+          echo "✅ **Windows Build:** Completed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifacts produced:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Windows MSI installer" >> $GITHUB_STEP_SUMMARY
+          echo "- Windows NSIS EXE installer" >> $GITHUB_STEP_SUMMARY
+          echo "- Build information file" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Windows Build:** Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check the build logs for detailed error information." >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📦 Download Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "Artifacts are available in the workflow run for 30 days." >> $GITHUB_STEP_SUMMARY
